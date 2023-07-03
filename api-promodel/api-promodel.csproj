@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>api_promodel</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="archivos\demo\fotos\001.jpg" />
+    <None Remove="archivos\demo\fotos\002.jpg" />
+    <None Remove="archivos\demo\fotos\003.jpg" />
+    <None Remove="archivos\demo\fotos\004.jpg" />
+    <None Remove="archivos\demo\fotos\005.jpg" />
+    <None Remove="archivos\demo\fotos\006.jpg" />
+    <None Remove="archivos\demo\fotos\007.jpg" />
+    <None Remove="archivos\demo\fotos\008.jpg" />
+    <None Remove="archivos\demo\fotos\009.jpg" />
+    <None Remove="archivos\demo\fotos\010.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="archivos\demo\fotos\001.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\002.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\003.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\004.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\005.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\006.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\007.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\008.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\009.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="archivos\demo\fotos\010.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
+    <PackageReference Include="CouchDB.NET" Version="3.3.1" />
+    <PackageReference Include="CouchDB.NET.DependencyInjection" Version="3.3.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\modelo-promodel\modelo-promodel.csproj" />
+    <ProjectReference Include="..\servicios-promodel\servicios-promodel.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://cdn.jsdelivr.net/gh/roadrunner-server/roadrunner@latest/schemas/config/2.0.schema.json" /></VisualStudio></ProjectExtensions>
+
+</Project>

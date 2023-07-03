@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>promodel.servicios</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bogus" Version="34.0.2" />
+    <PackageReference Include="CouchDB.NET" Version="3.3.1" />
+    <PackageReference Include="CouchDB.NET.DependencyInjection" Version="3.3.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\almacenamiento\almacenamiento.csproj" />
+    <ProjectReference Include="..\comunicaciones\comunicaciones.csproj" />
+    <ProjectReference Include="..\modelo-promodel\modelo-promodel.csproj" />
+  </ItemGroup>
+
+</Project>
