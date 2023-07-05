@@ -21,11 +21,11 @@ namespace promodel.servicios.proyectos
 
         private async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
         {
-            return await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId && x.ColaboradoresIds.Any(i => i.Equals(UsuarioId)));
+
+            return await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
         }
 
         #region Castings
-
         public async Task<RespuestaPayload<CastingListElement>> Casting(string ClienteId, bool incluirInactivos = false)
         {
             var r = new RespuestaPayload<CastingListElement>();

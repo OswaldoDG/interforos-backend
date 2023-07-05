@@ -75,7 +75,7 @@ namespace promodel.modelo.proyectos
         /// Identificadores de los colaboradores para el filtro de busqueda de Castings en los que participa
         /// </summary>
         [JsonProperty("colabs")]
-        public List<string> ColaboradoresIds { get; set; }
+        public List<string>? ColaboradoresIds { get; set; }
 
         /// <summary>
         /// Indica si el proyecto se encuentra activo

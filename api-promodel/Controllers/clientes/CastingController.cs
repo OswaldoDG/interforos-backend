@@ -42,7 +42,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<Casting>> FullCastingPorId(string id)
         {
-            var result = await castingService.FullCasting(ClienteId, UsuarioId, id);
+            var result = await castingService.FullCasting(ClienteId, id, UsuarioId);
             if (result.Ok)
             {
                 return Ok(result.Payload);
@@ -79,10 +79,10 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<Casting>> ActualizaCasting([FromBody] Casting casting, string Id)
         {
-            if (casting.Id != Id)
-            {
-                return BadRequest();
-            }
+            //if (casting.Id != Id)
+            //{
+            //    return BadRequest();
+            //}
 
             var result = await castingService.ActualizaCasting(ClienteId, UsuarioId, Id, casting);
             if (result.Ok)
