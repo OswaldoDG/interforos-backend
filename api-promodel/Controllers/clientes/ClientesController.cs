@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using promodel.modelo.clientes;
+using promodel.modelo.perfil;
 using promodel.servicios;
 
 namespace api_promodel.Controllers.clientes
@@ -49,6 +50,21 @@ namespace api_promodel.Controllers.clientes
                 return NotFound();
             }
 
+            return Ok(c);
+        }
+
+
+
+        [HttpGet("contactos", Name = "ContactosCliente")]
+        public async Task<ActionResult<List<ContactoUsuario>>> ObtieneContactos([FromQuery] string buscar)
+        {
+            if (string.IsNullOrEmpty(buscar))
+            {
+                return BadRequest();
+            }
+
+            var c = await servicioClientes.BuscaContactosClientePorTexto(ClienteId, buscar);
+            
             return Ok(c);
         }
 

@@ -3,6 +3,7 @@ using CouchDB.Driver.Query.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using promodel.modelo.clientes;
+using promodel.modelo.perfil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace promodel.servicios
 {
-    public class ServicioClientes: IServicioClientes
+    public class ServicioClientes : IServicioClientes
     {
 
         private readonly CLientesCouchDbContext db;
@@ -20,6 +21,11 @@ namespace promodel.servicios
         {
             this.db = db;
             this.cache = cache;
+        }
+
+        public Task<List<ContactoUsuario>> BuscaContactosClientePorTexto(string ClientId, string TextoBuscado)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Cliente?> ClientePorId(string Id)
