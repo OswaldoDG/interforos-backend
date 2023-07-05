@@ -1,10 +1,8 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
-using promodel.modelo;
 using promodel.modelo.castings;
-using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
-using System;
+
 
 namespace promodel.servicios.proyectos
 {
@@ -13,6 +11,8 @@ namespace promodel.servicios.proyectos
 
         private readonly CastingCouchDbContext db;
         private readonly IDistributedCache cache;
+       
+
         public CastingService(CastingCouchDbContext db, IDistributedCache cache)
         {
             this.db = db;
