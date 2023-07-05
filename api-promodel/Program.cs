@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using promodel.servicios;
 using promodel.servicios.almacenamiento;
+using promodel.servicios.castings.Mock;
 using promodel.servicios.media;
 using promodel.servicios.perfil;
 using promodel.servicios.proyectos;
@@ -114,6 +115,7 @@ builder.Services.AddTransient<IGoogleDriveConfigProvider, PromodelGDriveProvider
 builder.Services.AddTransient<IAlmacenamiento, GoogleDriveDriver>();
 builder.Services.AddTransient<ICacheAlmacenamiento, CacheAlmacenamientoLocal>();
 builder.Services.AddTransient<IMedia, MediaService>();
+builder.Services.AddTransient<IBogusService, BogusService>();
 
 // Default Policy for dynamic policy provider
 builder.Services.AddCors(options =>
