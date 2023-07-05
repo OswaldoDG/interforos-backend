@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using promodel.modelo.castings;
 using promodel.modelo.proyectos;
 using promodel.servicios;
+using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
 
 namespace api_promodel.Controllers.clientes
@@ -13,9 +14,12 @@ namespace api_promodel.Controllers.clientes
     public class CastingController : ControllerUsoInterno
     {
         private ICastingService castingService;
-        public CastingController(ICastingService castingService, IServicioClientes clientes) : base(clientes)
+        private readonly IBogusService bogus;
+
+        public CastingController(ICastingService castingService, IServicioClientes clientes,IBogusService Bogus) : base(clientes)
         {
             this.castingService = castingService;
+            bogus = Bogus;
         }
 
         [HttpGet]
@@ -24,15 +28,17 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<List<CastingListElement>>> MisCastings([FromQuery] bool? Inactivos = false)
         {
-            var result = await castingService.Casting(ClienteId, Inactivos.Value);
-            if(result.Ok)
-            {
-                return Ok(result.Payload);
-
-            } else
-            {
-                return ActionFromCode(result.HttpCode, result.Error);
-            }
+            //var result = await castingService.Casting(ClienteId, Inactivos.Value);
+            var result =  bogus.CreaDatosDemo();
+            return Ok(result.Result);
+            //if(result.Ok)
+            //{
+            //    return Ok(result.Payload);
+             
+            //} else
+            //{
+            //    return ActionFromCode(result.HttpCode, result.Error);
+            //}
         }
 
         [HttpGet("$id")]
