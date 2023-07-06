@@ -1,0 +1,6 @@
+System.ArgumentNullException: Value cannot be null. (Parameter 'apiKey')
+   at SendGrid.SendGridClientOptions.set_ApiKey(String value)
+   at SendGrid.SendGridClient.buildOptions(String apiKey, String host, Dictionary`2 requestHeaders, String version, String urlPath, Boolean httpErrorAsException)
+   at SendGrid.SendGridClient..ctor(String apiKey, String host, Dictionary`2 requestHeaders, String version, String urlPath)
+   at comunicaciones.email.ServicioEmailSendGrid.EnviarCorreo(String subject, String body, String email, String nombre, String emailDe, String nombreDe) in C:\interforos\interforos-backend\comunicaciones\email\ServicioEmailSendGrid.cs:line 42
+   at comunicaciones.email.ServicioEmailSendGrid.Enviar(MensajeEmail msg) in C:\interforos\interforos-backend\comunicaciones\email\ServicioEmailSendGrid.cs:line 26

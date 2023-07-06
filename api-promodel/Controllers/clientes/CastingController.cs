@@ -28,17 +28,18 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<List<CastingListElement>>> MisCastings([FromQuery] bool? Inactivos = false)
         {
-            //var result = await castingService.Casting(ClienteId, Inactivos.Value);
-            var result =  bogus.CreaDatosDemo();
-            return Ok(result.Result);
-            //if(result.Ok)
-            //{
-            //    return Ok(result.Payload);
-             
-            //} else
-            //{
-            //    return ActionFromCode(result.HttpCode, result.Error);
-            //}
+            var result = await castingService.Casting(ClienteId, Inactivos.Value);
+            //var result =  bogus.CreaDatosDemo();
+            //return Ok(result.Result);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
         }
 
         [HttpGet("$id")]
@@ -47,7 +48,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<Casting>> FullCastingPorId(string id)
-        {
+         {
             var result = await castingService.FullCasting(ClienteId, id, UsuarioId);
             if (result.Ok)
             {
