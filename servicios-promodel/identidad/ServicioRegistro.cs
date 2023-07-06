@@ -37,13 +37,13 @@ namespace promodel.servicios
 
 
 
-            DatosPlantillaRegistro data = new() { Activacion = inv.Id, FechaLimite = inv.LimiteUso.ToString(), Nombre = inv.Registro.Nombre, UrlBase = configuration.LeeUrlBase() };
+            DatosPlantillaRegistro data = new() { Activacion = inv.Id, FechaLimite = inv.LimiteUso.ToString(), Nombre = inv.Registro.Nombre, UrlBase = configuration.LeeUrlBase(), Remitente = inv.Registro.Nombre};
             MensajeEmail m = new()
             {
                 DireccionPara = r.Email,
                 NombrePara = r.Nombre,
                 JSONData = JsonConvert.SerializeObject(data),
-                PlantillaCuerpo = configuration.LeePlantillaRegistro(environment),
+                PlantillaCuerpo = configuration.LeePlantillaRegistro(environment, inv),
                 PlantillaTema = configuration.LeeTemaRegistro()
             };
 
