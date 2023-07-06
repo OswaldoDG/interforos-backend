@@ -28,5 +28,5 @@ public class ContactoUsuario
     /// <summary>
     /// Indioca si el contacto ha sido localizado como usuario del sistema
     /// </summary>
-    public bool Localizado { get; set; }
+    public bool Localizado { get; set; } = false;
 }

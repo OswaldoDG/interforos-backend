@@ -2,8 +2,11 @@
 using CouchDB.Driver.Query.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using promodel.modelo;
 using promodel.modelo.clientes;
 using promodel.modelo.perfil;
+using promodel.modelo.registro;
+using promodel.servicios.clientes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +20,31 @@ namespace promodel.servicios
 
         private readonly CLientesCouchDbContext db;
         private readonly IDistributedCache cache;
-        public ServicioClientes(CLientesCouchDbContext db, IDistributedCache cache)
+        private readonly IdentidadCouchDbContext usuariosDB;
+
+        public ServicioClientes(CLientesCouchDbContext db, IDistributedCache cache, IdentidadCouchDbContext usuariosDB)
         {
             this.db = db;
             this.cache = cache;
+            this.usuariosDB = usuariosDB;
         }
 
-        public Task<List<ContactoUsuario>> BuscaContactosClientePorTexto(string ClientId, string TextoBuscado)
+        public async Task<List<ContactoUsuario>> BuscaContactosClientePorTexto(string ClientId, string TextoBuscado)
         {
-            throw new NotImplementedException();
+
+            var result = new List<ContactoUsuario>();
+
+            var contactos = await usuariosDB.Usuarios.Where(_=>_.Clientes.Contains(ClientId)).ToListAsync();
+
+            var usuarios= contactos.Where(_=>_.Email.Contains(TextoBuscado) && (_.RolesCliente.Where(r=>r.Rol==TipoRolCliente.Staff || r.Rol == TipoRolCliente.RevisorExterno).Any())).ToList();
+
+            foreach (var usuario in usuarios)
+            {
+                result.Add(usuario.aContactoUsuario(usuario.RolesCliente.FirstOrDefault(_ => _.ClienteId == ClientId).Rol));
+                
+            }
+
+            return result;
         }
 
         public async Task<Cliente?> ClientePorId(string Id)
