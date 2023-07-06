@@ -41,7 +41,6 @@ namespace promodel.servicios
             foreach (var usuario in usuarios)
             {
                 result.Add(usuario.aContactoUsuario(usuario.RolesCliente.FirstOrDefault(_ => _.ClienteId == ClientId).Rol));
-                
             }
 
             return result;
