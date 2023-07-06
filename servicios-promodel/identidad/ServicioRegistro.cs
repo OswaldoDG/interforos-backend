@@ -37,18 +37,41 @@ namespace promodel.servicios
 
 
 
-            DatosPlantillaRegistro data = new() { Activacion = inv.Id, FechaLimite = inv.LimiteUso.ToString(), Nombre = inv.Registro.Nombre, UrlBase = configuration.LeeUrlBase() };
+            DatosPlantillaRegistro data = new() { 
+                Activacion = inv.Id, 
+                FechaLimite = inv.LimiteUso.ToString(), 
+                Nombre = inv.Registro.Nombre, 
+                UrlBase = configuration.LeeUrlBase(), 
+                Remitente = inv.Registro.Nombre,
+                Rol = RolComoTexto(inv.Registro.Rol)
+            };
+
             MensajeEmail m = new()
             {
                 DireccionPara = r.Email,
                 NombrePara = r.Nombre,
                 JSONData = JsonConvert.SerializeObject(data),
-                PlantillaCuerpo = configuration.LeePlantillaRegistro(environment),
+                PlantillaCuerpo = configuration.LeePlantillaRegistro(environment, inv),
                 PlantillaTema = configuration.LeeTemaRegistro()
             };
 
             await servicioEmail.Enviar(m);
 
+        }
+
+        private string RolComoTexto(TipoRolCliente rol)
+        {
+            switch (rol)
+            {
+                case TipoRolCliente.Staff:
+                    return "Miembro del equipo";
+
+                case TipoRolCliente.RevisorExterno:
+                    return "Revisor del casting";
+
+                default:
+                    return "";
+            }
         }
 
         public async Task<InvitacionRegistro?> RegistroPorId(string Id)
