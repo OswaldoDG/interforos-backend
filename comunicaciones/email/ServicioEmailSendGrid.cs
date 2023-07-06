@@ -30,7 +30,6 @@ namespace comunicaciones.email
             }
             catch (Exception ex)
             {
-                File.AppendAllText("log.txt", ex.ToString() + "\r\n");
                 Log.Error(ex.Message);
                 return false;
             };
@@ -44,11 +43,6 @@ namespace comunicaciones.email
             var to = new EmailAddress(email, nombre);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, null, body);
             var response = await client.SendEmailAsync(msg);
-
-            if(!response.IsSuccessStatusCode)
-            {
-                File.AppendAllText("log.txt", response.Body + "\r\n");
-            }
 
             return response.IsSuccessStatusCode;
         }
