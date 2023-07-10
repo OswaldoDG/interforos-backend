@@ -56,14 +56,10 @@ namespace api_promodel.Controllers.clientes
 
 
         [HttpGet("contactos", Name = "ContactosCliente")]
-        public async Task<ActionResult<List<ContactoUsuario>>> ObtieneContactos([FromQuery] string buscar)
-        {
-            if (string.IsNullOrEmpty(buscar))
-            {
-                return BadRequest();
-            }
+        public async Task<ActionResult<List<ContactoUsuario>>> ObtieneContactos()
+        { 
+            var c = await servicioClientes.BuscaContactosClientePorTexto(ClienteId);
 
-            var c = await servicioClientes.BuscaContactosClientePorTexto(ClienteId, buscar);
             
             return Ok(c);
         }
