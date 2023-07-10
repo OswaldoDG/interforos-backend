@@ -1,12 +1,13 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 
 
 namespace promodel.servicios.proyectos
 {
-    public class CastingService: ICastingService
+    public class CastingService : ICastingService
     {
 
         private readonly CastingCouchDbContext db;
@@ -400,84 +401,10 @@ namespace promodel.servicios.proyectos
 
         #region Acceso
 
-        public async Task<RespuestaPayload<StaffCasting>> AdicionarStaff(string ClienteId, string CastingId, string? UsuarioId, string? Email)
+
+        public Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
         {
-            var r = new RespuestaPayload<StaffCasting>();
-            var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
-            if (casting != null)
-            {
-                StaffCasting staff = null;
-                if(!string.IsNullOrEmpty(UsuarioId))
-                {
-                    staff = casting.Staff.FirstOrDefault(s => s.UsuarioId == UsuarioId);
-                } else
-                {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        staff = casting.Staff.FirstOrDefault(s => s.Email.Equals(Email, StringComparison.InvariantCultureIgnoreCase));
-                    }
-                }
-
-                if(staff==null)
-                {
-                    if(!string.IsNullOrEmpty(UsuarioId) || !string.IsNullOrEmpty(Email))
-                    {
-                        staff = new StaffCasting() { Confirmado = UsuarioId != null, Email = Email, UsuarioId = UsuarioId };
-                        casting.Staff.Add(staff);
-                        if(!string.IsNullOrEmpty(UsuarioId))
-                        {
-                            if (!casting.ColaboradoresIds.Any(c => c.Equals(UsuarioId)))
-                            {
-                                casting.ColaboradoresIds.Add(UsuarioId);
-                            }
-                        }
-                        await db.Castings.AddOrUpdateAsync(casting);
-                        r.Payload = staff;
-                        r.Ok = true;
-                    }
-                }
-
-            }
-            return r;
-        }
-
-
-        public async Task<Respuesta> EliminarStaff(string ClienteId, string CastingId, string? UsuarioId,  string? Email)
-        {
-            var r = new Respuesta();
-            var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
-            if (casting != null)
-            {
-                StaffCasting staff = null;
-                if (!string.IsNullOrEmpty(UsuarioId))
-                {
-                    staff = casting.Staff.FirstOrDefault(s => s.UsuarioId == UsuarioId);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        staff = casting.Staff.FirstOrDefault(s => s.Email.Equals(Email, StringComparison.InvariantCultureIgnoreCase));
-                    }
-                }
-
-                if (staff != null)
-                {
-                    if (!string.IsNullOrEmpty(staff.UsuarioId))
-                    {
-                        if (!casting.ColaboradoresIds.Any(c => c.Equals(staff.UsuarioId)))
-                        {
-                            casting.ColaboradoresIds.Remove(staff.UsuarioId);
-                        }
-                    }
-
-                    casting.Staff.Remove(staff);
-                    await db.Castings.AddOrUpdateAsync(casting);
-                    r.Ok = true;
-                }
-
-            }
-            return r;
+            throw new NotImplementedException();
         }
 
 

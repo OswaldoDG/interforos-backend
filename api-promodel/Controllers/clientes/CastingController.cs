@@ -1,6 +1,7 @@
 ﻿using api_promodel.middlewares;
 using Microsoft.AspNetCore.Mvc;
 using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
@@ -123,7 +124,24 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+        [HttpPut("contactos/{Id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<Casting>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string Id)
+        {
 
+            var result = await castingService.ActualizaContactosCasting(ClienteId, UsuarioId, Id, contactos);
+            if (result.Ok)
+            {
+                return Ok();
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
 
     }
 }

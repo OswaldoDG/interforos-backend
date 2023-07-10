@@ -9,7 +9,7 @@ public class BogusService : IBogusService
 {
     private List<Casting> listaCastings = new List<Casting>();
     private List<CastingListElement> listaCastingListElement= new List<CastingListElement>();
-    private List<StaffCasting> listaStaffCasting=new List<StaffCasting>();
+    private List<ContactoCasting> listaStaffCasting=new List<ContactoCasting>();
     private List<ComentarioCasting> listaComentariosCasting= new List<ComentarioCasting>();
     private List<CategoriaCasting> listaCategoriasCasting= new List<CategoriaCasting>();
     public List<CastingListElement> GenerarCastingListElementFicticios (int numeroCastings)
@@ -24,7 +24,6 @@ public class BogusService : IBogusService
                        .RuleFor(_ => _.FechaApertura, f => f.Person.DateOfBirth)
                        .RuleFor(_ => _.FechaCierre, f => f.Person.DateOfBirth)
                        .RuleFor(_ => _.AceptaAutoInscripcion, f => f.Random.Bool())
-                       .RuleFor(_ => _.Staff, f => GenerarStaffCasting(10))
                        .RuleFor(_ => _.Descripcion, f => f.Commerce.ProductDescription())
                        .RuleFor(_ => _.Comentarios, f => GenerarComentarioCastingFicticios(10))
                        .RuleFor(_ => _.ColaboradoresIds, f => f.GenerarColaboradores())
@@ -43,9 +42,9 @@ public class BogusService : IBogusService
         return listaCastingListElement;
     }
 
-        public List<StaffCasting> GenerarStaffCasting (int numeroStaff)
+        public List<ContactoCasting> GenerarStaffCasting (int numeroStaff)
     {
-        var bogusStaff = new Faker<StaffCasting>()
+        var bogusStaff = new Faker<ContactoCasting>()
                        .RuleFor(_ => _.UsuarioId, f => Guid.NewGuid().ToString())
                        .RuleFor(_ => _.Email, f => f.Person.Email)
                        .RuleFor(_ => _.Confirmado, f => f.Random.Bool())
@@ -53,7 +52,7 @@ public class BogusService : IBogusService
       
         for (int i = 0; i < numeroStaff; i++)
         {
-            StaffCasting staffGenerado = bogusStaff.Generate();
+            ContactoCasting staffGenerado = bogusStaff.Generate();
             listaStaffCasting.Add(staffGenerado);
         }
 
