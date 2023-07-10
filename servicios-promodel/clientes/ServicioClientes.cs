@@ -29,14 +29,14 @@ namespace promodel.servicios
             this.usuariosDB = usuariosDB;
         }
 
-        public async Task<List<ContactoUsuario>> BuscaContactosClientePorTexto(string ClientId, string TextoBuscado)
+        public async Task<List<ContactoUsuario>> BuscaContactosClientePorTexto(string ClientId)
         {
 
             var result = new List<ContactoUsuario>();
 
             var contactos = await usuariosDB.Usuarios.Where(_=>_.Clientes.Contains(ClientId)).ToListAsync();
 
-            var usuarios= contactos.Where(_=>_.Email.Contains(TextoBuscado) && (_.RolesCliente.Where(r=>r.Rol==TipoRolCliente.Staff || r.Rol == TipoRolCliente.RevisorExterno).Any())).ToList();
+            var usuarios= contactos.Where(_=>_.RolesCliente.Where(r=>r.Rol==TipoRolCliente.Staff || r.Rol == TipoRolCliente.RevisorExterno).Any()).ToList();
 
             foreach (var usuario in usuarios)
             {
