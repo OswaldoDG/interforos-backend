@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using promodel.modelo;
 
@@ -15,9 +16,26 @@ namespace promodel.servicios.identidad
             return _configuration.GetValue<string>("BaseConnectUrl:urlRegistro");
         }
 
-        public static string LeeTemaRegistro(this IConfiguration _configuration)
+        public static string LeeTemaRegistro(this IConfiguration _configuration, InvitacionRegistro inv)
         {
-            return _configuration.GetValue<string>("emailing:tema-email-registro");
+
+            switch (inv.Registro.Rol)
+            {
+                case TipoRolCliente.Staff:
+                    return _configuration.GetValue<string>("emailing:tema-email-registro-staff");
+                   
+                case TipoRolCliente.Modelo:
+                    return _configuration.GetValue<string>("emailing:tema-email-registro");
+                   
+                case TipoRolCliente.RevisorExterno:
+                    return _configuration.GetValue<string>("emailing:tema-email-registro-revisor");                  
+
+                default:
+                    return null;
+
+            }
+
+            
         }
 
         public static string LeePlantillaRegistro(this IConfiguration _configuration, IWebHostEnvironment _environment, InvitacionRegistro inv)

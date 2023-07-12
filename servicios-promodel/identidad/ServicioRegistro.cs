@@ -52,7 +52,7 @@ namespace promodel.servicios
                 NombrePara = r.Nombre,
                 JSONData = JsonConvert.SerializeObject(data),
                 PlantillaCuerpo = configuration.LeePlantillaRegistro(environment, inv),
-                PlantillaTema = configuration.LeeTemaRegistro()
+                PlantillaTema = configuration.LeeTemaRegistro(inv)
             };
 
             await servicioEmail.Enviar(m);

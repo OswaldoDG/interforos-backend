@@ -36,5 +36,6 @@ namespace promodel.servicios.proyectos
         Task<Respuesta> RemoverColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds);
 
         Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
+        Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     }
 }

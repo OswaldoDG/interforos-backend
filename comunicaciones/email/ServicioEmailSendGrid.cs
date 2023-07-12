@@ -37,6 +37,7 @@ namespace comunicaciones.email
 
         public async Task<bool> EnviarCorreo(string subject, string body, string email, string nombre, string emailDe, string nombreDe)
         {
+
             var apiKey = _SMTPConfig.SendgridKey;
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress(emailDe, nombreDe);
