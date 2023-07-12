@@ -1,25 +1,29 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
-
+using promodel.servicios.castings;
+using System.Diagnostics.Eventing.Reader;
+using System.Runtime.Serialization.Formatters;
 
 namespace promodel.servicios.proyectos
 {
-    public class CastingService: ICastingService
+    public class CastingService : ICastingService
     {
 
         private readonly CastingCouchDbContext db;
         private readonly IDistributedCache cache;
-       
+        private readonly IServicioIdentidad identidad;
 
-        public CastingService(CastingCouchDbContext db, IDistributedCache cache)
+        public CastingService(CastingCouchDbContext db, IDistributedCache cache,IServicioIdentidad servicioIdentidad)
         {
             this.db = db;
             this.cache = cache;
+            this.identidad = servicioIdentidad;
         }
 
-        private async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
+        public async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
         {
 
             return await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
@@ -67,6 +71,7 @@ namespace promodel.servicios.proyectos
             casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
             casting.ClienteId = ClienteId;
             casting.UsuarioId = UsuarioId;
+            casting.Contactos = new List<ContactoCasting>();
             await db.Castings.AddOrUpdateAsync(casting);
             r.Ok = true;
 
@@ -87,7 +92,7 @@ namespace promodel.servicios.proyectos
                 tmpCasting.FechaApertura = casting.FechaApertura;
                 tmpCasting.FechaCierre = casting.FechaCierre;
                 tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
-
+                tmpCasting.Contactos= casting.Contactos;
 
                 await db.Castings.AddOrUpdateAsync(tmpCasting);
                 r.Ok = true;
@@ -400,84 +405,40 @@ namespace promodel.servicios.proyectos
 
         #region Acceso
 
-        public async Task<RespuestaPayload<StaffCasting>> AdicionarStaff(string ClienteId, string CastingId, string? UsuarioId, string? Email)
-        {
-            var r = new RespuestaPayload<StaffCasting>();
-            var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
-            if (casting != null)
-            {
-                StaffCasting staff = null;
-                if(!string.IsNullOrEmpty(UsuarioId))
-                {
-                    staff = casting.Staff.FirstOrDefault(s => s.UsuarioId == UsuarioId);
-                } else
-                {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        staff = casting.Staff.FirstOrDefault(s => s.Email.Equals(Email, StringComparison.InvariantCultureIgnoreCase));
-                    }
-                }
 
-                if(staff==null)
-                {
-                    if(!string.IsNullOrEmpty(UsuarioId) || !string.IsNullOrEmpty(Email))
-                    {
-                        staff = new StaffCasting() { Confirmado = UsuarioId != null, Email = Email, UsuarioId = UsuarioId };
-                        casting.Staff.Add(staff);
-                        if(!string.IsNullOrEmpty(UsuarioId))
-                        {
-                            if (!casting.ColaboradoresIds.Any(c => c.Equals(UsuarioId)))
-                            {
-                                casting.ColaboradoresIds.Add(UsuarioId);
-                            }
-                        }
-                        await db.Castings.AddOrUpdateAsync(casting);
-                        r.Payload = staff;
-                        r.Ok = true;
-                    }
-                }
-
-            }
-            return r;
-        }
-
-
-        public async Task<Respuesta> EliminarStaff(string ClienteId, string CastingId, string? UsuarioId,  string? Email)
+        public async Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
         {
             var r = new Respuesta();
-            var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
-            if (casting != null)
+            var casting = await ObtieneCasting(ClienteId,CastingId,UsuarioId);
+            
+            if (casting ==null)
             {
-                StaffCasting staff = null;
-                if (!string.IsNullOrEmpty(UsuarioId))
+                r.HttpCode = HttpCode.NotFound;
+                r.Error = "Casting no encontrado";
+                return r;
+            }
+            casting.Contactos = new List<ContactoCasting>();
+            foreach (var contacto in Contactos)
+            {
+                var user = await identidad.UsuarioPorEmail(contacto.Email);
+
+                if (user == null)
                 {
-                    staff = casting.Staff.FirstOrDefault(s => s.UsuarioId == UsuarioId);
+                    casting.Contactos.Add(contacto.aContactoCasting(null));
                 }
+
                 else
                 {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        staff = casting.Staff.FirstOrDefault(s => s.Email.Equals(Email, StringComparison.InvariantCultureIgnoreCase));
-                    }
+                    casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
                 }
-
-                if (staff != null)
-                {
-                    if (!string.IsNullOrEmpty(staff.UsuarioId))
-                    {
-                        if (!casting.ColaboradoresIds.Any(c => c.Equals(staff.UsuarioId)))
-                        {
-                            casting.ColaboradoresIds.Remove(staff.UsuarioId);
-                        }
-                    }
-
-                    casting.Staff.Remove(staff);
-                    await db.Castings.AddOrUpdateAsync(casting);
-                    r.Ok = true;
-                }
+               
 
             }
+            await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
+            r.Ok = true;
             return r;
+
+
         }
 
 

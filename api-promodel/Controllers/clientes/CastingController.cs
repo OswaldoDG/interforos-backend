@@ -1,6 +1,8 @@
 ﻿using api_promodel.middlewares;
 using Microsoft.AspNetCore.Mvc;
+using promodel.modelo;
 using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
@@ -15,11 +17,13 @@ namespace api_promodel.Controllers.clientes
     {
         private ICastingService castingService;
         private readonly IBogusService bogus;
+        private readonly IServicioIdentidad identidad;
 
-        public CastingController(ICastingService castingService, IServicioClientes clientes,IBogusService Bogus) : base(clientes)
+        public CastingController(ICastingService castingService, IServicioClientes clientes,IBogusService Bogus,IServicioIdentidad servicioIdentidad) : base(clientes)
         {
             this.castingService = castingService;
             bogus = Bogus;
+            this.identidad = servicioIdentidad;
         }
 
         [HttpGet]
@@ -123,7 +127,63 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+        [HttpPut("contactos/{castingId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<Casting>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string castingId)
+        {
+            foreach (var contacto in contactos)
+            {               
+          
+            if (contacto.Id==null)
+                {
+                    var usuario = new RegistroUsuario()
+                    {
+                        Email=contacto.Email,
+                        Nombre=contacto.NombreCompleto,
+                        Rol=(TipoRolCliente)contacto.Rol,
+                        CastingId = castingId,
+                        ClienteId = this.ClienteId
+                    };
+                    await RegistroContacto(usuario);
+                }
+            }
 
+
+
+            var result = await castingService.ActualizaContactosCasting(ClienteId,castingId, UsuarioId, contactos);
+            if (result.Ok)
+            {
+                return Ok();
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+
+        // solo se llama cuando el usuario contacto del casting no existe
+        private async Task<ActionResult> RegistroContacto(RegistroUsuario registro)
+        {
+            registro.ClienteId = this.ClienteId;
+            if (!this.ModelState.IsValid || registro.ClienteId == null)
+            {
+                return BadRequest();
+            }
+
+            var u = await identidad.UsuarioPorEmail(registro.Email);
+            if (u != null && u.Clientes.Any(x => x == registro.ClienteId))
+            {
+                return Conflict();
+            }
+
+            await identidad.Registro(registro);
+        
+            return Ok();
+        }
 
     }
+ 
 }

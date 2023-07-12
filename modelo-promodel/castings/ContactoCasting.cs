@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace promodel.modelo.proyectos
 {
 
-    public class StaffCasting
+    public class ContactoCasting
     {
         /// <summary>
         /// Identificador del usuario si ya se encuentra registrado
@@ -25,6 +25,8 @@ namespace promodel.modelo.proyectos
         /// </summary>
         public bool Confirmado { get; set; } = false;
 
+        // Tipo de rol asignado al contacto del casting
+        public TipoRolCliente Rol { get; set; }
 
         /// <summary>
         /// Mantiene la fecha y hora del ultimo ingreso del usurio al proyecto

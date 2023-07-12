@@ -29,5 +29,9 @@ namespace promodel.modelo
         /// </summary>
         public TipoRolCliente Rol { get; set; }
 
+        /// <summary>
+        /// Se llena cuando la invitación se origina en un casting
+        /// </summary>
+        public string? CastingId { get; set; }
     }
 }

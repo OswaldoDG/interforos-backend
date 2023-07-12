@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using promodel.modelo;
 using promodel.servicios;
+using promodel.servicios.proyectos;
 
 namespace api_promodel.Controllers
 {
@@ -14,10 +15,13 @@ namespace api_promodel.Controllers
 
         private IServicioIdentidad identidad;
         private readonly IServicioClientes clientes;
-        public RegistroController(IServicioIdentidad identidad, IServicioClientes clientes) : base()
+        private readonly ICastingService castingService;
+
+        public RegistroController(IServicioIdentidad identidad, IServicioClientes clientes,ICastingService castingService) : base()
         {
             this.identidad = identidad; ;
             this.clientes = clientes;
+            this.castingService = castingService;
         }
 
 
@@ -102,6 +106,7 @@ namespace api_promodel.Controllers
                     var u = await identidad.UsuarioPorEmail(r.Registro.Email);
                     if (u == null)
                     {
+                        
                         var usuarioNuevo = r.AUsuario();
                         if (usuarioNuevo != null)
                         {
@@ -118,6 +123,26 @@ namespace api_promodel.Controllers
                             await identidad.ActualizaUsuario(u);
                         }
                     }
+
+                    var user = await identidad.UsuarioPorEmail(r.Registro.Email);
+
+                    if (r.Registro.CastingId != null && user !=null)
+                    {
+                        var casting = await castingService.ObtieneCasting(this.ClienteId, r.Registro.CastingId, this.UsuarioId);
+
+                        var contacto = casting.Contactos.FirstOrDefault(_ => _.Email == user.Email);
+
+                        if (contacto != null)
+                        {
+                            contacto.Confirmado = true;
+                            contacto.UsuarioId = user.Id;
+                        }
+
+                        await castingService.ActualizaCasting(this.ClienteId, this.UsuarioId, casting.Id, casting);
+                    }
+
+
+
 
                     await identidad.EliminaRegistroPorId(r.Id);
 

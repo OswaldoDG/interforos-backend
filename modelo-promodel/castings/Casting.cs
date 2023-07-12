@@ -58,8 +58,8 @@ namespace promodel.modelo.proyectos
         /// <summary>
         /// Lista de staff o externos participantes en el proyecto
         /// </summary>
-        [JsonProperty("st")]
-        public List<StaffCasting>? Staff { get; set; }
+        [JsonProperty("ctc")]
+        public List<ContactoCasting>? Contactos { get; set; }
 
         [JsonProperty("ds")]
         public string? Descripcion { get; set; }

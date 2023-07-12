@@ -1,4 +1,5 @@
 ﻿using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using System;
 using System.Collections.Generic;
@@ -31,11 +32,10 @@ namespace promodel.servicios.proyectos
         Task<Respuesta> EliminarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string ComentarioId);
         Task<RespuestaPayload<ComentarioCasting>> AdicionarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string comentario);
         
-        Task<Respuesta> EliminarStaff(string ClienteId, string CastingId, string? UsuarioId, string? Email);
-        
-        Task<RespuestaPayload<StaffCasting>> AdicionarStaff(string ClienteId, string CastingId, string? UsuarioId, string? email);
-
         Task<Respuesta> AdicionarColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds);
         Task<Respuesta> RemoverColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds);
+
+        Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
+        Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     }
 }
