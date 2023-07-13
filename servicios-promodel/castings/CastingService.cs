@@ -1,5 +1,6 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
@@ -30,7 +31,7 @@ namespace promodel.servicios.proyectos
         }
 
         #region Castings
-        public async Task<RespuestaPayload<CastingListElement>> Casting(string ClienteId, bool incluirInactivos = false)
+        public async Task<RespuestaPayload<CastingListElement>> Casting(string ClienteId, string usuarioId, TipoRolCliente rol, bool incluirInactivos = false)
         {
             var r = new RespuestaPayload<CastingListElement>();
             if (incluirInactivos)

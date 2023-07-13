@@ -32,9 +32,9 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<List<CastingListElement>>> MisCastings([FromQuery] bool? Inactivos = false)
         {
-            var result = await castingService.Casting(ClienteId, Inactivos.Value);
-            //var result =  bogus.CreaDatosDemo();
-            //return Ok(result.Result);
+            // El id del usaurio se obtiene del JWT 
+            var result = await castingService.Casting(ClienteId, this.UsuarioId, this.RolUsuario, Inactivos.Value);
+
             if (result.Ok)
             {
                 return Ok(result.Payload);

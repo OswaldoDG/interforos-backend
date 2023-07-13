@@ -52,4 +52,9 @@ public class CastingListElement
     /// Especifica si el proyecto debe marcarse como inactivo al superarse la fecha de cierro
     /// </summary>
     public bool CierreAutomatico { get; set; } = true;
+
+    /// <summary>
+    /// Rol del usuario actual
+    /// </summary>
+    public TipoRolCliente Rol { get; set; }
 }
