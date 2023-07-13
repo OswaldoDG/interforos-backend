@@ -1,5 +1,6 @@
 ﻿using api_promodel.middlewares;
 using Microsoft.AspNetCore.Mvc;
+using promodel.modelo;
 using promodel.modelo.clientes;
 using promodel.modelo.controllers;
 using promodel.servicios;
@@ -7,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace api_promodel.Controllers
 {
-    
+
     public class ControllerUsoInterno : ControllerBase, IControladorCliente
     {
 
@@ -74,6 +75,31 @@ namespace api_promodel.Controllers
             }
 
         }
+
+
+        protected TipoRolCliente RolUsuario
+        {
+            get
+            {
+                    try
+                    {
+                        // Inyectar el servicio de usuarios
+                        // OBtener el usuario del servicio por ID utilizando this.UsuarioId
+                        // Buscar en el usuario encontrado en RolesCliente el rol para el clienteid actual utilizando this.ClienteId
+                        // devolver el rol a partir del primer elemento encotnrado en vez de TipoRolCliente.Administrador
+
+                        return TipoRolCliente.Administrador;
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Console.WriteLine(ex.ToString());
+                    }
+
+                return TipoRolCliente.Ninguno;
+            }
+        }
+
 
         public string? UsuarioId
         {

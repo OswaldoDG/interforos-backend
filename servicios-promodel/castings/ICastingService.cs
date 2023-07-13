@@ -1,4 +1,5 @@
-﻿using promodel.modelo.castings;
+﻿using promodel.modelo;
+using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using System;
@@ -12,7 +13,7 @@ namespace promodel.servicios.proyectos
     public interface ICastingService
     {
 
-        Task<RespuestaPayload<CastingListElement>> Casting(string ClienteId, bool incluirInactivos);
+        Task<RespuestaPayload<CastingListElement>> Casting(string ClienteId, string usuarioId, TipoRolCliente rol, bool incluirInactivos);
         Task<Respuesta> EliminarCasting(string ClienteId, string CastingId, string UsuarioId);
         Task<Respuesta> EstadoCasting(string ClienteId, string CastingId, string UsuarioId, bool Activo);
         Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting);
