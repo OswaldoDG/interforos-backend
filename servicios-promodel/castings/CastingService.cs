@@ -75,11 +75,9 @@ public class CastingService : ICastingService
     }
     protected async Task<List<Casting>> CastingsStaffRevisor(string usuarioId, Boolean incluirInactivos)
     {
-       var user = await identidad.UsuarioPorId(usuarioId);
-        var casting = await db.Castings.ToListAsync();
         if (incluirInactivos)
         {
-            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == user.Id)).ToListAsync();
+            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == usuarioId)).ToListAsync();
         }
         else
         {
