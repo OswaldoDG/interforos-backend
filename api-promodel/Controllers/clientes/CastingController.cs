@@ -19,7 +19,7 @@ namespace api_promodel.Controllers.clientes
         private readonly IBogusService bogus;
         private readonly IServicioIdentidad identidad;
 
-        public CastingController(ICastingService castingService, IServicioClientes clientes,IBogusService Bogus,IServicioIdentidad servicioIdentidad) : base(clientes)
+        public CastingController(ICastingService castingService, IServicioClientes clientes, IBogusService Bogus, IServicioIdentidad servicioIdentidad) : base(clientes,servicioIdentidad)
         {
             this.castingService = castingService;
             bogus = Bogus;

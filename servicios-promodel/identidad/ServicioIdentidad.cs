@@ -11,176 +11,172 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace promodel.servicios
+namespace promodel.servicios;
+
+public partial class ServicioIdentidad: IServicioIdentidad
 {
-    public partial class ServicioIdentidad: IServicioIdentidad
+
+
+    private readonly IdentidadCouchDbContext db;
+    private readonly IDistributedCache cache;
+    private readonly IConfiguration configuration;
+    private readonly IServicioEmail servicioEmail;
+    private readonly IWebHostEnvironment environment;
+
+    public ServicioIdentidad(IdentidadCouchDbContext db, IDistributedCache cache, 
+        IConfiguration configuration, IServicioEmail servicioEmail, 
+        IWebHostEnvironment environment)
     {
+        this.db = db;
+        this.cache = cache;
+        this.configuration = configuration;
+        this.servicioEmail = servicioEmail;
+        this.environment = environment;
+    }
 
-
-        private readonly IdentidadCouchDbContext db;
-        private readonly IDistributedCache cache;
-        private readonly IConfiguration configuration;
-        private readonly IServicioEmail servicioEmail;
-        private readonly IWebHostEnvironment environment;
-
-        public ServicioIdentidad(IdentidadCouchDbContext db, IDistributedCache cache, 
-            IConfiguration configuration, IServicioEmail servicioEmail, 
-            IWebHostEnvironment environment)
+    public async Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId)
+    {
+        await EliminaTokensExcedidos();
+        string tokenId = ExtensionesUsuario.Base64Decode(RefreshToken);
+        RefreshToken? r = await RefreshTokenPorId(tokenId);
+        if (r != null)
         {
-            this.db = db;
-            this.cache = cache;
-            this.configuration = configuration;
-            this.servicioEmail = servicioEmail;
-            this.environment = environment;
-        }
-
-        public async Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId)
-        {
-            await EliminaTokensExcedidos();
-            string tokenId = ExtensionesUsuario.Base64Decode(RefreshToken);
-            RefreshToken? r = await RefreshTokenPorId(tokenId);
-            if (r != null)
+            if (r.Caducidad > DateTime.UtcNow)
             {
-                if (r.Caducidad > DateTime.UtcNow)
+
+                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(10);
+                var issuer = configuration["Jwt:Issuer"];
+                var audience = configuration["Jwt:Audience"];
+                var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
+                var signingCredentials = new SigningCredentials(
+                                        new SymmetricSecurityKey(key),
+                                        SecurityAlgorithms.HmacSha512Signature
+                                    );
+                var subject = new ClaimsIdentity(new[]
                 {
-
-                    DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(10);
-                    var issuer = configuration["Jwt:Issuer"];
-                    var audience = configuration["Jwt:Audience"];
-                    var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
-                    var signingCredentials = new SigningCredentials(
-                                            new SymmetricSecurityKey(key),
-                                            SecurityAlgorithms.HmacSha512Signature
-                                        );
-                    var subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(JwtRegisteredClaimNames.Sub, UsuarioId)
-                    });
+                    new Claim(JwtRegisteredClaimNames.Sub, UsuarioId)
+                });
 
 
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = subject,
-                        Expires = tokenexpiration,
-                        Issuer = issuer,
-                        Audience = audience,
-                        SigningCredentials = signingCredentials
-                    };
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-                    var jwtToken = tokenHandler.WriteToken(token);
-
-                    await EliminaRefreshTokenPorId(tokenId);
-                    var rt = await CreaRefreshToken();
-                    RespuestaLogin refeshed = new() { RefreshToken = ExtensionesUsuario.Base64Encode(rt.Id), Token = jwtToken, UTCExpiration = tokenexpiration };
-
-                    return refeshed;
-                }
-            }
-
-            return null;
-        }
-
-        public async Task<RespuestaLogin?> Login(string usuario, string contrasena)
-        {
-            Usuario? u = await db.Usuarios.Where(x => x.NombreAcceso == usuario.ToLower())
-                .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_NOMBRE }).FirstOrDefaultAsync();
-            if (u != null)
-            {
-                if (SecretHasher.Verify(contrasena, u.HashContrasena))
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
+                    Subject = subject,
+                    Expires = tokenexpiration,
+                    Issuer = issuer,
+                    Audience = audience,
+                    SigningCredentials = signingCredentials
+                };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var jwtToken = tokenHandler.WriteToken(token);
 
-                    DateTime tokenexpiration = DateTime.UtcNow.AddDays(10);
-                    var issuer = configuration["Jwt:Issuer"];
-                    var audience = configuration["Jwt:Audience"];
-                    var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
-                    var signingCredentials = new SigningCredentials(
-                                            new SymmetricSecurityKey(key),
-                                            SecurityAlgorithms.HmacSha512Signature
-                                        );
-                    var subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(JwtRegisteredClaimNames.Sub, u.Id)
-                    });
+                await EliminaRefreshTokenPorId(tokenId);
+                var rt = await CreaRefreshToken();
+                RespuestaLogin refeshed = new() { RefreshToken = ExtensionesUsuario.Base64Encode(rt.Id), Token = jwtToken, UTCExpiration = tokenexpiration };
 
-
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = subject,
-                        Expires = tokenexpiration,
-                        Issuer = issuer,
-                        Audience = audience,
-                        SigningCredentials = signingCredentials
-                    };
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-                    var jwtToken = tokenHandler.WriteToken(token);
-
-                    var rt = await CreaRefreshToken();
-                    RespuestaLogin r = new () {  RefreshToken = ExtensionesUsuario.Base64Encode(rt.Id) , Token = jwtToken , UTCExpiration = tokenexpiration };
-
-                    return r;
-                }
+                return refeshed;
             }
-
-            return null;
         }
 
+        return null;
+    }
 
-        private async Task EliminaTokensExcedidos()
+    public async Task<RespuestaLogin?> Login(string usuario, string contrasena)
+    {
+        Usuario? u = await db.Usuarios.Where(x => x.NombreAcceso == usuario.ToLower())
+            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_NOMBRE }).FirstOrDefaultAsync();
+        if (u != null)
         {
-            var tokens = await db.RefreshTokens.Where(t => t.Caducidad < DateTime.UtcNow)
-                .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_REFRESHTOKEN_X_CADUCIDAD }).ToListAsync();
-            await db.RefreshTokens.DeleteRangeAsync(tokens);
-        }
-
-        private async Task<RefreshToken> CreaRefreshToken()
-        {
-            DateTime tokenexpiration = DateTime.UtcNow.AddHours(24);
-            RefreshToken t = new() { Id = Guid.NewGuid().ToString(), Caducidad = tokenexpiration };
-            await db.RefreshTokens.AddAsync(t);
-            return t;
-        }
-
-        private async Task<RefreshToken?> RefreshTokenPorId(string Id)
-        {
-            return await db.RefreshTokens.FirstOrDefaultAsync(x => x.Id == Id);
-        }
-
-        private async Task EliminaRefreshTokenPorId(string Id)
-        {
-            var t=  await db.RefreshTokens.FirstOrDefaultAsync(x => x.Id == Id);
-            if (t != null)
+            if (SecretHasher.Verify(contrasena, u.HashContrasena))
             {
-                await db.RefreshTokens.RemoveAsync(t);
+
+                DateTime tokenexpiration = DateTime.UtcNow.AddDays(10);
+                var issuer = configuration["Jwt:Issuer"];
+                var audience = configuration["Jwt:Audience"];
+                var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
+                var signingCredentials = new SigningCredentials(
+                                        new SymmetricSecurityKey(key),
+                                        SecurityAlgorithms.HmacSha512Signature
+                                    );
+                var subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, u.Id)
+                });
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = subject,
+                    Expires = tokenexpiration,
+                    Issuer = issuer,
+                    Audience = audience,
+                    SigningCredentials = signingCredentials
+                };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var jwtToken = tokenHandler.WriteToken(token);
+                var rt = await CreaRefreshToken();
+                RespuestaLogin r = new () {  RefreshToken = ExtensionesUsuario.Base64Encode(rt.Id) , Token = jwtToken , UTCExpiration = tokenexpiration };
+
+                return r;
             }
         }
+        return null;
+    }
 
-        public async Task<Usuario?> UsuarioPorEmail(string Email)
+    private async Task EliminaTokensExcedidos()
+    {
+        var tokens = await db.RefreshTokens.Where(t => t.Caducidad < DateTime.UtcNow)
+            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_REFRESHTOKEN_X_CADUCIDAD }).ToListAsync();
+        await db.RefreshTokens.DeleteRangeAsync(tokens);
+    }
+
+    private async Task<RefreshToken> CreaRefreshToken()
+    {
+        DateTime tokenexpiration = DateTime.UtcNow.AddHours(24);
+        RefreshToken t = new() { Id = Guid.NewGuid().ToString(), Caducidad = tokenexpiration };
+        await db.RefreshTokens.AddAsync(t);
+        return t;
+    }
+
+    private async Task<RefreshToken?> RefreshTokenPorId(string Id)
+    {
+        return await db.RefreshTokens.FirstOrDefaultAsync(x => x.Id == Id);
+    }
+
+    private async Task EliminaRefreshTokenPorId(string Id)
+    {
+        var t=  await db.RefreshTokens.FirstOrDefaultAsync(x => x.Id == Id);
+        if (t != null)
         {
-            Usuario? usuario = await db.Usuarios.Where(x=>x.Email == Email.ToLower() )
-                .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_EMAIL }).FirstOrDefaultAsync();
+            await db.RefreshTokens.RemoveAsync(t);
+        }
+    }
+
+    public async Task<Usuario?> UsuarioPorEmail(string Email)
+    {
+        Usuario? usuario = await db.Usuarios.Where(x=>x.Email == Email.ToLower() )
+            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_EMAIL }).FirstOrDefaultAsync();
+        return usuario;
+    }
+    public async Task<Usuario?> UsuarioPorId(string id)
+    {
+        Usuario? usuario = await db.Usuarios.Where(x => x.Id == id)
+            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_ID}).FirstOrDefaultAsync();
+        return usuario;
+    }
+
+    public async  Task<Usuario?> ActualizaUsuario(Usuario usuario)
+    {
+        if(db.Usuarios.Any(x => x.Id == usuario.Id))
+        {
+            await db.Usuarios.AddOrUpdateAsync(usuario);
             return usuario;
         }
+        return null;
+    }
 
-
-        public async  Task<Usuario?> ActualizaUsuario(Usuario usuario)
-        {
-            if(db.Usuarios.Any(x => x.Id == usuario.Id))
-            {
-                await db.Usuarios.AddOrUpdateAsync(usuario);
-                return usuario;
-            }
-
-            return null;
-        }
-
-        public async Task<Usuario> CreaUsuario(Usuario usuario)
-        {
-           await db.Usuarios.AddOrUpdateAsync(usuario);
-           return usuario;
-        }
-
-
+    public async Task<Usuario> CreaUsuario(Usuario usuario)
+    {
+       await db.Usuarios.AddOrUpdateAsync(usuario);
+       return usuario;
     }
 }
