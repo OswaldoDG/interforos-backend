@@ -8,7 +8,7 @@ using promodel.modelo.proyectos;
 
 namespace promodel.servicios.castings;
 
- public static class ExtencionesCastingServicios
+ public static class ExtensionesCastingServicios
 {
 
     public static ContactoCasting aContactoCasting(this ContactoUsuario usuario,DateTime? UltimoAcceso)
