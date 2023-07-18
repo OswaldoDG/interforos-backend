@@ -14,11 +14,14 @@ namespace promodel.servicios.perfil
         private readonly CatalogosCouchDbContext db;
         private readonly IDistributedCache cache;
         private readonly IConfiguration configuration;
-        public ServicioCatalogos(CatalogosCouchDbContext db, IDistributedCache cache, IConfiguration configuration)
+        private readonly IServicioClientes DbClientes;
+
+        public ServicioCatalogos(CatalogosCouchDbContext db, IDistributedCache cache, IConfiguration configuration, IServicioClientes servicioClientes)
         {
             this.db = db;
             this.cache = cache;
             this.configuration = configuration;
+            this.DbClientes = servicioClientes;
         }
 
         public async Task<ElementoCatalogo> BuscaCrea(string ClienteId, string ClaveCatalogo, string Texto)
@@ -124,6 +127,7 @@ namespace promodel.servicios.perfil
                         break;
 
                     case Perfil.CAT_PAISES:
+
                         c = Perfil.NuevoCatalogo(ClienteId, ClaveCatalogo, Perfil.PaisesBase());
                         await db.Catalogos.AddAsync(c);
                         break;
@@ -155,6 +159,16 @@ namespace promodel.servicios.perfil
             foreach(string clave in l)
             {
                 var c = await GetCatalogoCliente(clave, ClienteId);
+                c.Elementos=c.Elementos.OrderBy(x=>x.Texto).ToList();
+                if (clave == "pais")
+                {
+                    var cliente = await DbClientes.ClientePorId(ClienteId);
+                    var pais = c.Elementos.FirstOrDefault(_ => _.Clave == cliente.PaisDefault);
+                    if (cliente != null && pais != null)
+                    {
+                        c.Elementos.Insert(0, pais);
+                    }
+                }
                 catalogos.Add(c);
             }
             return catalogos;
