@@ -1,7 +1,9 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using Org.BouncyCastle.Asn1.Cms;
 using promodel.modelo;
 using promodel.modelo.castings;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
@@ -224,6 +226,59 @@ public class CastingService : ICastingService
         return r;
     }
 
+    public async Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
+    {
+        var r = new Respuesta();
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+        casting.Contactos = new List<ContactoCasting>();
+        foreach (var contacto in Contactos)
+        {
+            var user = await identidad.UsuarioPorEmail(contacto.Email);
+
+            if (user == null)
+            {
+                casting.Contactos.Add(contacto.aContactoCasting(null));
+            }
+
+            else
+            {
+                casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
+            }
+
+        }
+        await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
+        r.Ok = true;
+        return r;
+
+
+    }
+
+    public async Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId)
+    {
+        var r = new RespuestaPayload<CastingListElement>();
+        var castingsResult = new List<CastingListElement>();
+        var castings = await db.Castings
+            .Where(_ => _.Activo == true && _.AceptaAutoInscripcion == true && _.FechaApertura >= DateTime.Now && _.FechaCierre > DateTime.Now).ToListAsync();
+
+        if (castings != null)
+        {
+            castings.ForEach(casting => {
+
+                castingsResult.Add(casting.aCastingListElement());
+            });
+
+            r.Payload = castingsResult.OrderBy(_ => _.FechaApertura);
+        }
+        r.Ok = true;
+        return r;
+    }
     #endregion
 
 
@@ -439,44 +494,6 @@ public class CastingService : ICastingService
 
 
     #region Acceso
-
-
-    public async Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
-    {
-        var r = new Respuesta();
-        var casting = await ObtieneCasting(ClienteId,CastingId,UsuarioId);
-        
-        if (casting ==null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-            r.Error = "Casting no encontrado";
-            return r;
-        }
-        casting.Contactos = new List<ContactoCasting>();
-        foreach (var contacto in Contactos)
-        {
-            var user = await identidad.UsuarioPorEmail(contacto.Email);
-
-            if (user == null)
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(null));
-            }
-
-            else
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
-            }          
-
-        }
-        await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
-        r.Ok = true;
-        return r;
-
-
-    }
-
-
-
     #endregion
 
 

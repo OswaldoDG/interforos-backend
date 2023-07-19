@@ -46,6 +46,24 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+        [HttpGet("actuales")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<List<CastingListElement>>> CastingsActuales()
+        {           
+            var result = await castingService.CastingsActuales(ClienteId);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+
+
         [HttpGet("$id")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
