@@ -493,6 +493,16 @@ public class CastingService : ICastingService
         }
         return r;
     }
+
+    public Task LogoCasting(string CLienteId, string UsuarioId, string CastingId, string imagenbase64)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
+    {
+        throw new NotImplementedException();
+    }
     #endregion
     #region Acceso
     #endregion

@@ -182,6 +182,28 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+        [HttpPut("{castingId}/logo")]
+        public async Task<ActionResult> EstableceLog(string castingId, [FromBody] string image)
+        {
+            // Antes de subr la imagen hay que reducir su tamañao para que el ancho sea de 250px
+            // PRimero debe convertirse de base 64 a byte[] la variable image y despues
+            // Realizar esta funcionalida utilizando  Magick.NET
+            // Referirse a https://github.com/dlemstra/Magick.NET/
+            // Una vez cambiado el tamaño añadir/reemplazar en casting.logo
+
+            await castingService.LogoCasting(ClienteId, UsuarioId, castingId, image);
+            return Ok();
+        }
+
+        [HttpPut("{castingId}/eventos")]
+        public async Task<ActionResult> EstableceEventos(string castingId, [FromBody] List<EventoCasting> eventos)
+        {
+            // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
+            await castingService.ActualizaEventosCasting(ClienteId, UsuarioId, castingId, eventos);
+            return Ok();
+        }
+
+
         // solo se llama cuando el usuario contacto del casting no existe
         private async Task<ActionResult> RegistroContacto(RegistroUsuario registro)
         {

@@ -1,5 +1,6 @@
 ﻿using CouchDB.Driver.Types;
 using Newtonsoft.Json;
+using promodel.modelo.castings;
 
 namespace promodel.modelo.proyectos
 {
@@ -102,5 +103,17 @@ namespace promodel.modelo.proyectos
         [JsonProperty("ca")]
         public List<CategoriaCasting>? Categorias { get; set; } = new List<CategoriaCasting>();
 
+
+        /// <summary>
+        /// Imagen para el casting en formato base 64 
+        /// </summary>
+        [JsonProperty("logo")]
+        public string? LogoCasting { get; set; }
+
+
+        /// <summary>
+        /// Eventos asociados al casting
+        /// </summary>
+        public List<EventoCasting> Eventos { get; set; } = new List<EventoCasting>();
     }
 }
