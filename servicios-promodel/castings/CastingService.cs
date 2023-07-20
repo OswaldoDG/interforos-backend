@@ -1,7 +1,9 @@
 ﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using Org.BouncyCastle.Asn1.Cms;
 using promodel.modelo;
 using promodel.modelo.castings;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
@@ -35,7 +37,7 @@ public class CastingService : ICastingService
         var castingsResult = new List<CastingListElement>();
         switch (rol)
         {
-            case TipoRolCliente.Administrador :
+            case TipoRolCliente.Administrador:
                 castings = await CastingsAdministrador(ClienteId, incluirInactivos);
                 break;
             case TipoRolCliente.Staff:
@@ -48,9 +50,11 @@ public class CastingService : ICastingService
                 castings = null;
                 break;
         }
-         
-     if (castings != null) {
-            castings.ForEach(casting => {
+
+        if (castings != null)
+        {
+            castings.ForEach(casting =>
+            {
 
                 castingsResult.Add(casting.aCastingListElement(rol));
             });
@@ -116,7 +120,7 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId,  Casting casting)
+    public async Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
     {
         var r = new RespuestaPayload<Casting>();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
@@ -128,11 +132,10 @@ public class CastingService : ICastingService
             tmpCasting.FechaApertura = casting.FechaApertura;
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
-            tmpCasting.Contactos= casting.Contactos;
+            tmpCasting.Contactos = casting.Contactos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
-            r.Payload= tmpCasting;
-            
+            r.Payload = tmpCasting;
         }
         else
         {
@@ -147,11 +150,12 @@ public class CastingService : ICastingService
         var r = new Respuesta();
 
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
-        if (casting!=null)
+        if (casting != null)
         {
             await db.Castings.RemoveAsync(casting);
             r.Ok = true;
-        } else
+        }
+        else
         {
             r.HttpCode = HttpCode.NotFound;
         }
@@ -185,15 +189,15 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             bool actualizar = false;
-            foreach(string Id in ColaboradoresIds)
+            foreach (string Id in ColaboradoresIds)
             {
-                if (!casting.ColaboradoresIds.Any(x=>x.Equals(Id)))
+                if (!casting.ColaboradoresIds.Any(x => x.Equals(Id)))
                 {
                     casting.ColaboradoresIds.Add(Id);
                     actualizar = true;
                 }
             }
-            if(actualizar)
+            if (actualizar)
             {
                 await db.Castings.AddOrUpdateAsync(casting);
                 r.Ok = true;
@@ -202,7 +206,7 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<Respuesta> RemoverColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId,  List<string> ColaboradoresIds)
+    public async Task<Respuesta> RemoverColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds)
     {
         var r = new Respuesta();
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
@@ -226,11 +230,63 @@ public class CastingService : ICastingService
         return r;
     }
 
+    public async Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
+    {
+        var r = new RespuestaPayload<Casting>();
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+        casting.Contactos = new List<ContactoCasting>();
+        foreach (var contacto in Contactos)
+        {
+            var user = await identidad.UsuarioPorEmail(contacto.Email);
+
+            if (user == null)
+            {
+                casting.Contactos.Add(contacto.aContactoCasting(null));
+            }
+
+            else
+            {
+                casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
+            }
+
+        }
+        await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
+        r.Ok = true;
+        r.Payload = casting;
+        return r;
+    }
+
+    public async Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId)
+    {
+        var r = new RespuestaPayload<CastingListElement>();
+        var castingsResult = new List<CastingListElement>();
+        var castings = await db.Castings
+            .Where(_ => _.Activo == true && _.AceptaAutoInscripcion == true && _.FechaApertura >= DateTime.Now && _.FechaCierre > DateTime.Now).ToListAsync();
+
+        if (castings != null)
+        {
+            castings.ForEach(casting =>
+            {
+                castingsResult.Add(casting.aCastingListElement());
+            });
+
+            r.Payload = castingsResult.OrderBy(_ => _.FechaApertura);
+        }
+        r.Ok = true;
+        return r;
+    }
     #endregion
 
 
     #region Cartegorias
-    public async  Task<RespuestaPayload<CategoriaCasting>> ActualizarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoriaId, CategoriaCasting categoria)
+    public async Task<RespuestaPayload<CategoriaCasting>> ActualizarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoriaId, CategoriaCasting categoria)
     {
         var r = new RespuestaPayload<CategoriaCasting>();
 
@@ -264,12 +320,13 @@ public class CastingService : ICastingService
     {
         var r = new RespuestaPayload<CategoriaCasting>();
 
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting == null)
         {
             r.HttpCode = HttpCode.NotFound;
 
-        } else
+        }
+        else
         {
             categoria.Id = Guid.NewGuid().ToString();
             casting.Categorias.Add(categoria);
@@ -281,11 +338,11 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async  Task<Respuesta> EliminarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId)
+    public async Task<Respuesta> EliminarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId)
     {
         var r = new Respuesta();
 
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting == null)
         {
             r.HttpCode = HttpCode.NotFound;
@@ -319,7 +376,7 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             var categoria = casting.Categorias.FirstOrDefault(c => c.Id == CategoríaId);
-            if(categoria!= null && !categoria.Modelos.Any(x=>x.PersonaId == PersonaId))
+            if (categoria != null && !categoria.Modelos.Any(x => x.PersonaId == PersonaId))
             {
                 categoria.Modelos.Add(new ModeloCasting() { PersonaId = PersonaId, Origen = origen });
                 await db.Castings.AddOrUpdateAsync(casting);
@@ -331,11 +388,11 @@ public class CastingService : ICastingService
     public async Task<Respuesta> EliminarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
     {
         var r = new Respuesta();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
             var categoria = casting.Categorias.FirstOrDefault(c => c.Id == CategoríaId);
-            if(categoria!=null )
+            if (categoria != null)
             {
                 var modelo = categoria.Modelos.FirstOrDefault(x => x.PersonaId == PersonaId);
                 if (modelo != null)
@@ -356,7 +413,7 @@ public class CastingService : ICastingService
     public async Task<RespuestaPayload<ComentarioCasting>> AdicionarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string Comentario)
     {
         var r = new RespuestaPayload<ComentarioCasting>();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
             var c = new ComentarioCasting() { Comentario = Comentario, UsuarioId = UsuarioId };
@@ -364,7 +421,7 @@ public class CastingService : ICastingService
             await db.Castings.AddOrUpdateAsync(casting);
             r.Payload = c;
             r.Ok = true;
-         
+
         }
         return r;
     }
@@ -372,11 +429,11 @@ public class CastingService : ICastingService
     public async Task<Respuesta> EliminarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string ComentarioId)
     {
         var r = new Respuesta();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
-            var comentario  =casting.Comentarios.FirstOrDefault(c=>c.Id == ComentarioId && c.UsuarioId == UsuarioId);
-            if(comentario!=null)
+            var comentario = casting.Comentarios.FirstOrDefault(c => c.Id == ComentarioId && c.UsuarioId == UsuarioId);
+            if (comentario != null)
             {
                 casting.Comentarios.Remove(comentario);
                 await db.Castings.AddOrUpdateAsync(casting);
@@ -415,7 +472,7 @@ public class CastingService : ICastingService
     public async Task<Respuesta> EliminarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, string ComentarioId)
     {
         var r = new Respuesta();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId); 
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
             var categoria = casting.Categorias.FirstOrDefault(x => x.Id == CategoríaId);
@@ -436,52 +493,7 @@ public class CastingService : ICastingService
         }
         return r;
     }
-
     #endregion
-
-
     #region Acceso
-
-
-    public async Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
-    {
-        var r = new RespuestaPayload<Casting>();
-        var casting = await ObtieneCasting(ClienteId,CastingId,UsuarioId);
-        
-        if (casting ==null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-            r.Error = "Casting no encontrado";
-            return r;
-        }
-        casting.Contactos = new List<ContactoCasting>();
-        foreach (var contacto in Contactos)
-        {
-            var user = await identidad.UsuarioPorEmail(contacto.Email);
-
-            if (user == null)
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(null));
-            }
-
-            else
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
-            }          
-
-        }
-        await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
-        r.Ok = true;
-        r.Payload= casting;
-        return r;
-
-
-    }
-
-
-
     #endregion
-
-
-
 }
