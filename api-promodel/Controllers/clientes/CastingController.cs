@@ -98,7 +98,7 @@ namespace api_promodel.Controllers.clientes
             var result = await castingService.ActualizaCasting(ClienteId, UsuarioId, Id, casting);
             if (result.Ok)
             {
-                return Ok();
+                return Ok(result.Payload);
 
             }
             else
@@ -155,7 +155,7 @@ namespace api_promodel.Controllers.clientes
             var result = await castingService.ActualizaContactosCasting(ClienteId,castingId, UsuarioId, contactos);
             if (result.Ok)
             {
-                return Ok();
+                return Ok(result.Payload);
 
             }
             else

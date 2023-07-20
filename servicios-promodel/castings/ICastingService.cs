@@ -17,7 +17,7 @@ namespace promodel.servicios.proyectos
         Task<Respuesta> EliminarCasting(string ClienteId, string CastingId, string UsuarioId);
         Task<Respuesta> EstadoCasting(string ClienteId, string CastingId, string UsuarioId, bool Activo);
         Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting);
-        Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting);
+        Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting);
         Task<RespuestaPayload<Casting>> FullCasting(string ClienteId, string CastingId, string UsuarioId);
 
         Task<Respuesta> EliminarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId);
@@ -36,7 +36,7 @@ namespace promodel.servicios.proyectos
         Task<Respuesta> AdicionarColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds);
         Task<Respuesta> RemoverColaboradoresCasting(string ClienteId, string CastingId, string UsuarioId, List<string> ColaboradoresIds);
 
-        Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
+        Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
         Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     }
 }

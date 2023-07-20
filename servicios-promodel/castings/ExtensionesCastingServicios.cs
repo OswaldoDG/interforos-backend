@@ -28,7 +28,7 @@ namespace promodel.servicios.castings;
     {
         return new CastingListElement()
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = casting.Id,
             Nombre = casting.Nombre,
             NombreCliente = casting.NombreCliente,
             FechaApertura = casting.FechaApertura,
