@@ -46,6 +46,12 @@ namespace promodel.modelo.clientes
         [JsonProperty("lm")]
         public string? MailLogoURL{ get; set; }
 
+        /// <summary>
+        /// Clave del pais por default del cliente
+        /// </summary>
+        [JsonProperty("paisId")]
+        public string PaisDefault { get; set; } 
+
         [JsonProperty("cn")]
         public Contacto Contacto { get; set; }
 

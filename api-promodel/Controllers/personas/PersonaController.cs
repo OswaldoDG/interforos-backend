@@ -23,7 +23,7 @@ namespace api_promodel.Controllers
         private readonly IServicioPersonas personas;
         private readonly IServicioCatalogos catalogos;
         private readonly IAlmacenamiento almacenamiento;
-
+        private readonly IServicioClientes DbClientes;
 
         public PersonaController(IServicioPersonas personas, IServicioCatalogos catalogos, 
             IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes) : base(servicioClientes)
@@ -31,6 +31,7 @@ namespace api_promodel.Controllers
             this.personas = personas; 
             this.catalogos = catalogos;
             this.almacenamiento = almacenamiento;
+            this.DbClientes = servicioClientes;
         }
 
         [HttpGet("mi",Name = "MiPerfile")]
@@ -193,7 +194,19 @@ namespace api_promodel.Controllers
 
             var r = await catalogos.GetCatalogoCliente(tipo, this.ClienteId);
 
-            if(r==null)
+            r.Elementos = r.Elementos.OrderBy(x => x.Texto).ToList();
+            if (tipo=="pais")
+            {
+                var cliente = await DbClientes.ClientePorId(this.ClienteId);
+                var pais = r.Elementos.FirstOrDefault(_ => _.Clave == cliente.PaisDefault);
+                if (cliente != null && pais != null)
+                {
+                    r.Elementos.Insert(0, pais);
+                }
+
+            }
+
+            if (r==null)
             {
                 return NotFound();
             }
