@@ -116,9 +116,9 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId,  Casting casting)
+    public async Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId,  Casting casting)
     {
-        var r = new Respuesta();
+        var r = new RespuestaPayload<Casting>();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (tmpCasting != null)
         {
@@ -131,6 +131,8 @@ public class CastingService : ICastingService
             tmpCasting.Contactos= casting.Contactos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
+            r.Payload= tmpCasting;
+            
         }
         else
         {
@@ -441,9 +443,9 @@ public class CastingService : ICastingService
     #region Acceso
 
 
-    public async Task<Respuesta> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
+    public async Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
     {
-        var r = new Respuesta();
+        var r = new RespuestaPayload<Casting>();
         var casting = await ObtieneCasting(ClienteId,CastingId,UsuarioId);
         
         if (casting ==null)
@@ -470,6 +472,7 @@ public class CastingService : ICastingService
         }
         await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
         r.Ok = true;
+        r.Payload= casting;
         return r;
 
 
