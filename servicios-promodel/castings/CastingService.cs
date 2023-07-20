@@ -274,7 +274,6 @@ public class CastingService : ICastingService
         {
             castings.ForEach(casting =>
             {
-
                 castingsResult.Add(casting.aCastingListElement());
             });
 
