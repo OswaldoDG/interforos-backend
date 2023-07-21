@@ -107,7 +107,7 @@ public class CastingService : ICastingService
     }
 
     public async Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting)
-    {
+        {
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
@@ -120,9 +120,10 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
+    public async Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
+            
     {
-        var r = new RespuestaPayload<Casting>();
+        var r = new Respuesta();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (tmpCasting != null)
         {
@@ -135,7 +136,6 @@ public class CastingService : ICastingService
             tmpCasting.Contactos = casting.Contactos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
-            r.Payload = tmpCasting;
         }
         else
         {

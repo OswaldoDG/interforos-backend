@@ -64,7 +64,7 @@ namespace api_promodel.Controllers.clientes
         }
 
 
-        [HttpGet("$id")]
+        [HttpGet("id/{id}", Name = "CastingPorId")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +106,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Casting>> ActualizaCasting([FromBody] Casting casting, string Id)
+        public async Task<ActionResult> ActualizaCasting([FromBody] Casting casting, string Id)
         {
             //if (casting.Id != Id)
             //{
@@ -116,7 +116,7 @@ namespace api_promodel.Controllers.clientes
             var result = await castingService.ActualizaCasting(ClienteId, UsuarioId, Id, casting);
             if (result.Ok)
             {
-                return Ok(result.Payload);
+                return Ok();
 
             }
             else
@@ -164,7 +164,7 @@ namespace api_promodel.Controllers.clientes
                         CastingId = castingId,
                         ClienteId = this.ClienteId
                     };
-                    await RegistroContacto(usuario);
+                    var x = await RegistroContacto(usuario);
                 }
             }
 
