@@ -117,6 +117,8 @@ builder.Services.AddTransient<ICacheAlmacenamiento, CacheAlmacenamientoLocal>();
 builder.Services.AddTransient<IMedia, MediaService>();
 builder.Services.AddTransient<IBogusService, BogusService>();
 
+builder.Services.AddHttpClient();
+
 // Default Policy for dynamic policy provider
 builder.Services.AddCors(options =>
 {
