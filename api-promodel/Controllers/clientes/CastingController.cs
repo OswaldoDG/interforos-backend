@@ -1,5 +1,9 @@
 ﻿using api_promodel.middlewares;
+using Bogus.DataSets;
+using ImageMagick;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
@@ -7,6 +11,7 @@ using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
+using System.Net.WebSockets;
 
 namespace api_promodel.Controllers.clientes
 {
@@ -47,9 +52,9 @@ namespace api_promodel.Controllers.clientes
         }
 
         [HttpGet("actuales")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<List<CastingListElement>>> CastingsActuales()
         {           
             var result = await castingService.CastingsActuales(ClienteId);
@@ -64,7 +69,7 @@ namespace api_promodel.Controllers.clientes
         }
 
 
-        [HttpGet("$id")]
+        [HttpGet("id/{id}", Name = "CastingPorId")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +111,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Casting>> ActualizaCasting([FromBody] Casting casting, string Id)
+        public async Task<ActionResult> ActualizaCasting([FromBody] Casting casting, string Id)
         {
             //if (casting.Id != Id)
             //{
@@ -116,7 +121,7 @@ namespace api_promodel.Controllers.clientes
             var result = await castingService.ActualizaCasting(ClienteId, UsuarioId, Id, casting);
             if (result.Ok)
             {
-                return Ok(result.Payload);
+                return Ok();
 
             }
             else
@@ -164,7 +169,7 @@ namespace api_promodel.Controllers.clientes
                         CastingId = castingId,
                         ClienteId = this.ClienteId
                     };
-                    await RegistroContacto(usuario);
+                    var x = await RegistroContacto(usuario);
                 }
             }
 
@@ -182,17 +187,60 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+
+        [HttpGet("{CastingId}/logo")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<string>> ObtieneLogo([FromRoute] string  CastingId)
+        { 
+            byte[] content = await castingService.ObtieneLogo(ClienteId, CastingId);
+
+            if (content == null)
+            {
+                return Ok(null);
+            }
+            var result = "data:image/jpeg;base64," + Convert.ToBase64String(content);         
+            return Ok(JsonConvert.SerializeObject(result));
+        }
+
+
         [HttpPut("{castingId}/logo")]
         public async Task<ActionResult> EstableceLog(string castingId, [FromBody] string image)
         {
-            // Antes de subr la imagen hay que reducir su tamañao para que el ancho sea de 250px
-            // PRimero debe convertirse de base 64 a byte[] la variable image y despues
-            // Realizar esta funcionalida utilizando  Magick.NET
-            // Referirse a https://github.com/dlemstra/Magick.NET/
-            // Una vez cambiado el tamaño añadir/reemplazar en casting.logo
+            var defalut = 250;
+            var cadena = image.Split(",");
+            //Convirtiendo de base64 a Stream
+            byte[] imgByte = Convert.FromBase64String(cadena[1]);
+            var imgStream = new MemoryStream(imgByte,0,imgByte.Length);
+            using var img = new MagickImage(imgStream);
 
-            await castingService.LogoCasting(ClienteId, UsuarioId, castingId, image);
-            return Ok();
+            //Calculando Proporcion para resolucion 
+            var ancho = defalut;
+            var alto = (defalut * img.Height) / img.Width;
+
+            //Cambiando resolucion
+            var size = new MagickGeometry(ancho,alto);
+            img.Resize(size);
+
+            //Cmabiando Formato
+            img.Quality = 80;
+            img.Format = MagickFormat.Jpg;
+
+            //Conviertiendo a Byte[]
+            var logoByte = Convert.FromBase64String(img.ToBase64());
+         
+           
+            var result = await castingService.LogoCasting(ClienteId, UsuarioId, castingId, logoByte);
+            if (result.Ok)
+            {
+                return Ok();
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
         }
 
         [HttpPut("{castingId}/eventos")]

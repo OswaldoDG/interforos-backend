@@ -1,5 +1,11 @@
-﻿using CouchDB.Driver.Extensions;
+﻿using Amazon.Runtime.Internal.Util;
+using Bogus.DataSets;
+using CouchDB.Driver.Extensions;
+using Flurl.Util;
+using ImageMagick;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Org.BouncyCastle.Asn1.Cms;
 using promodel.modelo;
 using promodel.modelo.castings;
@@ -7,6 +13,11 @@ using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
+using SendGrid;
+using System;
+using System.Net.Http.Headers;
+using System.Net.Mime;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace promodel.servicios.proyectos;
 
@@ -16,12 +27,17 @@ public class CastingService : ICastingService
     private readonly CastingCouchDbContext db;
     private readonly IDistributedCache cache;
     private readonly IServicioIdentidad identidad;
+    private readonly HttpClient httpClient;
+    private readonly IConfiguration configuration;
 
-    public CastingService(CastingCouchDbContext db, IDistributedCache cache, IServicioIdentidad servicioIdentidad)
+    public CastingService(CastingCouchDbContext db, IDistributedCache cache, 
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration)
     {
         this.db = db;
         this.cache = cache;
         this.identidad = servicioIdentidad;
+        this.httpClient = httpClient;
+        this.configuration = configuration;
     }
 
     public async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
@@ -107,7 +123,7 @@ public class CastingService : ICastingService
     }
 
     public async Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting)
-    {
+        {
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
@@ -120,9 +136,10 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<RespuestaPayload<Casting>> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
+    public async Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
+            
     {
-        var r = new RespuestaPayload<Casting>();
+        var r = new Respuesta();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (tmpCasting != null)
         {
@@ -135,7 +152,6 @@ public class CastingService : ICastingService
             tmpCasting.Contactos = casting.Contactos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
-            r.Payload = tmpCasting;
         }
         else
         {
@@ -494,9 +510,38 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public Task LogoCasting(string CLienteId, string UsuarioId, string CastingId, string imagenbase64)
-    {
-        throw new NotImplementedException();
+    public async Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte)
+    {             
+        string patch = "logo.jpg";
+        try
+        {
+            var fichero = File.Create(patch);
+            fichero.Write(imagenByte, 0, imagenByte.Length);
+            fichero.Close();     
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Exception: " + e.Message);
+        }        
+
+        var r = new Respuesta();
+        var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
+
+        if (casting != null)
+        {
+            casting.Attachments.AddOrUpdate(patch, MediaTypeNames.Text.Plain);
+            var logo = casting.Attachments[patch];
+            await db.Castings.AddOrUpdateAsync(casting);
+            logo = casting.Attachments[patch];
+            r.Ok = true;
+            return r;    
+        }
+
+        
+        r.HttpCode = HttpCode.BadRequest;
+        r.Error = "No se pudo guardar logo";
+        return r;
+
     }
 
     public Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
@@ -510,6 +555,26 @@ public class CastingService : ICastingService
     }
 
 
+    public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)
+    {
+        string URL = configuration.GetValue<string>("promodeldrivers:couchdb:endpoint");
+        string User = configuration.GetValue<string>("promodeldrivers:couchdb:username");
+        string Pass = configuration.GetValue<string>("promodeldrivers:couchdb:password");   
+        string url = URL +"/proyectos/" + CastingId + "/logo.jpg";         
+
+        var base64String = Convert.ToBase64String(
+           System.Text.Encoding.ASCII.GetBytes($"{User}:{Pass}"));
+        httpClient.DefaultRequestHeaders.Add("Accept", "application/octet-stream");
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + base64String);
+
+        var response = await httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode){
+            var result = await response.Content.ReadAsByteArrayAsync();
+
+            return result;
+        }
+        return null;      
+    }
     #endregion
     #region Acceso
     #endregion
