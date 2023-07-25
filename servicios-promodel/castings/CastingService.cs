@@ -530,9 +530,7 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             casting.Attachments.AddOrUpdate(patch, MediaTypeNames.Text.Plain);
-            var logo = casting.Attachments[patch];
             await db.Castings.AddOrUpdateAsync(casting);
-            logo = casting.Attachments[patch];
             r.Ok = true;
             return r;    
         }
