@@ -539,7 +539,7 @@ public class CastingService : ICastingService
 
         
         r.HttpCode = HttpCode.BadRequest;
-        r.Error = "No se puso guardar logo";
+        r.Error = "No se pudo guardar logo";
         return r;
 
     }
@@ -562,10 +562,12 @@ public class CastingService : ICastingService
         httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + base64String);
 
         var response = await httpClient.GetAsync(url);
-        var result = await response.Content.ReadAsByteArrayAsync();
+        if (response.IsSuccessStatusCode){
+            var result = await response.Content.ReadAsByteArrayAsync();
 
-        return result;
-
+            return result;
+        }
+        return null;      
     }
     #endregion
     #region Acceso
