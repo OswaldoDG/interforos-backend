@@ -503,6 +503,13 @@ public class CastingService : ICastingService
     {
         throw new NotImplementedException();
     }
+
+    public Task ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias)
+    {
+        throw new NotImplementedException();
+    }
+
+
     #endregion
     #region Acceso
     #endregion

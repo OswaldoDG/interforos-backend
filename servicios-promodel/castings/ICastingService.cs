@@ -27,9 +27,9 @@ public interface ICastingService
     Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
     Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId);
-
     Task LogoCasting(string CLienteId, string UsuarioId, string CastingId, string imagenbase64);
     Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
+    Task ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias);
 }
 
 
