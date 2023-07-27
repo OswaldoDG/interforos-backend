@@ -150,6 +150,7 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
+            tmpCasting.Eventos = casting.Eventos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }
@@ -544,9 +545,26 @@ public class CastingService : ICastingService
 
     }
 
-    public Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
+    public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
     {
-        throw new NotImplementedException();
+        var r = new Respuesta();
+        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+        casting.Eventos = new List<EventoCasting>();
+        eventos.ForEach(e =>
+        {
+            casting.Eventos.Add(e.aEventoCasting());
+        });
+        await ActualizaCasting(CLienteId, UsuarioId, CastingId, casting);
+        r.Ok = true;
+        return r;
     }
 
     public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)

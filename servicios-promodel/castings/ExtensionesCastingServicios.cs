@@ -54,4 +54,18 @@ namespace promodel.servicios.castings;
             CierreAutomatico = casting.CierreAutomatico,
         };
     }
+
+    public static EventoCasting aEventoCasting(this EventoCasting eventoCasting)
+    {
+        return new EventoCasting()
+        {
+            Id = eventoCasting.Id,
+            FechaInicial = eventoCasting.FechaInicial,
+            FechaFinal = eventoCasting.FechaFinal,
+            Notas = eventoCasting.Notas,
+            Lugar = eventoCasting.Lugar,
+            Coordenadas = eventoCasting.Coordenadas
+            
+        };
+    }
 }
