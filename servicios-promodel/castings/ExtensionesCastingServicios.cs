@@ -1,6 +1,5 @@
 ﻿
 
-using Amazon.Runtime.Internal.Util;
 using CouchDB.Driver.Query.Extensions;
 using promodel.modelo;
 using promodel.modelo.castings;
