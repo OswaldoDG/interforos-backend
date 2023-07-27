@@ -150,6 +150,7 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
+            tmpCasting.Eventos = casting.Eventos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }

@@ -30,7 +30,7 @@ public interface ICastingService
     Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId);
 
     Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte);
-    Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
+    Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
 
     Task<byte[]> ObtieneLogo(string ClienteId, string CastingId);
 }
