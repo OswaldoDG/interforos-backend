@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Reflection.Metadata;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace promodel.servicios.proyectos;
@@ -514,19 +515,25 @@ public class CastingService : ICastingService
     }
 
     public async Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte)
-    {             
-        string patch = "logo.jpg";
+    {
+        string pahchFolder = @$".\LogoTemp\{Guid.NewGuid()}";
+        string patch = @$"{pahchFolder}\logo.jpg";
+
+
         try
         {
-            var fichero = System.IO.File.Create(patch);
+            if (!Directory.Exists(pahchFolder))
+            {
+                Directory.CreateDirectory(pahchFolder);
+            }
+            var fichero = File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
             fichero.Close();     
         }
         catch (Exception e)
         {
             Console.WriteLine("Exception: " + e.Message);
-        }        
-
+        }
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
 
@@ -535,12 +542,14 @@ public class CastingService : ICastingService
             casting.Attachments.AddOrUpdate(patch, MediaTypeNames.Text.Plain);
             await db.Castings.AddOrUpdateAsync(casting);
             r.Ok = true;
+            Directory.Delete(pahchFolder,true);
             return r;    
         }
 
         
         r.HttpCode = HttpCode.BadRequest;
         r.Error = "No se pudo guardar logo";
+        Directory.Delete(pahchFolder,true);
         return r;
 
     }
