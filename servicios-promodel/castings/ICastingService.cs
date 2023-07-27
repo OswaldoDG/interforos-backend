@@ -29,7 +29,7 @@ public interface ICastingService
     Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId);
     Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte);
-    Task ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias);
+    Task<Respuesta> ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias);
     Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
     Task<byte[]> ObtieneLogo(string ClienteId, string CastingId);
 }
