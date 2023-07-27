@@ -244,8 +244,15 @@ namespace api_promodel.Controllers.clientes
         public async Task<ActionResult> EstableceEventos(string castingId, [FromBody] List<EventoCasting> eventos)
         {
             // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
-            await castingService.ActualizaEventosCasting(ClienteId, UsuarioId, castingId, eventos);
-            return Ok();
+            var r = await castingService.ActualizaEventosCasting(ClienteId, UsuarioId, castingId, eventos);
+            if (r.Ok)
+            {
+                return Ok();
+            }
+            else
+            {
+                return ActionFromCode(r.HttpCode, r.Error);
+            }
         }
 
 
