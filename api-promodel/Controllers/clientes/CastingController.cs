@@ -253,7 +253,7 @@ namespace api_promodel.Controllers.clientes
 
 
         [HttpPut("{castingId}/categorias")]
-        public async Task<ActionResult> EstabeceCategorias(string castingId, [FromBody] List<CategoriaCasting> categorias)
+        public async Task<ActionResult> EstableceCategorias(string castingId, [FromBody] List<CategoriaCasting> categorias)
         {
             // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
             await castingService.ActualizaCategoríasCasting(ClienteId, UsuarioId, castingId, categorias);

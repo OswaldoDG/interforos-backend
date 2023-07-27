@@ -15,6 +15,7 @@ using promodel.modelo.proyectos;
 using promodel.servicios.castings;
 using SendGrid;
 using System;
+using System.Diagnostics.Contracts;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using static System.Net.Mime.MediaTypeNames;
@@ -130,6 +131,7 @@ public class CastingService : ICastingService
         casting.ClienteId = ClienteId;
         casting.UsuarioId = UsuarioId;
         casting.Contactos = new List<ContactoCasting>();
+        casting.Categorias = new List<CategoriaCasting>();
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload = casting;
@@ -150,6 +152,7 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
+            tmpCasting.Categorias=casting.Categorias;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }
@@ -515,7 +518,7 @@ public class CastingService : ICastingService
         string patch = "logo.jpg";
         try
         {
-            var fichero = File.Create(patch);
+            var fichero = System.IO.File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
             fichero.Close();     
         }
@@ -547,11 +550,23 @@ public class CastingService : ICastingService
         throw new NotImplementedException();
     }
 
-    public Task ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias)
+    public async Task<Respuesta> ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias)
     {
-        throw new NotImplementedException();
-    }
+        var r = new Respuesta();
+        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
 
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+        // se verifica si hay categorias a actualizar o nuevas , y elimina las removidas
+        casting.ActulizarCategorias(categorias);
+        await ActualizaCasting(CLienteId, UsuarioId, casting.Id, casting);
+        r.Ok = true;
+        return r;
+    }
 
     public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)
     {
