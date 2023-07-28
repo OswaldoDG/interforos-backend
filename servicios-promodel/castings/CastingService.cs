@@ -15,10 +15,8 @@ using promodel.modelo.proyectos;
 using promodel.servicios.castings;
 using SendGrid;
 using System;
-using System.Diagnostics.Contracts;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Reflection.Metadata;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace promodel.servicios.proyectos;
@@ -132,7 +130,6 @@ public class CastingService : ICastingService
         casting.ClienteId = ClienteId;
         casting.UsuarioId = UsuarioId;
         casting.Contactos = new List<ContactoCasting>();
-        casting.Categorias = new List<CategoriaCasting>();
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload = casting;
@@ -153,7 +150,6 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
-            tmpCasting.Categorias=casting.Categorias;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }
@@ -515,17 +511,10 @@ public class CastingService : ICastingService
     }
 
     public async Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte)
-    {
-        string pahchFolder = @$".\LogoTemp\{Guid.NewGuid()}";
-        string patch = @$"{pahchFolder}\logo.jpg";
-
-
+    {             
+        string patch = "logo.jpg";
         try
         {
-            if (!Directory.Exists(pahchFolder))
-            {
-                Directory.CreateDirectory(pahchFolder);
-            }
             var fichero = File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
             fichero.Close();     
@@ -533,23 +522,24 @@ public class CastingService : ICastingService
         catch (Exception e)
         {
             Console.WriteLine("Exception: " + e.Message);
-        }
+        }        
+
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
 
         if (casting != null)
         {
             casting.Attachments.AddOrUpdate(patch, MediaTypeNames.Text.Plain);
+            var logo = casting.Attachments[patch];
             await db.Castings.AddOrUpdateAsync(casting);
+            logo = casting.Attachments[patch];
             r.Ok = true;
-            Directory.Delete(pahchFolder,true);
             return r;    
         }
 
         
         r.HttpCode = HttpCode.BadRequest;
-        r.Error = "No se pudo guardar logo";
-        Directory.Delete(pahchFolder,true);
+        r.Error = "No se puso guardar logo";
         return r;
 
     }
@@ -557,24 +547,6 @@ public class CastingService : ICastingService
     public Task ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
     {
         throw new NotImplementedException();
-    }
-
-    public async Task<Respuesta> ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias)
-    {
-        var r = new Respuesta();
-        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
-
-        if (casting == null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-            r.Error = "Casting no encontrado";
-            return r;
-        }
-        // se verifica si hay categorias a actualizar o nuevas , y elimina las removidas
-        casting.ActulizarCategorias(categorias);
-        await ActualizaCasting(CLienteId, UsuarioId, casting.Id, casting);
-        r.Ok = true;
-        return r;
     }
 
     public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)
@@ -590,12 +562,10 @@ public class CastingService : ICastingService
         httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + base64String);
 
         var response = await httpClient.GetAsync(url);
-        if (response.IsSuccessStatusCode){
-            var result = await response.Content.ReadAsByteArrayAsync();
+        var result = await response.Content.ReadAsByteArrayAsync();
 
-            return result;
-        }
-        return null;      
+        return result;
+
     }
     #endregion
     #region Acceso

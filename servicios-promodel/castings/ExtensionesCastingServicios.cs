@@ -1,6 +1,5 @@
 ﻿
 
-using CouchDB.Driver.Query.Extensions;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
@@ -55,49 +54,4 @@ namespace promodel.servicios.castings;
             CierreAutomatico = casting.CierreAutomatico,
         };
     }
-    /// <summary>
-    /// Actualiza una categoria existente.
-    /// </summary>
-    /// <param name="categoria"></param>
-    /// <param name="categoriaNueva"></param>
-    public static void Actualizar(this CategoriaCasting categoria, CategoriaCasting categoriaNueva)
-    {
-        categoria.Nombre = categoriaNueva.Nombre;
-        categoria.Descripcion = categoriaNueva.Descripcion;
-    }
-    /// <summary>
-    /// remueve las categorias de un casting que no se encuentren en <param name="categoriaNueva"></param>
-    /// </summary>
-    /// <param name="categoria"></param>
-    /// <param name="categoriaNueva"></param>
-    public static List<CategoriaCasting> RemoverCategoriaElminada(this List<CategoriaCasting> categorias, List<CategoriaCasting> categoriasNuevas)
-    {
-       var categoriaselimnadas = categorias.Where(p => categoriasNuevas.All(p2 => p2.Id != p.Id)).ToList();
-        categoriaselimnadas.ForEach(_ => categorias.Remove(_));
-        return categorias;
-
-    }
-
-    /// <summary>
-    /// Actualiza , agrega y remueve categorias eliminadas de un casting dado  una lista de categorias
-    /// </summary>
-    /// <param name="casting"></param>
-    /// <param name="categoriasNuevas"></param>
-    public static void ActulizarCategorias(this Casting casting, List<CategoriaCasting> categoriasNuevas)
-    {       
-        foreach (var categoria in categoriasNuevas)
-        {
-            var existeCategoria = casting.Categorias.FirstOrDefault(_ => _.Id == categoria.Id);
-            if (existeCategoria != null)
-            {
-                existeCategoria.Actualizar(categoria);
-            }
-            else
-            {
-                casting.Categorias.Add(categoria);
-            }
-        }
-        casting.Categorias = casting.Categorias.RemoverCategoriaElminada(categoriasNuevas);
-    }
-      
 }

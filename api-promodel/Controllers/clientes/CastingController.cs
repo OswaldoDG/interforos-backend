@@ -3,7 +3,6 @@ using Bogus.DataSets;
 using ImageMagick;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
@@ -11,7 +10,6 @@ using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
-using System.Net.WebSockets;
 
 namespace api_promodel.Controllers.clientes
 {
@@ -192,16 +190,15 @@ namespace api_promodel.Controllers.clientes
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<string>> ObtieneLogo([FromRoute] string  CastingId)
+        public async Task<IActionResult> ObtieneLogo([FromRoute] string  CastingId)
         { 
-            byte[] content = await castingService.ObtieneLogo(ClienteId, CastingId);
+            byte[] content = await castingService.ObtieneLogo(ClienteId, CastingId);          
 
             if (content == null)
             {
-                return Ok(null);
+                return NotFound();
             }
-            var result = "data:image/jpeg;base64," + Convert.ToBase64String(content);         
-            return Ok(JsonConvert.SerializeObject(result));
+            return File(content, "image/jpeg");
         }
 
 
@@ -251,14 +248,6 @@ namespace api_promodel.Controllers.clientes
             return Ok();
         }
 
-
-        [HttpPut("{castingId}/categorias")]
-        public async Task<ActionResult> EstableceCategorias(string castingId, [FromBody] List<CategoriaCasting> categorias)
-        {
-            // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
-            await castingService.ActualizaCategoríasCasting(ClienteId, UsuarioId, castingId, categorias);
-            return Ok();
-        }
 
         // solo se llama cuando el usuario contacto del casting no existe
         private async Task<ActionResult> RegistroContacto(RegistroUsuario registro)
