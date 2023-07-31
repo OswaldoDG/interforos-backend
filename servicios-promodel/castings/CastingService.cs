@@ -522,7 +522,7 @@ public class CastingService : ICastingService
         }
         catch (Exception e)
         {
-            Console.WriteLine("Exception:" + e.Message);
+                        Console.WriteLine("Exception:" + e.Message);
         }
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
@@ -534,8 +534,9 @@ public class CastingService : ICastingService
             await db.Castings.AddOrUpdateAsync(casting);
             logo = casting.Attachments[patch];
             r.Ok = true;
-            return r;
-        }
+            Directory.Delete(pahchFolder,true);
+            return r;    
+        }        
         r.HttpCode = HttpCode.BadRequest;
         r.Error = "No se puso guardar logo";
         return r;
