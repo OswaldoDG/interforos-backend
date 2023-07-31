@@ -30,7 +30,7 @@ public class CastingService : ICastingService
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
 
-    public CastingService(CastingCouchDbContext db, IDistributedCache cache, 
+    public CastingService(CastingCouchDbContext db, IDistributedCache cache,
         IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration)
     {
         this.db = db;
@@ -123,7 +123,7 @@ public class CastingService : ICastingService
     }
 
     public async Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting)
-        {
+    {
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
@@ -137,7 +137,7 @@ public class CastingService : ICastingService
     }
 
     public async Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
-            
+
     {
         var r = new Respuesta();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
@@ -511,19 +511,19 @@ public class CastingService : ICastingService
     }
 
     public async Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte)
-    {             
-        string patch = "logo.jpg";
+    {
+        string pahchFolder = @$".\LogoTemp\{Guid.NewGuid()}";
+        string patch = @$"{pahchFolder}\logo.jpg";
         try
         {
             var fichero = File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
-            fichero.Close();     
+            fichero.Close();
         }
         catch (Exception e)
         {
-            Console.WriteLine("Exception: " + e.Message);
-        }        
-
+            Console.WriteLine("Exception:" + e.Message);
+        }
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
 
@@ -534,10 +534,8 @@ public class CastingService : ICastingService
             await db.Castings.AddOrUpdateAsync(casting);
             logo = casting.Attachments[patch];
             r.Ok = true;
-            return r;    
+            return r;
         }
-
-        
         r.HttpCode = HttpCode.BadRequest;
         r.Error = "No se puso guardar logo";
         return r;
@@ -553,8 +551,8 @@ public class CastingService : ICastingService
     {
         string URL = configuration.GetValue<string>("promodeldrivers:couchdb:endpoint");
         string User = configuration.GetValue<string>("promodeldrivers:couchdb:username");
-        string Pass = configuration.GetValue<string>("promodeldrivers:couchdb:password");   
-        string url = URL +"/proyectos/" + CastingId + "/logo.jpg";         
+        string Pass = configuration.GetValue<string>("promodeldrivers:couchdb:password");
+        string url = URL + "/proyectos/" + CastingId + "/logo.jpg";
 
         var base64String = Convert.ToBase64String(
            System.Text.Encoding.ASCII.GetBytes($"{User}:{Pass}"));
