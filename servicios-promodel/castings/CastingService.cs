@@ -1,12 +1,6 @@
-﻿using Amazon.Runtime.Internal.Util;
-using Bogus.DataSets;
-using CouchDB.Driver.Extensions;
-using Flurl.Util;
-using ImageMagick;
-using Microsoft.AspNetCore.Mvc;
+﻿using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Org.BouncyCastle.Asn1.Cms;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
@@ -269,6 +263,10 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
+<<<<<<< HEAD
+=======
+            tmpCasting.Categorias=casting.Categorias;
+>>>>>>> bcd9b2bb55ac6dcdcdc8d0905211fe5468f699ab
             tmpCasting.Eventos = casting.Eventos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
@@ -366,38 +364,7 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<RespuestaPayload<Casting>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
-    {
-        var r = new RespuestaPayload<Casting>();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
 
-        if (casting == null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-            r.Error = "Casting no encontrado";
-            return r;
-        }
-        casting.Contactos = new List<ContactoCasting>();
-        foreach (var contacto in Contactos)
-        {
-            var user = await identidad.UsuarioPorEmail(contacto.Email);
-
-            if (user == null)
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(null));
-            }
-
-            else
-            {
-                casting.Contactos.Add(contacto.aContactoCasting(user.UltimoAcceso));
-            }
-
-        }
-        await ActualizaCasting(ClienteId, UsuarioId, casting.Id, casting);
-        r.Ok = true;
-        r.Payload = casting;
-        return r;
-    }
 
     public async Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId)
     {
@@ -443,6 +410,7 @@ public class CastingService : ICastingService
             {
                 categoriaExistente.Nombre = categoria.Nombre;
                 categoriaExistente.Descripcion = categoria.Descripcion;
+
                 await db.Castings.AddOrUpdateAsync(casting);
                 r.Ok = true;
             }
@@ -450,29 +418,7 @@ public class CastingService : ICastingService
 
         return r;
     }
-
-
-    public async Task<RespuestaPayload<CategoriaCasting>> CrearCategoria(string ClienteId, string CastingId, string UsuarioId, CategoriaCasting categoria)
-    {
-        var r = new RespuestaPayload<CategoriaCasting>();
-
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
-        if (casting == null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-
-        }
-        else
-        {
-            categoria.Id = Guid.NewGuid().ToString();
-            casting.Categorias.Add(categoria);
-            await db.Castings.AddOrUpdateAsync(casting);
-            r.Payload = categoria;
-            r.Ok = true;
-        }
-
-        return r;
-    }
+    
 
     public async Task<Respuesta> EliminarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId)
     {
@@ -661,28 +607,6 @@ public class CastingService : ICastingService
         r.Error = "No se puso guardar logo";
         return r;
 
-    }
-
-    public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
-    {
-        var r = new Respuesta();
-        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
-
-        if (casting == null)
-        {
-            r.HttpCode = HttpCode.NotFound;
-            r.Error = "Casting no encontrado";
-            return r;
-        }
-
-        casting.Eventos = new List<EventoCasting>();
-        eventos.ForEach(e =>
-        {
-            casting.Eventos.Add(e.aEventoCasting());
-        });
-        await ActualizaCasting(CLienteId, UsuarioId, CastingId, casting);
-        r.Ok = true;
-        return r;
     }
 
     public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)

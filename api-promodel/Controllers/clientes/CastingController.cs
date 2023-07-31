@@ -152,7 +152,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Casting>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string castingId)
+        public async Task<ActionResult<List<ContactoUsuario>>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string castingId)
         {
             foreach (var contacto in contactos)
             {               
@@ -167,7 +167,7 @@ namespace api_promodel.Controllers.clientes
                         CastingId = castingId,
                         ClienteId = this.ClienteId
                     };
-                    var x = await RegistroContacto(usuario);
+                    await RegistroContacto(usuario);
                 }
             }
 
