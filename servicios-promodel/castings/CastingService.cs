@@ -40,6 +40,125 @@ public class CastingService : ICastingService
         this.configuration = configuration;
     }
 
+    public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
+    {
+        var r = new Respuesta();
+        // trae el casting completo 
+        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+        // Solo actualiza evento lo dem[as queda intacto
+        casting.Eventos = eventos;
+
+        await ActualizaCasting(CLienteId, UsuarioId, CastingId, casting);
+
+        r.Ok = true;
+        return r;
+    }
+
+
+    public async Task<Respuesta> ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias)
+    {
+        var r = new Respuesta();
+        var casting = await ObtieneCasting(CLienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+
+        List<CategoriaCasting> fianles = new List<CategoriaCasting>();
+        // Primero las nuevas 
+        foreach(var cnueva in categorias)
+        {
+            CategoriaCasting exisntent = casting.Categorias.FirstOrDefault(x => x.Id == cnueva.Id);
+            if (exisntent != null)
+            {
+                // Como se evaua por refrecnia el objeto en el casting ya esta actualziado
+                exisntent.Descripcion = cnueva.Descripcion;
+                exisntent.Nombre = cnueva.Nombre;
+
+            } else
+            {
+                fianles.Add (cnueva);
+            }
+
+        }
+
+        casting.Categorias.AddRange(fianles);
+
+        fianles.Clear();
+        foreach(var c in casting.Categorias) {
+            var encontrada = categorias.FirstOrDefault(x => x.Id == c.Id);
+            if(encontrada == null) {
+                fianles.Add(c);
+            }
+        }
+
+        fianles.ForEach(c =>
+        {
+            casting.Categorias.Remove(c);
+        });
+        
+               
+
+       
+        await ActualizaCasting(CLienteId, UsuarioId, CastingId, casting);
+
+        r.Ok = true;
+        return r;
+    }
+
+    public async Task<RespuestaPayload<List<ContactoUsuario>>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
+    {
+        var r = new RespuestaPayload<List<ContactoUsuario>>();
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+
+        List<ContactoCasting> contactosCasting = new List<ContactoCasting>();
+        foreach (var contacto in Contactos)
+        {
+            var user = await identidad.UsuarioPorEmail(contacto.Email);
+
+            if (user == null)
+            {
+                contactosCasting.Add(contacto.aContactoCasting(null));
+            }
+
+            else
+            {
+                contactosCasting.Add(contacto.aContactoCasting(user.UltimoAcceso));
+            }
+        }
+
+
+        casting.Contactos = contactosCasting;
+        await ActualizaCasting(ClienteId, UsuarioId, CastingId, casting);
+        r.Ok = true;
+        r.Payload = casting.Contactos;
+        return r;
+    }
+
+
+
+
+
     public async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
     {
         return await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
