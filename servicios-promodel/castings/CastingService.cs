@@ -7,11 +7,7 @@ using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
-using SendGrid;
-using System;
-using System.Net.Http.Headers;
 using System.Net.Mime;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace promodel.servicios.proyectos;
 
@@ -263,10 +259,7 @@ public class CastingService : ICastingService
             tmpCasting.FechaCierre = casting.FechaCierre;
             tmpCasting.AceptaAutoInscripcion = casting.AceptaAutoInscripcion;
             tmpCasting.Contactos = casting.Contactos;
-<<<<<<< HEAD
-=======
             tmpCasting.Categorias=casting.Categorias;
->>>>>>> bcd9b2bb55ac6dcdcdc8d0905211fe5468f699ab
             tmpCasting.Eventos = casting.Eventos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
@@ -600,6 +593,7 @@ public class CastingService : ICastingService
             await db.Castings.AddOrUpdateAsync(casting);
             logo = casting.Attachments[patch];
             r.Ok = true;
+
             Directory.Delete(pahchFolder, true);
             return r;
         }
@@ -608,6 +602,7 @@ public class CastingService : ICastingService
         return r;
 
     }
+
 
     public async Task<byte[]> ObtieneLogo(string ClienteId, string CastingId)
     {
