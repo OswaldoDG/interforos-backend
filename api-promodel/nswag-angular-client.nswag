@@ -52,6 +52,7 @@
       "excludedTypeNames": [],
       "excludedParameterNames": [],
       "handleReferences": false,
+      "generateTypeCheckFunctions": false,
       "generateConstructorInterface": true,
       "convertConstructorInterfaceData": false,
       "importRequiredTypes": true,
@@ -68,7 +69,7 @@
       "enumNameGeneratorType": null,
       "serviceHost": ".",
       "serviceSchemes": null,
-      "output": "../../vesax-ng/src/app/services/api/api-promodel.ts",
+      "output": "../../interforos-frontend/src/app/services/api/api-promodel.ts",
       "newLineBehavior": "Auto"
     }
   }

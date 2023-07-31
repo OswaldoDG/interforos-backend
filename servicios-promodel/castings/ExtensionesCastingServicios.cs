@@ -11,7 +11,6 @@ namespace promodel.servicios.castings;
 
  public static class ExtensionesCastingServicios
 {
-
     public static ContactoCasting aContactoCasting(this ContactoUsuario usuario,DateTime? UltimoAcceso)
     {
         return new ContactoCasting()
@@ -55,6 +54,7 @@ namespace promodel.servicios.castings;
             CierreAutomatico = casting.CierreAutomatico,
         };
     }
+<<<<<<< Updated upstream
     /// <summary>
     /// Actualiza una categoria existente.
     /// </summary>
@@ -100,4 +100,20 @@ namespace promodel.servicios.castings;
         casting.Categorias = casting.Categorias.RemoverCategoriaElminada(categoriasNuevas);
     }
       
+
+    public static EventoCasting aEventoCasting(this EventoCasting eventoCasting)
+    {
+        return new EventoCasting()
+        {
+            Id = eventoCasting.Id,
+            FechaInicial = eventoCasting.FechaInicial,
+            FechaFinal = eventoCasting.FechaFinal,
+            Notas = eventoCasting.Notas,
+            Lugar = eventoCasting.Lugar,
+            Coordenadas = eventoCasting.Coordenadas
+            
+        };
+    }
+=======
+>>>>>>> Stashed changes
 }
