@@ -108,9 +108,6 @@ public class CastingService : ICastingService
         return r;
     }
 
-
-    // MOdificar para devolver contactos casting 
-    //  El front solo tiene que actualziar su lista local
     public async Task<RespuestaPayload<List<ContactoUsuario>>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos)
     {
         var r = new RespuestaPayload<List<ContactoUsuario>>();
