@@ -10,7 +10,6 @@ namespace promodel.servicios.castings;
 
  public static class ExtensionesCastingServicios
 {
-
     public static ContactoCasting aContactoCasting(this ContactoUsuario usuario,DateTime? UltimoAcceso)
     {
         return new ContactoCasting()

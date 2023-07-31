@@ -152,7 +152,7 @@ namespace api_promodel.Controllers.clientes
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Casting>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string castingId)
+        public async Task<ActionResult<List<ContactoUsuario>>> ActualizaContactosCasting([FromBody] List<ContactoUsuario> contactos, string castingId)
         {
             foreach (var contacto in contactos)
             {               
@@ -167,7 +167,7 @@ namespace api_promodel.Controllers.clientes
                         CastingId = castingId,
                         ClienteId = this.ClienteId
                     };
-                    var x = await RegistroContacto(usuario);
+                    await RegistroContacto(usuario);
                 }
             }
 
@@ -244,8 +244,15 @@ namespace api_promodel.Controllers.clientes
         public async Task<ActionResult> EstableceEventos(string castingId, [FromBody] List<EventoCasting> eventos)
         {
             // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
-            await castingService.ActualizaEventosCasting(ClienteId, UsuarioId, castingId, eventos);
-            return Ok();
+            var r = await castingService.ActualizaEventosCasting(ClienteId, UsuarioId, castingId, eventos);
+            if (r.Ok)
+            {
+                return Ok();
+            }
+            else
+            {
+                return ActionFromCode(r.HttpCode, r.Error);
+            }
         }
 
 

@@ -51,7 +51,7 @@ namespace api_promodel.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("password/{id}", Name = "RecuperarContrasena")]
+        [HttpPost("password/{id}", Name = "RestablecerContrasena")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
