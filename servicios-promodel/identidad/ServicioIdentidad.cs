@@ -179,4 +179,23 @@ public partial class ServicioIdentidad: IServicioIdentidad
        await db.Usuarios.AddOrUpdateAsync(usuario);
        return usuario;
     }
+
+    public async Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaNueva)
+    {
+        var res = new Respuesta();
+
+        var usuario = await UsuarioPorId(UsuarioId);
+
+        if (usuario == null)
+        {
+            res.Error = "El usuario no existe";
+            res.HttpCode = HttpCode.NotFound;
+            return res;
+        }
+
+        usuario.HashContrasena = SecretHasher.Hash(ContrasenaNueva);
+        await ActualizaUsuario(usuario);
+        res.Ok = true;
+        return res;
+    }
 }

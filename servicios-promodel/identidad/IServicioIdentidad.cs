@@ -1,5 +1,4 @@
 ﻿using promodel.modelo;
-using promodel.modelo.perfil;
 
 namespace promodel.servicios;
 
@@ -14,4 +13,5 @@ public interface IServicioIdentidad
     Task<RespuestaLogin?> Login(string usuario, string contrasena);
     Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId);
     Task<Usuario?> UsuarioPorId(string id);
+    Task<Respuesta> CambiarPassword(string UsuarioId,string ContrasenaNueva);
 }
