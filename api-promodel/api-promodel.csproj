@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>api_promodel</RootNamespace>
+    <UserSecretsId>a828ad26-21cf-4442-988a-0712ef32e785</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

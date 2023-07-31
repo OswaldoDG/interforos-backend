@@ -26,7 +26,7 @@ public class SolicitudSoporteUsuario: CouchDocument
     /// <summary>
     /// Email de envio de la confirmación
     /// </summary>
-    public string Email { get; set; }
+    public string? Email { get; set; }
     
     /// <summary>
     /// Fecha de envío de la confirmación
