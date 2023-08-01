@@ -55,7 +55,9 @@ public class AccesoController : ControllerPublico
             respuesta.Error = "No existe usuario";
             return respuesta;
         }
+
         await servicioSoporte.CreaSolicitudRecuperacionContrasena(usuario);
+
         respuesta.Ok = true;
         return Ok(respuesta);
     }

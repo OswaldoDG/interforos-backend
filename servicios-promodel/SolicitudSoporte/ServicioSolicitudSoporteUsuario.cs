@@ -1,10 +1,13 @@
 ﻿using comunicaciones.email;
 using CouchDB.Driver.Extensions;
 using Humanizer;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.registro;
+using promodel.servicios.identidad;
 using promodel.servicios.SolicitudSoporte;
 using System;
 
@@ -13,9 +16,17 @@ namespace promodel.servicios.SolicitudServicio;
 public class ServicioSolicitudSoporteUsuario: IServicioSolicitudSoporteUsuario
 {
     private readonly SolicitudSoporteCouchDbContext db;
-    public ServicioSolicitudSoporteUsuario(SolicitudSoporteCouchDbContext solicitudSoporteCouchDb)
+    private readonly IConfiguration configuration;
+    private readonly IWebHostEnvironment environment;
+    private readonly IServicioEmail servicioEmail;
+
+    public ServicioSolicitudSoporteUsuario(SolicitudSoporteCouchDbContext solicitudSoporteCouchDb, IConfiguration configuration,
+                                            IWebHostEnvironment environment, IServicioEmail servicioEmail)
     {
        this.db= solicitudSoporteCouchDb;
+        this.configuration = configuration;
+        this.environment = environment;
+        this.servicioEmail = servicioEmail;
     }
 
     public async Task<string> CreaSolicitudRecuperacionContrasena(Usuario usuario)
@@ -33,6 +44,24 @@ public class ServicioSolicitudSoporteUsuario: IServicioSolicitudSoporteUsuario
         // Aqui vamos a enviar el correo para el usuario    
 
         CrearSoporteUsuario(solicitud);
+
+        DatosPlantillaPassword data = new()
+        {
+            Activacion = solicitud.Id,
+            Email = solicitud.Email,
+            UrlBase = configuration.LeeUrlBase(),
+        };
+
+        MensajeEmail m = new()
+        {
+            DireccionPara = usuario.Email,
+            NombrePara = usuario.Email,
+            JSONData = JsonConvert.SerializeObject(data),
+            PlantillaCuerpo = configuration.LeePlantillaTipoServcio(environment, solicitud),
+            PlantillaTema = configuration.LeeTemaTipoServicio(solicitud)
+        };
+
+        await servicioEmail.Enviar(m);
 
         return solicitud.Id;
     }

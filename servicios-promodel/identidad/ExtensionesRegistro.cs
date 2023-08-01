@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using promodel.modelo;
+using promodel.modelo.registro;
 
 namespace promodel.servicios.identidad
 {
@@ -38,6 +39,19 @@ namespace promodel.servicios.identidad
             
         }
 
+        public static string LeeTemaTipoServicio(this IConfiguration _configuration, SolicitudSoporteUsuario solicitudSoporteUsuario)
+        {
+            switch (solicitudSoporteUsuario.Tipo)
+            {
+                case TipoServicio.RecuperacionContrasena:
+                    return _configuration.GetValue<string>("emailing:tema-email-restablecimiento-contraseña");
+
+                default:
+                    return null;
+
+            }
+        }
+
         public static string LeePlantillaRegistro(this IConfiguration _configuration, IWebHostEnvironment _environment, InvitacionRegistro inv)
         {
             string plantilla="";
@@ -54,6 +68,25 @@ namespace promodel.servicios.identidad
                     break;
 
             }
+            string ruta = Path.Combine(_environment.ContentRootPath, plantilla);
+            string contenido = "";
+            if (System.IO.File.Exists(ruta))
+            {
+                contenido = System.IO.File.ReadAllText(ruta);
+            }
+            return contenido;
+        }
+
+        public static string LeePlantillaTipoServcio(this IConfiguration _configuration, IWebHostEnvironment _environment, SolicitudSoporteUsuario solicitudSoporteUsuario)
+        {
+            string plantilla = "";
+            switch (solicitudSoporteUsuario.Tipo)
+            {
+                case TipoServicio.RecuperacionContrasena:
+                    plantilla = _configuration.GetValue<string>("emailing:plantilla-email-restablecer-password");
+                    break;
+            }
+
             string ruta = Path.Combine(_environment.ContentRootPath, plantilla);
             string contenido = "";
             if (System.IO.File.Exists(ruta))
