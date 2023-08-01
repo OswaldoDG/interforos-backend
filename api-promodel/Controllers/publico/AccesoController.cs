@@ -44,19 +44,24 @@ public class AccesoController : ControllerPublico
     [HttpPost("password", Name = "RecuperarContrasena")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> RecuperarContrasena([FromBody] string email)
+    public async Task<ActionResult<Respuesta>> RecuperarContrasena([FromBody] string email)
     {
+        Respuesta respuesta = new Respuesta();
+
         var usuario = await identidad.UsuarioPorEmail(email);
         if (usuario==null)
         {
-            return NotFound();
+            respuesta.HttpCode = HttpCode.NotFound;
+            respuesta.Error = "No existe usuario";
+            return respuesta;
         }
         await servicioSoporte.CreaSolicitudRecuperacionContrasena(usuario);
-        return Ok();
+        respuesta.Ok = true;
+        return Ok(respuesta);
     }
 
     [AllowAnonymous]
-    [HttpPost("password/{id}", Name = "RestablecerContrasena")]
+    [HttpPost("password/id/{id}", Name = "RestablecerContrasena")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,7 +75,7 @@ public class AccesoController : ControllerPublico
             if (usuario != null && r.FechaLimiteConfirmacion >= DateTime.UtcNow && r.Tipo == TipoServicio.RecuperacionContrasena
                 && r.Email.Equals(usuario.Email, StringComparison.InvariantCultureIgnoreCase) )
             {
-                await identidad.CambiarPassword(r.Id,nuevoPassword);
+                await identidad.CambiarPassword(r.UsuarioId,nuevoPassword);
                 await servicioSoporte.EliminaSolicitudPorId(r.Id);
                 return Ok();
             }

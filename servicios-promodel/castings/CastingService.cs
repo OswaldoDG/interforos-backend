@@ -573,15 +573,21 @@ public class CastingService : ICastingService
     {
         string pahchFolder = @$".\LogoTemp\{Guid.NewGuid()}";
         string patch = @$"{pahchFolder}\logo.jpg";
+
+
         try
         {
+            if (!Directory.Exists(pahchFolder))
+            {
+                Directory.CreateDirectory(pahchFolder);
+            }
             var fichero = File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
             fichero.Close();
         }
         catch (Exception e)
         {
-            Console.WriteLine("Exception:" + e.Message);
+            Console.WriteLine("Exception: " + e.Message);
         }
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
@@ -589,16 +595,16 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             casting.Attachments.AddOrUpdate(patch, MediaTypeNames.Text.Plain);
-            var logo = casting.Attachments[patch];
             await db.Castings.AddOrUpdateAsync(casting);
-            logo = casting.Attachments[patch];
             r.Ok = true;
-
             Directory.Delete(pahchFolder, true);
             return r;
         }
+
+
         r.HttpCode = HttpCode.BadRequest;
-        r.Error = "No se puso guardar logo";
+        r.Error = "No se pudo guardar logo";
+        Directory.Delete(pahchFolder, true);
         return r;
 
     }
