@@ -56,7 +56,6 @@ namespace promodel.servicios
             };
 
             await servicioEmail.Enviar(m);
-
         }
 
         private string RolComoTexto(TipoRolCliente rol)
