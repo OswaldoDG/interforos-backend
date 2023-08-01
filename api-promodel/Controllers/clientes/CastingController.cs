@@ -3,6 +3,7 @@ using Bogus.DataSets;
 using ImageMagick;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
@@ -10,6 +11,7 @@ using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
+using System.Text.Json;
 
 namespace api_promodel.Controllers.clientes
 {
@@ -190,15 +192,16 @@ namespace api_promodel.Controllers.clientes
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ObtieneLogo([FromRoute] string  CastingId)
-        { 
-            byte[] content = await castingService.ObtieneLogo(ClienteId, CastingId);          
+        public async Task<ActionResult<string>> ObtieneLogo([FromRoute] string CastingId)
+        {
+            byte[] content = await castingService.ObtieneLogo(ClienteId, CastingId);
 
             if (content == null)
             {
-                return NotFound();
+                return Ok(null);
             }
-            return File(content, "image/jpeg");
+            var result = "data:image/jpeg;base64," + Convert.ToBase64String(content);
+            return Ok(JsonConvert.SerializeObject(result));
         }
 
 
@@ -273,6 +276,16 @@ namespace api_promodel.Controllers.clientes
 
             await identidad.Registro(registro);
         
+            return Ok();
+        }
+
+        [HttpPut("{castingId}/categorias")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> EstabeceCategorias(string castingId, [FromBody] List<CategoriaCasting> categorias)
+        {
+            // Reemplazr la totalidad de eventos en el casting a partir de los enviados a este endpoint
+            await castingService.ActualizaCategoríasCasting(ClienteId, UsuarioId, castingId, categorias);
             return Ok();
         }
 
