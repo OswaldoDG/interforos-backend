@@ -6,4 +6,6 @@
     public string Email { get; set; }
 
     public string UrlBase { get; set; }
+
+    public string Logo64 { get; set; }
 }

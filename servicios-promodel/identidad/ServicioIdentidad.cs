@@ -22,16 +22,18 @@ public partial class ServicioIdentidad: IServicioIdentidad
     private readonly IConfiguration configuration;
     private readonly IServicioEmail servicioEmail;
     private readonly IWebHostEnvironment environment;
+    private readonly IServicioClientes servicioClientes;
 
     public ServicioIdentidad(IdentidadCouchDbContext db, IDistributedCache cache, 
         IConfiguration configuration, IServicioEmail servicioEmail, 
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment, IServicioClientes servicioClientes)
     {
         this.db = db;
         this.cache = cache;
         this.configuration = configuration;
         this.servicioEmail = servicioEmail;
         this.environment = environment;
+        this.servicioClientes = servicioClientes;
     }
 
     public async Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId)

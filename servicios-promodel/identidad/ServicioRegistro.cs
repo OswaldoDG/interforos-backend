@@ -7,6 +7,7 @@ using promodel.servicios.identidad;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using promodel.modelo.registro;
+using promodel.modelo.clientes;
 
 namespace promodel.servicios
 {
@@ -35,15 +36,16 @@ namespace promodel.servicios
 
             await db.Invitaciones.AddOrUpdateAsync(inv);
 
+            var c = await servicioClientes.ClientePorId(r.ClienteId);
 
-
-            DatosPlantillaRegistro data = new() { 
-                Activacion = inv.Id, 
-                FechaLimite = inv.LimiteUso.ToString(), 
-                Nombre = inv.Registro.Nombre, 
-                UrlBase = configuration.LeeUrlBase(), 
+            DatosPlantillaRegistro data = new() {
+                Activacion = inv.Id,
+                FechaLimite = inv.LimiteUso.ToString(),
+                Nombre = inv.Registro.Nombre,
+                UrlBase = configuration.LeeUrlBase(),
                 Remitente = inv.Registro.Nombre,
-                Rol = RolComoTexto(inv.Registro.Rol)
+                Rol = RolComoTexto(inv.Registro.Rol),
+                Logo64 = c.WebLogoBase64,
             };
 
             MensajeEmail m = new()

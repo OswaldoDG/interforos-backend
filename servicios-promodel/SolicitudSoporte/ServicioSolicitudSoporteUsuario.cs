@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using promodel.modelo;
+using promodel.modelo.clientes;
 using promodel.modelo.registro;
 using promodel.servicios.identidad;
 using promodel.servicios.SolicitudSoporte;
@@ -19,14 +20,16 @@ public class ServicioSolicitudSoporteUsuario: IServicioSolicitudSoporteUsuario
     private readonly IConfiguration configuration;
     private readonly IWebHostEnvironment environment;
     private readonly IServicioEmail servicioEmail;
+    private readonly IServicioClientes servicioClientes;
 
     public ServicioSolicitudSoporteUsuario(SolicitudSoporteCouchDbContext solicitudSoporteCouchDb, IConfiguration configuration,
-                                            IWebHostEnvironment environment, IServicioEmail servicioEmail)
+                                            IWebHostEnvironment environment, IServicioEmail servicioEmail, IServicioClientes servicioClientes)
     {
        this.db= solicitudSoporteCouchDb;
         this.configuration = configuration;
         this.environment = environment;
         this.servicioEmail = servicioEmail;
+        this.servicioClientes = servicioClientes;
     }
 
     public async Task<string> CreaSolicitudRecuperacionContrasena(Usuario usuario)
@@ -45,11 +48,14 @@ public class ServicioSolicitudSoporteUsuario: IServicioSolicitudSoporteUsuario
 
         CrearSoporteUsuario(solicitud);
 
+        var c = await servicioClientes.ClientePorId(usuario.Clientes.FirstOrDefault(r=> r != null));
+
         DatosPlantillaPassword data = new()
         {
             Activacion = solicitud.Id,
             Email = solicitud.Email,
             UrlBase = configuration.LeeUrlBase(),
+            Logo64 = c.WebLogoBase64
         };
 
         MensajeEmail m = new()
