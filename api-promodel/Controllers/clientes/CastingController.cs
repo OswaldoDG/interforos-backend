@@ -88,6 +88,25 @@ namespace api_promodel.Controllers.clientes
             }
         }
 
+        [HttpGet("anonimo/{id}", Name = "CastingAnonimo")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Casting>> CastingAnomino(string id)
+        {
+            var result = await castingService.FullCasting(ClienteId, id, UsuarioId);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
