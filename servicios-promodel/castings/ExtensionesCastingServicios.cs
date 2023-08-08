@@ -8,9 +8,9 @@ using System.Globalization;
 
 namespace promodel.servicios.castings;
 
- public static class ExtensionesCastingServicios
+public static class ExtensionesCastingServicios
 {
-    public static ContactoCasting aContactoCasting(this ContactoUsuario usuario,DateTime? UltimoAcceso)
+    public static ContactoCasting aContactoCasting(this ContactoUsuario usuario, DateTime? UltimoAcceso)
     {
         return new ContactoCasting()
         {
@@ -18,11 +18,11 @@ namespace promodel.servicios.castings;
             Email = usuario.Email.ToLower(),
             Rol = (TipoRolCliente)usuario.Rol,
             UltimoIngreso = UltimoAcceso,
-            UsuarioId = usuario.Id,              
+            UsuarioId = usuario.Id,
         };
     }
 
-    public static CastingListElement aCastingListElement(this Casting casting,TipoRolCliente rol)
+    public static CastingListElement aCastingListElement(this Casting casting, TipoRolCliente rol)
     {
         return new CastingListElement()
         {
@@ -35,13 +35,13 @@ namespace promodel.servicios.castings;
             Activo = casting.Activo,
             AperturaAutomatica = casting.AperturaAutomatica,
             CierreAutomatico = casting.CierreAutomatico,
-            Rol =rol
+            Rol = rol
         };
     }
     public static CastingListElement aCastingListElement(this Casting casting)
-    {  
+    {
         return new CastingListElement()
-        {            
+        {
             Id = casting.Id,
             Nombre = casting.Nombre,
             NombreCliente = casting.NombreCliente,
@@ -53,4 +53,26 @@ namespace promodel.servicios.castings;
             CierreAutomatico = casting.CierreAutomatico,
         };
     }
+
+    public static SelectorCastingCategoria aSelectorCasting(this Casting casting)
+    {
+        var selectorCastig = new SelectorCastingCategoria()
+        {
+            Id = casting.Id,
+            Nombre = casting.Nombre,
+            Categorias = new List<SelectorCategoria>()
+        };
+
+        casting.Categorias.ForEach(categoria =>
+        {
+            selectorCastig.Categorias.Add(new SelectorCategoria()
+            {
+                Id = categoria.Id,
+                Nombre = categoria.Nombre,
+                Modelos = categoria.Modelos.Select(_ => _.PersonaId).ToList(),
+            }); ;
+        });
+        return selectorCastig;
+    }
 }
+

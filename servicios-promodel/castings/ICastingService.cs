@@ -1,6 +1,5 @@
 ﻿using promodel.modelo;
 using promodel.modelo.castings;
-using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 
@@ -27,11 +26,11 @@ public interface ICastingService
     Task<RespuestaPayload<List<ContactoUsuario>>> ActualizaContactosCasting(string ClienteId, string CastingId, string UsuarioId, List<ContactoUsuario> Contactos);
     Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId);
     Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId);
-
     Task<Respuesta> LogoCasting(string CLienteId, string UsuarioId, string CastingId, byte[] imagenByte);
     Task<Respuesta> ActualizaCategoríasCasting(string CLienteId, string UsuarioId, string CastingId, List<CategoriaCasting> categorias);
     Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
     Task<byte[]> ObtieneLogo(string ClienteId, string CastingId);
+    Task<SelectorCastingCategoria> SelectorCastingCategoria(string ClienteId,string CastingId,string UsuarioId);
 }
 
 

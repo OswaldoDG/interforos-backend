@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using promodel.modelo;
+using promodel.modelo.castings;
 using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
@@ -80,7 +81,6 @@ namespace promodel.servicios
 
             return true;
         }
-
 
         public async Task<bool> UpsertLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId, string AlmacenamientoId)
         {
@@ -199,7 +199,6 @@ namespace promodel.servicios
 
             return imc;
         }
-
 
         public static string NombreBusuqedaPersona(Persona persona)
         {
@@ -362,7 +361,6 @@ namespace promodel.servicios
             }
             return r;
         }
-
 
         public async Task<InformacionPerfil?> PerfilCliente(string UsuarioId, string ClienteId)
         {
@@ -561,6 +559,73 @@ namespace promodel.servicios
         
         }
 
+        public async Task<ResponsePaginado<Persona>> BuscarPersonasId( RequestPaginado<BusquedaPersonasId> busqueda)
+        {
+            try
+            {     
+                int total = 0;
+                List<Persona> personas = new List<Persona>();
+                List<Persona> todos = new List<Persona>();
+                if (busqueda.Request.Ids.Count > 0)
+                {
+                    foreach (var id in busqueda.Request.Ids)
+                    {
+                        var p = db.Personas.FirstOrDefault(_ => _.UsuarioId == id);
+                        if (p!=null)
+                        {
+                            todos.Add(p);
+                        }
+                    }    
+                    if (busqueda.Contar)
+                    {
+                        total = todos.Count();
+                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                    }
+                    else
+                    {
+                        personas = todos;
+                    }
+                }
+#if DEBUG
+
+                var fcontacto = new Faker<Contacto>()
+         .RuleFor(o => o.AccesoDireccion, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
+         .RuleFor(o => o.AccesoEmail, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
+         .RuleFor(o => o.AccesoRedes, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
+         .RuleFor(o => o.AccesoTelefono, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
+         .RuleFor(o => o.Direccion, f => f.Address.StreetAddress())
+         .RuleFor(o => o.Email, f => f.Person.Email)
+         .RuleFor(o => o.Telefono, f => f.Person.Phone)
+         .RuleFor(o => o.Twitter, f => f.Person.UserName)
+         .RuleFor(o => o.FaceBook, f => f.Person.Website);
+
+
+                foreach (var p in personas)
+                {
+                    if (p.Contacto == null)
+                    {
+                        p.Contacto = fcontacto.Generate();
+                    }
+                }
+#endif
+
+                return new ResponsePaginado<Persona>()
+                {
+                    Elementos = personas,
+                    Pagina = busqueda.Pagina,
+                    Tamano = busqueda.Tamano,
+                    Total = total
+                };
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+
+        }
 
         private Expression<Func<Persona, bool>>? PorHabilidades(List<string>? Habilidades)
         {
@@ -729,8 +794,6 @@ namespace promodel.servicios
 
             return null;
         }
-
-
 
         /// <summary>
         /// Ontiene la expresion para los fisltros de edad
