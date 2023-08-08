@@ -246,7 +246,6 @@ public class CastingService : ICastingService
     }
 
     public async Task<Respuesta> ActualizaCasting(string ClienteId, string UsuarioId, string CastingId, Casting casting)
-
     {
         var r = new Respuesta();
         var tmpCasting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
@@ -458,6 +457,8 @@ public class CastingService : ICastingService
                 r.Ok = true;
             }
         }
+        r.HttpCode = HttpCode.BadRequest;
+        r.Error = "No se pudo agregar modelo";
         return r;
     }
     public async Task<Respuesta> EliminarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
@@ -478,6 +479,8 @@ public class CastingService : ICastingService
                 }
             }
         }
+        r.HttpCode = HttpCode.BadRequest;
+        r.Error = "No se pudo remover modelo";
         return r;
     }
 
@@ -600,8 +603,6 @@ public class CastingService : ICastingService
             Directory.Delete(pahchFolder, true);
             return r;
         }
-
-
         r.HttpCode = HttpCode.BadRequest;
         r.Error = "No se pudo guardar logo";
         Directory.Delete(pahchFolder, true);
@@ -627,6 +628,18 @@ public class CastingService : ICastingService
 
         return result;
 
+    }
+
+    public async Task<SelectorCastingCategoria> SelectorCastingCategoria(string ClienteId,string CastingId, string UsuarioId)
+    {
+        var casting = await ObtieneCasting(ClienteId,CastingId,UsuarioId);
+        
+        if (casting != null)
+        {
+            return casting.aSelectorCasting();
+
+        }
+        return null;
     }
     #endregion
     #region Acceso
