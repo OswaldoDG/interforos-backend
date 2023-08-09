@@ -308,6 +308,27 @@ namespace api_promodel.Controllers.clientes
             return Ok();
         }
 
+
+        [HttpGet("{CastingId}/excel")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<string>>> GenerarReporte(string CastingId)
+        {
+            var result = await castingService.CrearReporteCasting(ClienteId, CastingId, UsuarioId); 
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+
     }
  
 }

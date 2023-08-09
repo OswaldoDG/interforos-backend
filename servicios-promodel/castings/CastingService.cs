@@ -1,12 +1,16 @@
-﻿using CouchDB.Driver.Extensions;
+﻿using almacenamiento;
+using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Asn1.Mozilla;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
+using promodel.servicios.perfil;
+using System.Linq;
 using System.Net.Mime;
 
 namespace promodel.servicios.proyectos;
@@ -19,15 +23,24 @@ public class CastingService : ICastingService
     private readonly IServicioIdentidad identidad;
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
+    private readonly IServicioPersonas servicioPersonas;
+    private readonly IServicioCatalogos servicioCatalogos;
+    private readonly ICacheAlmacenamiento cacheAlmacenamiento;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, 
+        IConfiguration configuration, IServicioPersonas servicioPersonas, 
+        IServicioCatalogos servicioCatalogos,ICacheAlmacenamiento cacheAlmacenamiento
+        )
     {
         this.db = db;
         this.cache = cache;
         this.identidad = servicioIdentidad;
         this.httpClient = httpClient;
         this.configuration = configuration;
+        this.servicioPersonas = servicioPersonas;
+        this.servicioCatalogos = servicioCatalogos;
+        this.cacheAlmacenamiento = cacheAlmacenamiento;
     }
 
     public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
@@ -628,6 +641,92 @@ public class CastingService : ICastingService
         return result;
 
     }
+
+    public async Task<RespuestaPayload<List<string>>> CrearReporteCasting(string ClienteId, string CastingId, string UsuarioId)
+    {
+        var r = new RespuestaPayload<List<string>>();
+
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        List<ReporteModelosDTO> listaArtistas = new List<ReporteModelosDTO>();
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+        foreach (var item in casting.Categorias)
+        {
+            foreach (var modeloCasting in item.Modelos)
+            {
+                var busquedaPersona = await servicioPersonas.PorId(modeloCasting.PersonaId);
+                var x = (Persona)busquedaPersona.Payload;
+                var c = await servicioCatalogos.GetCatalogoCliente(Perfil.CAT_ACTIVIDADES, ClienteId);
+                var g = await servicioCatalogos.GetCatalogoCliente(Perfil.CAT_GENERO, ClienteId);
+                List<string> habilidadesPersona = new List<string>();
+                string generoPersona = "";
+                foreach (var h in x.ActividadesIds)
+                {
+                    foreach (var h2 in c.Elementos)
+                    {
+                        if (h == h2.Clave)
+                        {
+                            habilidadesPersona.Add(h2.Texto);
+                        }
+                    }
+                }
+
+                foreach(var g1 in g.Elementos)
+                {
+                    if(x.GeneroId == g1.Clave)
+                    {
+                        generoPersona = g1.Texto;
+                    }
+                }
+                if (busquedaPersona != null)
+                {
+                    ReporteModelosDTO artista = new ReporteModelosDTO()
+                    {
+                        Categoria = item.Nombre,
+                        NombreArtistico = x.NombreArtistico,
+                        NombrePersona = x.Nombre,
+                        Genero = generoPersona,
+                        Edad = x.Edad,
+                        Habilidades = string.Join(", ", habilidadesPersona)
+                    };
+                    
+                    if(!string.IsNullOrEmpty(x.ElementoMedioPrincipalId))
+                    {
+                        //var imagenPorId = cacheAlmacenamiento.FotoById(x.Id, x.ElementoMedioPrincipalId, "thumb");
+                        artista.FotoPrincipal = @"C:\borrame\ExcelTest\SampleImage.jpg";
+                        listaArtistas.Add(artista);
+                    }
+                    else
+                    {
+                        listaArtistas.Add(artista);
+                    }
+                }
+                else
+                {
+                    // Manejo de error si la búsqueda de persona no tiene éxito.
+                    // Puedes agregar lógica de manejo de errores aquí si es necesario.
+                }
+            }
+        }
+        
+        if(listaArtistas.Count > 0) {
+
+            casting.CrearArchivo(listaArtistas);
+
+        }
+
+        r.Ok = true;
+        return r;
+    }
+
+
     #endregion
     #region Acceso
     #endregion
