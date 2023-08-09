@@ -5,6 +5,7 @@ using ImageMagick;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios;
@@ -74,6 +75,17 @@ namespace api_promodel.Controllers
             return Ok(await personas.BuscarPersonas(busqueda));
         }
 
+        [HttpPost("buscar/id", Name = "BuscarPersonasId")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ResponsePaginado<Persona>>> BuscarPersonasPorId([FromBody] RequestPaginado<BusquedaPersonasId> busqueda)
+        {
+            busqueda.Request.ClienteId = this.ClienteId;
+            return Ok(await personas.BuscarPersonasId(busqueda));
+        }
+
         [HttpGet("{usuarioid}", Name = "ObtenerPersonaUsuarioId")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -88,6 +100,8 @@ namespace api_promodel.Controllers
 
             return ActionFromCode(r.HttpCode, r.Error);
         }
+
+
 
 
         private async Task<RespuestaPayload<Persona>> CrearPersona(Persona persona)
