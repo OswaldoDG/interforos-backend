@@ -1,12 +1,16 @@
-﻿using CouchDB.Driver.Extensions;
+﻿using almacenamiento;
+using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Asn1.Mozilla;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
+using promodel.servicios.perfil;
+using System.Linq;
 using System.Net.Mime;
 
 namespace promodel.servicios.proyectos;
@@ -19,15 +23,24 @@ public class CastingService : ICastingService
     private readonly IServicioIdentidad identidad;
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
+    private readonly IServicioPersonas servicioPersonas;
+    private readonly IServicioCatalogos servicioCatalogos;
+    private readonly ICacheAlmacenamiento cacheAlmacenamiento;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, 
+        IConfiguration configuration, IServicioPersonas servicioPersonas, 
+        IServicioCatalogos servicioCatalogos,ICacheAlmacenamiento cacheAlmacenamiento
+        )
     {
         this.db = db;
         this.cache = cache;
         this.identidad = servicioIdentidad;
         this.httpClient = httpClient;
         this.configuration = configuration;
+        this.servicioPersonas = servicioPersonas;
+        this.servicioCatalogos = servicioCatalogos;
+        this.cacheAlmacenamiento = cacheAlmacenamiento;
     }
 
     public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)

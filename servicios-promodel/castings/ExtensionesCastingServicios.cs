@@ -1,10 +1,19 @@
 ﻿
 
+using System.Drawing;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using A = DocumentFormat.OpenXml.Drawing;
+using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using System.Globalization;
+using Google.Apis.Json;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace promodel.servicios.castings;
 

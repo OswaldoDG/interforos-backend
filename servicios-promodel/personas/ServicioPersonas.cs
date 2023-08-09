@@ -401,7 +401,8 @@ namespace promodel.servicios
             var p = await db.Personas.FindAsync(Id);
             if(p != null)
             {
-                r = r.OK(p);
+                r.Payload = p;
+                r.Ok = true;
             } else
             {
                 r.HttpCode = HttpCode.NotFound; 
