@@ -54,6 +54,18 @@ namespace promodel.modelo.media
         [JsonProperty("v")]
         public bool Video { get; set; }
 
+        /// <summary>
+        /// Determina si el elemento es un video
+        /// </summary>
+        [JsonProperty("au")]
+        public bool Audio { get; set; }
+
+        /// <summary>
+        /// Determina si el elemento es un video
+        /// </summary>
+        [JsonProperty("ss")]
+        public bool SinSoporteWeb { get; set; }
+
 
         /// <summary>
         /// DEtermina si el contenido es un PDF

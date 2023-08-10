@@ -385,8 +385,10 @@ namespace api_promodel.Controllers.personas
                 FileInfo fi = new FileInfo(fileName);
                 bool EsFoto = false;
                 bool EsVideo = false;
+                bool SinSoporte = true;
+                bool EsAudio = false;
                 bool Landscape = false;
-                bool ExtensionValida = false;
+                bool EsPDF = false;
                 string tempId = Guid.NewGuid().ToString();
                 string FileId = $"{tempId}{fi.Extension.ToLower()}";
                 string FullPath = Path.Combine(uploadsDir, FileId);
@@ -394,22 +396,34 @@ namespace api_promodel.Controllers.personas
                 string FrameFullPath = Path.Combine(uploadsDir, FileFrameId);
 
 
-                if (".jpg,.jpeg".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
+                if (".jpg,.jpeg,.png,.gif".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
                 {
                     EsFoto = true;
-                    ExtensionValida = true;
+                    SinSoporte = false;
                 }
 
-                if (".mp4,.mpeg,.mpg,.mov,.wmv".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
+                if (".mp4,.mpeg,.mpg,.mov,.wmv,.ogg".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
                 {
                     EsVideo = true;
-                    ExtensionValida = true;
+                    SinSoporte = false;
                 }
 
-                if (!ExtensionValida)
+                if (".mp3,.ogg".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
                 {
-                    return BadRequest("Tipo de medio no válido");
+                    EsAudio = true;
+                    SinSoporte = false;
                 }
+
+                if (".pdf".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
+                {
+                    EsPDF = true;
+                    SinSoporte = false;
+                }
+
+                //if (!ExtensionValida)
+                //{
+                //    return BadRequest("Tipo de medio no válido");
+                //}
 
                 using (var stream = new FileStream(FullPath, FileMode.Create))
                 {
@@ -465,7 +479,7 @@ namespace api_promodel.Controllers.personas
 
                     el = await AddElementoMedio(archivoAlmacenado.Id, 
                         TipoMedio.Galería , fi.Extension, fileName.GetMimeTypeForFileExtension(),
-                        FiSaved.Length, EsFoto, EsVideo, false, Landscape, frameAlmacenado?.Id);
+                        FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id);
 
                     await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", UsuarioId, EsFoto);
                     if (EsVideo)
@@ -501,6 +515,8 @@ namespace api_promodel.Controllers.personas
             long Totales, 
             bool EsFoto=true, 
             bool EsVideo=false,
+            bool EsAudio = false,
+            bool SinSoporte = true,
             bool Pdf = false,
             bool Landscape = true, 
             string? FrameId = null 
@@ -523,7 +539,9 @@ namespace api_promodel.Controllers.personas
                 Landscape = Landscape,
                 FrameVideoId = FrameId,
                 Pdf = Pdf,
-                Tipo = Tipo 
+                Tipo = Tipo ,
+                Audio = EsAudio,
+                SinSoporteWeb = SinSoporte
             };
 
             el = await this.media.AddElemento(el, UsuarioId);
