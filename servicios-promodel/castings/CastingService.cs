@@ -654,6 +654,86 @@ public class CastingService : ICastingService
         }
         return null;
     }
+    public async Task<RespuestaPayload<List<string>>> CrearReporteCasting(string ClienteId, string CastingId, string UsuarioId)
+    {
+        var r = new RespuestaPayload<List<string>>();
+
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        List<ReporteModelosDTO> listaArtistas = new List<ReporteModelosDTO>();
+
+        if (casting == null)
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "Casting no encontrado";
+            return r;
+        }
+
+        foreach (var item in casting.Categorias)
+        {
+            foreach (var modeloCasting in item.Modelos)
+            {
+                var busquedaPersona = await servicioPersonas.PorId(modeloCasting.PersonaId);
+                var x = (Persona)busquedaPersona.Payload;
+                var c = await servicioCatalogos.GetCatalogoCliente(Perfil.CAT_ACTIVIDADES, ClienteId);
+                var g = await servicioCatalogos.GetCatalogoCliente(Perfil.CAT_GENERO, ClienteId);
+                List<string> habilidadesPersona = new List<string>();
+                string generoPersona = "";
+                foreach (var h in x.ActividadesIds)
+                {
+                    foreach (var h2 in c.Elementos)
+                    {
+                        if (h == h2.Clave)
+                        {
+                            habilidadesPersona.Add(h2.Texto);
+                        }
+                    }
+                }
+
+                foreach(var g1 in g.Elementos)
+                {
+                    if(x.GeneroId == g1.Clave)
+                    {
+                        generoPersona = g1.Texto;
+                    }
+                }
+                if (busquedaPersona != null)
+                {
+                    ReporteModelosDTO artista = new ReporteModelosDTO()
+                    {
+                        Categoria = item.Nombre,
+                        NombreArtistico = x.NombreArtistico,
+                        NombrePersona = x.Nombre,
+                        Genero = generoPersona,
+                        Edad = x.Edad,
+                        Habilidades = string.Join(", ", habilidadesPersona)
+                    };
+                    
+                    if(!string.IsNullOrEmpty(x.ElementoMedioPrincipalId))
+                    {
+                        //var imagenPorId = cacheAlmacenamiento.FotoById(x.Id, x.ElementoMedioPrincipalId, "thumb");
+                        artista.FotoPrincipal = @"C:\borrame\ExcelTest\SampleImage.jpg";
+                        listaArtistas.Add(artista);
+                    }
+                    else
+                    {
+                        listaArtistas.Add(artista);
+                    }
+                }
+            }
+        }
+        
+        if(listaArtistas.Count > 0) {
+
+            casting.CrearArchivo(listaArtistas);
+
+        }
+
+        r.Ok = true;
+        return r;
+    }
+
+
     #endregion
     #region Acceso
     #endregion
