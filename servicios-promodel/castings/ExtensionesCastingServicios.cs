@@ -191,13 +191,11 @@ namespace promodel.servicios.castings;
             for(int i=pos; i<tamArtistList; i++)
             {
                 Cell celda = worksheetPart.Worksheet.Descendants<Cell>().Where(c => c.CellReference == "B2").FirstOrDefault();
-                if(celda != null)
+                //Aquí no encuentra valor en la celda
+                var valor = celda.CellValue.InnerText;
+                if (!string.IsNullOrEmpty(valor))
                 {
-                    var valor = celda.CellValue.InnerText;
-                    if (!string.IsNullOrEmpty(valor))
-                    {
-                        InsertarImagenEnHojaExistente(workbookPart, artista.FotoPrincipal, artista.Categoria, 0, pos);
-                    }
+                    InsertarImagenEnHojaExistente(workbookPart, artista.FotoPrincipal, artista.Categoria, 0, pos);
                 }
             }
 
@@ -211,6 +209,8 @@ namespace promodel.servicios.castings;
         Cell cell = new Cell();
         cell.DataType = CellValues.String;
         cell.CellValue = new CellValue(value);
+
+
         return cell;
     }
 
