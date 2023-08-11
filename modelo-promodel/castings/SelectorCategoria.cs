@@ -1,4 +1,6 @@
-﻿namespace promodel.modelo.castings;
+﻿using promodel.modelo.proyectos;
+
+namespace promodel.modelo.castings;
 
 public class SelectorCategoria
 {
@@ -7,4 +9,7 @@ public class SelectorCategoria
     public string Nombre { get; set; }
 
     public List<string> Modelos { get; set; }
+
+    public List<ComentarioCategoriaModeloCasting> Comentarios { get; set;}
+
 }

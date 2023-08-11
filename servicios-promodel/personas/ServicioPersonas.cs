@@ -570,7 +570,7 @@ namespace promodel.servicios
                 {
                     foreach (var id in busqueda.Request.Ids)
                     {
-                        var p = db.Personas.FirstOrDefault(_ => _.UsuarioId == id);
+                        var p = db.Personas.FirstOrDefault(_ => _.Id == id);
                         if (p!=null)
                         {
                             todos.Add(p);

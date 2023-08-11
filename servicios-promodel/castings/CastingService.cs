@@ -522,13 +522,13 @@ public class CastingService : ICastingService
     }
 
 
-    public async Task<RespuestaPayload<ComentarioCasting>> AdicionarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, string Comentario)
+    public async Task<RespuestaPayload<ComentarioCategoriaModeloCasting>> AdicionarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoriaId, string PersonaId, string Comentario)
     {
-        var r = new RespuestaPayload<ComentarioCasting>();
+        var r = new RespuestaPayload<ComentarioCategoriaModeloCasting>();
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
-            var categoria = casting.Categorias.FirstOrDefault(x => x.Id == CategoríaId);
+            var categoria = casting.Categorias.FirstOrDefault(x => x.Id == CategoriaId);
             if (categoria != null)
             {
                 var modelo = categoria.Modelos.FirstOrDefault(m => m.PersonaId.Equals(PersonaId));
@@ -537,7 +537,7 @@ public class CastingService : ICastingService
                     var comentario = new ComentarioCasting() { Comentario = Comentario, UsuarioId = UsuarioId };
                     modelo.Comentarios.Add(comentario);
                     await db.Castings.AddOrUpdateAsync(casting);
-                    r.Payload = comentario;
+                    r.Payload = comentario.aComentarioCategoriaModeloCasting(CategoriaId,PersonaId);
                     r.Ok = true;
                 }
             }
@@ -636,8 +636,23 @@ public class CastingService : ICastingService
         
         if (casting != null)
         {
-            return casting.aSelectorCasting();
+            var castingSelector = casting.aSelectorCasting();
 
+
+            casting.Contactos.ForEach(async c =>
+            {
+                var user = await identidad.UsuarioPorId(c.UsuarioId);
+                if (user != null) { 
+                castingSelector.Participantes.Add(
+                    new MapaUsuarioNombre()
+                    {
+                        Id = user.Id,
+                        Nombre = user.Email
+                    }
+                    );
+            }
+            });
+            return castingSelector;
         }
         return null;
     }
