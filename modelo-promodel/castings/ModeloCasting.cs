@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using promodel.modelo.castings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace promodel.modelo.proyectos
 {
     public enum OrigenInscripcion
     {
-        publico=0, staff =1
+        publico = 0, staff = 1
     }
 
 
@@ -44,6 +45,9 @@ namespace promodel.modelo.proyectos
         /// </summary>
         [JsonProperty("cs")]
         public List<ComentarioCasting> Comentarios { get; set; } = new List<ComentarioCasting>();
+
+        [JsonProperty("vo")]
+        public List<VotoModeloCategoria> Votos { get; set; } = new List<VotoModeloCategoria>();
 
     }
 }
