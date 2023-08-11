@@ -808,28 +808,35 @@ namespace promodel.servicios
 
             if(Min.HasValue)
             {
-                long minimo = EdadATicks(Min.Value);
+                long minimo = 0; 
 
                 if (Max.HasValue)
                 {
-                    long maximo = EdadATicks(Max.Value);
+                    minimo = EdadATicks(Min.Value, false, false);
+                    long maximo = EdadATicks(Max.Value, false, false);
 
                     // Intervalo
+                    if(Min.Value == Max.Value)
+                    {
+                        minimo = EdadATicks(Min.Value, true, false);
+                        maximo = EdadATicks(Max.Value, false, true);
+                        return p => p.TicksFechaNacimiento <= maximo && p.TicksFechaNacimiento >= minimo;
+                    }
                     return p => p.TicksFechaNacimiento <= minimo && p.TicksFechaNacimiento >= maximo;
-
                 }
                 else
                 {
                     // >= min
+                    minimo = EdadATicks(Min.Value, false, false);
                     return p => p.TicksFechaNacimiento <= minimo;
 
                 }
-
+                
             } else
             {
                 if (Max.HasValue)
                 {
-                    long maximo = EdadATicks(Max.Value);
+                    long maximo = EdadATicks(Max.Value, false, false);
 
                     // <= max
                     return p => p.TicksFechaNacimiento >= maximo;
@@ -846,11 +853,28 @@ namespace promodel.servicios
         /// </summary>
         /// <param name="Edad"></param>
         /// <returns></returns>
-        private static long EdadATicks(int Edad)
+        private static long EdadATicks(int Edad, bool inicioAno, bool finAno)
         {
-            var f = DateTime.UtcNow.AddYears((Edad * -1));
+            DateTime? f = new DateTime();
 
-            return f.Ticks;
+            if (!inicioAno && !finAno)
+            {
+                f = DateTime.UtcNow.AddYears(((Edad + 1)*-1));
+            }
+            
+            if(inicioAno)
+            {
+                f = DateTime.UtcNow.AddYears(((Edad + 1) * -1));
+                f = new DateTime(f.Value.Year, 1, 1, 0, 0, 0,DateTimeKind.Utc);
+            }
+
+            if(finAno)
+            {
+                f = DateTime.UtcNow.AddYears(((Edad + 1) * -1));
+                f = new DateTime(f.Value.Year, 12, 31, 23, 59, 59,DateTimeKind.Utc);
+            }
+
+            return f.Value.Ticks;
         }
 
 
