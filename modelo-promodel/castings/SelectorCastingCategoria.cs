@@ -8,4 +8,5 @@ public class SelectorCastingCategoria
     public string Nombre { get; set; }
 
     public List<SelectorCategoria> Categorias { get; set; }
+    public List<MapaUsuarioNombre> Participantes { get; set; }
 }

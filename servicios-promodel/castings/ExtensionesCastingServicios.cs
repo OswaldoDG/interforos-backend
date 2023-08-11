@@ -5,6 +5,7 @@ using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace promodel.servicios.castings;
 
@@ -54,25 +55,67 @@ public static class ExtensionesCastingServicios
         };
     }
 
+
+
+    public static ComentarioCategoriaModeloCasting aComentarioCategoriaModeloCasting(this ComentarioCasting co,string categoriaId,string PersonaId)
+    {
+        return new ComentarioCategoriaModeloCasting()
+        {
+            Id = co.Id,
+            Fecha = co.Fecha,
+            UsuarioId = co.UsuarioId,
+            Comentario = co.Comentario,
+            CategoriaId = categoriaId,
+            PersonaId = PersonaId,
+        };
+
+    }
+
+
     public static SelectorCastingCategoria aSelectorCasting(this Casting casting)
     {
         var selectorCastig = new SelectorCastingCategoria()
         {
             Id = casting.Id,
             Nombre = casting.Nombre,
-            Categorias = new List<SelectorCategoria>()
-        };
+            Categorias = new List<SelectorCategoria>(),
+            Participantes= new List<MapaUsuarioNombre>()
+    };
 
-        casting.Categorias.ForEach(categoria =>
+       if (casting.Categorias!=null)
         {
-            selectorCastig.Categorias.Add(new SelectorCategoria()
+            casting.Categorias.ForEach(categoria =>
             {
-                Id = categoria.Id,
-                Nombre = categoria.Nombre,
-                Modelos = categoria.Modelos.Select(_ => _.PersonaId).ToList(),
-            }); ;
-        });
+                var c = new SelectorCategoria();
+                c.Id = categoria.Id;
+                c.Nombre = categoria.Nombre;
+                c.Modelos = new List<string>();
+                c.Comentarios = new List<ComentarioCategoriaModeloCasting>();
+                categoria.Modelos.ForEach(m =>
+                {
+                    c.Modelos.Add(m.PersonaId);
+
+                    m.Comentarios.ForEach(co =>
+                    {
+                        var comentario = new ComentarioCategoriaModeloCasting()
+                        {
+                            Id = co.Id,
+                            Fecha = co.Fecha,
+                            UsuarioId = co.UsuarioId,
+                            Comentario = co.Comentario,
+                            CategoriaId = categoria.Id,
+                            PersonaId = m.PersonaId,
+                        };
+                        c.Comentarios.Add(comentario);
+
+                    });
+                });
+
+                selectorCastig.Categorias.Add(c);
+            });
+        }
         return selectorCastig;
     }
+
 }
 

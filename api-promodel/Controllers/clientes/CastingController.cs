@@ -8,6 +8,7 @@ using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
+using promodel.modelo.registro;
 using promodel.servicios;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
@@ -361,6 +362,81 @@ public class CastingController : ControllerUsoInterno
         {
             return Ok(null);
         }
+    }
+
+    [HttpPut("{castingId}/comentarios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AgregaComentarioCasting(string castingId,[FromBody]string comentario)
+    {
+       var result =  await castingService.AdicionarComentarioCasting(ClienteId, castingId, UsuarioId, comentario);
+        if (result.Ok)
+        {
+            return Ok();
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
+
+    [HttpDelete("{castingId}/comentarios/{comentarioId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> EliminaComentarioCasting(string castingId,string comentarioId)
+    {
+        var result = await castingService.EliminarComentarioCasting(ClienteId, castingId, UsuarioId, comentarioId);
+        if (result.Ok)
+        {
+            return Ok();
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
+
+    [HttpPost("{castingId}/categoria/{categoriaId}/modelo/{modeloId}/comentario")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ComentarioCategoriaModeloCasting>> AgregaComentarioModeloCategoria(string castingId, string categoriaId, string modeloId, [FromBody] string comentario)
+    { 
+        if (this.RolUsuario== TipoRolCliente.RevisorExterno || this.RolUsuario == TipoRolCliente.Staff || this.RolUsuario == TipoRolCliente.Administrador)
+        {
+
+            var result = await castingService.AdicionarComentarioModeloCategoria(ClienteId, castingId, UsuarioId, categoriaId, modeloId, comentario);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+    return Unauthorized();
+    }
+
+    [HttpDelete("{castingId}/categoria/{categoriaId}/modelo/{modeloId}/comentario/{comentarioId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> EliminaComentarioModeloCategoria(string castingId, string categoriaId, string modeloId, string comentarioId)
+    {
+        if (this.RolUsuario == TipoRolCliente.RevisorExterno || this.RolUsuario == TipoRolCliente.Staff || this.RolUsuario == TipoRolCliente.Administrador)
+        {
+            var result = await castingService.EliminarComentarioModeloCategoria(this.ClienteId, castingId, UsuarioId, categoriaId, modeloId, comentarioId);
+        if (result.Ok)
+        {
+            return Ok();
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
+        return Unauthorized();
     }
 
 }
