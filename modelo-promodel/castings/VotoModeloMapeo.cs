@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace promodel.modelo.castings
+{
+    public class VotoModeloMapeo
+    {
+        public string CategoriaId { get; set; }
+        public string PersonaId { get; set; }
+    }
+}
