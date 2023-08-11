@@ -31,6 +31,7 @@ public interface ICastingService
     Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos);
     Task<byte[]> ObtieneLogo(string ClienteId, string CastingId);
     Task<SelectorCastingCategoria> SelectorCastingCategoria(string ClienteId,string CastingId,string UsuarioId);
+    Task<Respuesta> VotoModelo(string userId, string modeloId, string clienteId, string castingId, string categoriaId, string nivel);
 }
 
 
