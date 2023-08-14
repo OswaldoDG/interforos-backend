@@ -636,23 +636,59 @@ public class CastingService : ICastingService
         
         if (casting != null)
         {
-            var castingSelector = casting.aSelectorCasting();
+           
+                var castingSelector = casting.aSelectorCasting();
 
 
-            casting.Contactos.ForEach(async c =>
-            {
-                var user = await identidad.UsuarioPorId(c.UsuarioId);
-                if (user != null) { 
-                castingSelector.Participantes.Add(
-                    new MapaUsuarioNombre()
+                casting.Contactos.ForEach(async c =>
+                {
+                    var user = await identidad.UsuarioPorId(c.UsuarioId);
+                    if (user != null)
                     {
-                        Id = user.Id,
-                        Nombre = user.Email
+                        castingSelector.Participantes.Add(
+                            new MapaUsuarioNombre()
+                            {
+                                Id = user.Id,
+                                Nombre = user.Email
+                            }
+                            );
                     }
-                    );
+                });
+                return castingSelector;
+            
+
+        }
+        return null;
+    }
+
+    public async Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId)
+    {
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+
+        if (casting != null)
+        {
+            if (casting.Contactos.Any(_ => _.UsuarioId == UsuarioId))
+            {
+                var castingSelector = casting.aSelectorCasting();
+
+
+                casting.Contactos.ForEach(async c =>
+                {
+                    var user = await identidad.UsuarioPorId(c.UsuarioId);
+                    if (user != null)
+                    {
+                        castingSelector.Participantes.Add(
+                            new MapaUsuarioNombre()
+                            {
+                                Id = user.Id,
+                                Nombre = user.Email
+                            }
+                            );
+                    }
+                });
+                return castingSelector;
             }
-            });
-            return castingSelector;
+
         }
         return null;
     }

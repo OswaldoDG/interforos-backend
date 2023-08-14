@@ -1,6 +1,7 @@
 ﻿using api_promodel.middlewares;
 using Bogus.DataSets;
 using ImageMagick;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -346,11 +347,31 @@ public class CastingController : ControllerUsoInterno
         }
     }
 
+    [HttpGet("{CastingId}/selector/revisor")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<SelectorCastingCategoria>> SelectorCategoriaRevisor([FromRoute] string CastingId)
+    {
+        var result = await castingService.SelectorCastingCategoriaRevisor(this.ClienteId, CastingId, this.UsuarioId);
+        if (result != null)
+        {
+            return Ok(result);
+        }
+        else
+        {
+            return StatusCode(403);
+        }
+    }
+
     [HttpGet("{CastingId}/selector")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SelectorCastingCategoria>> SelectorCategoria([FromRoute]string CastingId)
     {
         var result = await castingService.SelectorCastingCategoria(this.ClienteId,CastingId,this.UsuarioId);
@@ -360,7 +381,7 @@ public class CastingController : ControllerUsoInterno
         }
         else
         {
-            return Ok(null);
+            return StatusCode(403);
         }
     }
 
