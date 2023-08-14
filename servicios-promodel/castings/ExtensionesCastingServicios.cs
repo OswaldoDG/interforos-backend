@@ -91,6 +91,7 @@ public static class ExtensionesCastingServicios
                 c.Nombre = categoria.Nombre;
                 c.Modelos = new List<string>();
                 c.Comentarios = new List<ComentarioCategoriaModeloCasting>();
+                c.Votos = new List<VotoModeloMapeo>();
                 categoria.Modelos.ForEach(m =>
                 {
                     c.Modelos.Add(m.PersonaId);
@@ -109,6 +110,19 @@ public static class ExtensionesCastingServicios
                         c.Comentarios.Add(comentario);
 
                     });
+
+
+                    m.Votos.ForEach(v =>
+                    {
+                        var voto = new VotoModeloMapeo()
+                        {
+                            NivelLike = v.NivelLike,
+                            PersonaId = m.PersonaId,
+                            UsuarioId = v.UsuarioId
+                        };
+                        c.Votos.Add(voto);
+                    });
+
                 });
 
                 selectorCastig.Categorias.Add(c);
