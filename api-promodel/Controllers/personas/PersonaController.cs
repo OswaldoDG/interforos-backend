@@ -101,6 +101,21 @@ namespace api_promodel.Controllers
             return ActionFromCode(r.HttpCode, r.Error);
         }
 
+        [HttpGet("persona/id/{personaid}", Name = "ObtenerPersonaId")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<Persona>> PersonaPorId(string personaid)
+        {
+            var r = await personas.PorId(personaid);
+            if (r.Ok)
+            {
+                return Ok(r.Payload);
+            }
+
+            return ActionFromCode(r.HttpCode, r.Error);
+        }
+
 
 
 
