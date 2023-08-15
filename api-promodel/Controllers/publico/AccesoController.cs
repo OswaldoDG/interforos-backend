@@ -32,7 +32,7 @@ public class AccesoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<RespuestaLogin>> Authenticate(SolicitudAcceso solicitud)
     {
-        var response = await identidad.Login(solicitud.Usuario, solicitud.Contrasena);
+        var response = await identidad.Login(solicitud.Usuario, solicitud.Contrasena,this.ClienteId);
         if (response != null)
         {
             return Ok(response);

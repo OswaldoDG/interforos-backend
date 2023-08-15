@@ -1,6 +1,7 @@
 ﻿using comunicaciones.email;
 using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Query.Extensions;
+using Flurl.Util;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -83,12 +84,15 @@ public partial class ServicioIdentidad: IServicioIdentidad
         return null;
     }
 
-    public async Task<RespuestaLogin?> Login(string usuario, string contrasena)
+    public async Task<RespuestaLogin?> Login(string usuario, string contrasena,string clienteId)
     {
+       
         Usuario? u = await db.Usuarios.Where(x => x.NombreAcceso == usuario.ToLower())
             .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_NOMBRE }).FirstOrDefaultAsync();
         if (u != null)
         {
+            var roles = u.RolesCliente.Where(_=>_.ClienteId==clienteId).ToList();
+
             if (SecretHasher.Verify(contrasena, u.HashContrasena))
             {
 
@@ -103,7 +107,18 @@ public partial class ServicioIdentidad: IServicioIdentidad
                 var subject = new ClaimsIdentity(new[]
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, u.Id)
+
                 });
+
+                if (roles.Any())
+                {
+                    roles.ForEach(rol =>
+                    {
+                       subject.AddClaim(new Claim("role",rol.Rol.ToString().ToLower()));
+
+                    });
+                }
+
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = subject,
