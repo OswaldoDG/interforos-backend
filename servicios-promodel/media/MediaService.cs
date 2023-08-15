@@ -78,7 +78,9 @@ namespace promodel.servicios.media
                     }
                     
                 }
-                var done = m.Elementos.FirstOrDefault(x => x.Id == ElementoId);
+                ElementoMedia? done = m.Elementos.FirstOrDefault(x => x.Id == ElementoId);
+
+
                 await db.Medios.AddOrUpdateAsync(m);
 
                 await cache.SetStringAsync($"media-{UsuarioId}", JsonConvert.SerializeObject(m), new DistributedCacheEntryOptions()

@@ -71,20 +71,29 @@ namespace almacenamiento
 
         private async Task<string> CreaImagen(string fullPath, string Tipo, string Extension, int quality, int MaxLen)
         {
+            int ancho;
+            int alto;
             using (var image = new MagickImage(fullPath))
             {
                 image.AutoOrient();
-                double ratio = 1;
+                //Cambiando resolucion
+            
                 if (image.Width > image.Height)
                 {
-                    ratio = (double)MaxLen / (double)image.Width;
+                    
+                    ancho = MaxLen;
+                    alto = (MaxLen * image.Height) / image.Width;
+
                 }
                 else
                 {
-                    ratio = (double)MaxLen / (double)image.Height;
+                     ancho = (MaxLen * image.Width) / image.Height;
+                     alto = MaxLen;
+             
+                   
                 }
-
-                image.Resize(new Percentage(ratio * 100));
+                var size = new MagickGeometry(ancho, alto);
+                image.Resize(size);
                 image.Quality = quality;
 
                 string name = $"{fullPath.Replace($"-{TAMANO_FULL}","").Replace(Extension, "")}-{Tipo}{Extension}";
