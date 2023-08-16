@@ -12,4 +12,9 @@ public class SelectorCategoria
 
     public List<ComentarioCategoriaModeloCasting> Comentarios { get; set;}
 
+    /// <summary>
+    /// Devuelve una lista de los votos por persona en la categoría para ser utilziada como parte de los componentes del frontend
+    /// </summary>
+    public List<VotoModeloMapeo> Votos { get; set; }
+
 }
