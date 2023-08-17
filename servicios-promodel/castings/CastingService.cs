@@ -1,4 +1,6 @@
 ﻿using CouchDB.Driver.Extensions;
+using EllipticCurve.Utils;
+using Google.Apis.Drive.v3;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using promodel.modelo;
@@ -29,6 +31,9 @@ public class CastingService : ICastingService
         this.httpClient = httpClient;
         this.configuration = configuration;
     }
+
+
+
 
     public async Task<Respuesta> ActualizaEventosCasting(string CLienteId, string UsuarioId, string CastingId, List<EventoCasting> eventos)
     {
@@ -584,7 +589,7 @@ public class CastingService : ICastingService
             {
                 Directory.CreateDirectory(pahchFolder);
             }
-            var fichero = File.Create(patch);
+            var fichero = System.IO.File.Create(patch);
             fichero.Write(imagenByte, 0, imagenByte.Length);
             fichero.Close();
         }
@@ -637,23 +642,22 @@ public class CastingService : ICastingService
         if (casting != null)
         {
            
-                var castingSelector = casting.aSelectorCasting();
+            var castingSelector = casting.aSelectorCasting();
 
 
-                casting.Contactos.ForEach(async c =>
+            foreach (var a in casting.Contactos)
+            {
+                var user = await identidad.UsuarioPorId(a.UsuarioId);
+                if (user != null)
                 {
-                    var user = await identidad.UsuarioPorId(c.UsuarioId);
-                    if (user != null)
+                    MapaUsuarioNombre m = new MapaUsuarioNombre()
                     {
-                        castingSelector.Participantes.Add(
-                            new MapaUsuarioNombre()
-                            {
-                                Id = user.Id,
-                                Nombre = user.Email
-                            }
-                            );
-                    }
-                });
+                        Id = user.Id,
+                        Nombre = user.Email,
+                    };
+                    castingSelector.Participantes.Add(m);
+                }
+            }
                 return castingSelector;
             
 
@@ -691,6 +695,55 @@ public class CastingService : ICastingService
 
         }
         return null;
+    }
+
+    public async Task<RespuestaPayload<VotoModeloCategoria>> VotoModelo(string userId, string modeloId, string clienteId, string castingId, string categoriaId, string nivel)
+    {
+        var r = new RespuestaPayload<VotoModeloCategoria>();
+        VotoModeloCategoria votoRetorno = new VotoModeloCategoria();
+        var casting = await ObtieneCasting(clienteId, castingId, userId);
+        var categoria = casting.Categorias.FirstOrDefault(c => c.Id == categoriaId);
+        if (casting == null && categoria == null)
+        {
+            r.Error = "No se encontró el casting y la categoría";
+            r.HttpCode = HttpCode.BadRequest;
+            return r;
+        }
+        var modelo = categoria.Modelos.FirstOrDefault(m => m.PersonaId == modeloId);
+        if (modelo == null && categoria == null)
+        {
+            r.Error = "No se encontró el modelo y la categoría";
+            r.HttpCode = HttpCode.BadRequest;
+            return r;
+        }
+        var revisor = casting.Contactos.FirstOrDefault(r => r.UsuarioId == userId && r.Rol == TipoRolCliente.RevisorExterno);
+        if (revisor == null)
+        {
+            r.Error = "El usuario no forma parte como revisor";
+            r.HttpCode = HttpCode.BadRequest;
+            return r;
+        }
+
+        var votoRevisor = modelo.Votos.FirstOrDefault(v => v.UsuarioId == userId);
+        if (votoRevisor != null)
+        {
+            votoRevisor.NivelLike = int.Parse(nivel);
+            votoRetorno = votoRevisor;
+        }
+        else
+        {
+            VotoModeloCategoria voto = new VotoModeloCategoria()
+            {
+                UsuarioId = userId,
+                NivelLike = int.Parse(nivel),
+            };
+            modelo.Votos.Add(voto);
+            votoRetorno = voto;
+        }
+        await db.Castings.AddOrUpdateAsync(casting);
+        r.Ok = true;
+        r.Payload= votoRetorno;
+        return r;
     }
     #endregion
     #region Acceso

@@ -460,5 +460,21 @@ public class CastingController : ControllerUsoInterno
         return Unauthorized();
     }
 
+    [HttpPost("{castingId}/categoria/{categoriaId}/modelo/{modeloId}/like/{nivel}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<VotoModeloCategoria>> VotoModelo(string castingId, string categoriaId, string modeloId, string nivel)
+    {
+        var result = await castingService.VotoModelo(this.UsuarioId, modeloId, this.ClienteId, castingId, categoriaId, nivel);
+
+        if (result.Ok)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
 }
 

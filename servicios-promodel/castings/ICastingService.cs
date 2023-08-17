@@ -32,6 +32,8 @@ public interface ICastingService
     Task<byte[]> ObtieneLogo(string ClienteId, string CastingId);
     Task<SelectorCastingCategoria> SelectorCastingCategoria(string ClienteId,string CastingId,string UsuarioId);
     Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId);
+    Task<RespuestaPayload<VotoModeloCategoria>> VotoModelo(string userId, string modeloId, string clienteId, string castingId, string categoriaId, string nivel);
+
 }
 
 
