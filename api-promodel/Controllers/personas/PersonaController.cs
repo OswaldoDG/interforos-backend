@@ -65,7 +65,7 @@ namespace api_promodel.Controllers
 
 
         [HttpPost("buscar", Name = "BuscarPersonas")]
-        [AllowAnonymous]
+ 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,7 +76,7 @@ namespace api_promodel.Controllers
         }
 
         [HttpPost("buscar/id", Name = "BuscarPersonasId")]
-        [AllowAnonymous]
+     
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
