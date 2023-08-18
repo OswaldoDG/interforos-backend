@@ -51,7 +51,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
             if (r.Caducidad > DateTime.UtcNow)
             {
 
-                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(5);
+                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_minutos"));
                 var issuer = configuration["Jwt:Issuer"];
                 var audience = configuration["Jwt:Audience"];
                 var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
@@ -108,7 +108,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
             if (SecretHasher.Verify(contrasena, u.HashContrasena))
             {
 
-                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(2);
+                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_minutos"));
                 var issuer = configuration["Jwt:Issuer"];
                 var audience = configuration["Jwt:Audience"];
                 var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
@@ -163,7 +163,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
 
     private async Task<RefreshToken> CreaRefreshToken()
     {
-        DateTime tokenexpiration = DateTime.UtcNow.AddHours(24);
+        DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_refresh_minutos"));
         RefreshToken t = new() { Id = Guid.NewGuid().ToString(), Caducidad = tokenexpiration };
         await db.RefreshTokens.AddAsync(t);
         return t;

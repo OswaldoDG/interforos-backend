@@ -15,7 +15,8 @@ namespace api_promodel.middlewares
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            if (string.IsNullOrEmpty(ClienteId(context)) || string.IsNullOrEmpty(UsuarioId(context)))
+            // if (string.IsNullOrEmpty(ClienteId(context)) || string.IsNullOrEmpty(UsuarioId(context)))
+            if (string.IsNullOrEmpty(ClienteId(context)))
             {
                 context.Result = new BadRequestResult();
                 return;
