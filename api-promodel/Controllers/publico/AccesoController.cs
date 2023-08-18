@@ -102,11 +102,12 @@ public class AccesoController : ControllerPublico
     [HttpPost("token-refresh/{token}", Name = "RefreshToken")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [AllowAnonymous]
     public async Task<ActionResult<RespuestaLogin>> TokenRefresh(string token)
     {
         if(UsuarioId != null)
         {
-            var response = await identidad.RefreshToken(token, UsuarioId);
+            var response = await identidad.RefreshToken(token, UsuarioId,this.ClienteId);
             if (response != null)
             {
                 return Ok(response);

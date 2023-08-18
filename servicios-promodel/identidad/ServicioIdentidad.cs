@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using promodel.modelo;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -37,17 +38,20 @@ public partial class ServicioIdentidad: IServicioIdentidad
         this.servicioClientes = servicioClientes;
     }
 
-    public async Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId)
+    public async Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId, string clienteId)
     {
         await EliminaTokensExcedidos();
         string tokenId = ExtensionesUsuario.Base64Decode(RefreshToken);
+        Usuario? u = await db.Usuarios.Where(x => x.Id==UsuarioId)
+            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_USUARIO_X_ID }).FirstOrDefaultAsync();
+        var roles = u.RolesCliente.Where(_ => _.ClienteId == clienteId).ToList();
         RefreshToken? r = await RefreshTokenPorId(tokenId);
         if (r != null)
         {
             if (r.Caducidad > DateTime.UtcNow)
             {
 
-                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(10);
+                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_minutos"));
                 var issuer = configuration["Jwt:Issuer"];
                 var audience = configuration["Jwt:Audience"];
                 var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
@@ -60,6 +64,14 @@ public partial class ServicioIdentidad: IServicioIdentidad
                     new Claim(JwtRegisteredClaimNames.Sub, UsuarioId)
                 });
 
+                if (roles.Any())
+                {
+                    roles.ForEach(rol =>
+                    {
+                        subject.AddClaim(new Claim("role", rol.Rol.ToString().ToLower()));
+
+                    });
+                }
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
@@ -96,7 +108,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
             if (SecretHasher.Verify(contrasena, u.HashContrasena))
             {
 
-                DateTime tokenexpiration = DateTime.UtcNow.AddDays(10);
+                DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_minutos"));
                 var issuer = configuration["Jwt:Issuer"];
                 var audience = configuration["Jwt:Audience"];
                 var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
@@ -141,14 +153,17 @@ public partial class ServicioIdentidad: IServicioIdentidad
 
     private async Task EliminaTokensExcedidos()
     {
-        var tokens = await db.RefreshTokens.Where(t => t.Caducidad < DateTime.UtcNow)
-            .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_REFRESHTOKEN_X_CADUCIDAD }).ToListAsync();
-        await db.RefreshTokens.DeleteRangeAsync(tokens);
+        var tokens = await db.RefreshTokens.Where(t => DateTime.UtcNow >t.Caducidad)
+           .UseIndex(new[] { "design_document", IdentidadCouchDbContext.IDX_REFRESHTOKEN_X_CADUCIDAD }).ToListAsync();
+        if(tokens.Count> 0)
+        {
+            await db.RefreshTokens.DeleteRangeAsync(tokens);
+        }
     }
 
     private async Task<RefreshToken> CreaRefreshToken()
     {
-        DateTime tokenexpiration = DateTime.UtcNow.AddHours(24);
+        DateTime tokenexpiration = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ttl_refresh_minutos"));
         RefreshToken t = new() { Id = Guid.NewGuid().ToString(), Caducidad = tokenexpiration };
         await db.RefreshTokens.AddAsync(t);
         return t;

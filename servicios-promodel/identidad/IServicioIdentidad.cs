@@ -11,7 +11,7 @@ public interface IServicioIdentidad
     Task EliminaRegistroPorId(string Id);
     Task Registro(RegistroUsuario r);
     Task<RespuestaLogin?> Login(string usuario, string contrasena,string ClienteId);
-    Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId);
+    Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId, string clienteId);
     Task<Usuario?> UsuarioPorId(string id);
     Task<Respuesta> CambiarPassword(string UsuarioId,string ContrasenaNueva);
 }
