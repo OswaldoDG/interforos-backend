@@ -1,6 +1,7 @@
 ﻿using api_promodel.Controllers.publico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.registro;
 using promodel.servicios;
@@ -77,7 +78,7 @@ public class AccesoController : ControllerPublico
             if (usuario != null && r.FechaLimiteConfirmacion >= DateTime.UtcNow && r.Tipo == TipoServicio.RecuperacionContrasena
                 && r.Email.Equals(usuario.Email, StringComparison.InvariantCultureIgnoreCase) )
             {
-                await identidad.CambiarPassword(r.UsuarioId,nuevoPassword);
+                await identidad.RestablecerPassword(r.UsuarioId,nuevoPassword);
                 await servicioSoporte.EliminaSolicitudPorId(r.Id);
                 return Ok();
             }
@@ -114,5 +115,19 @@ public class AccesoController : ControllerPublico
             }
         }
         return Unauthorized();
+    }
+
+    [HttpPost("password/establecer", Name = "EstablecerContrasena")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> EstablecerContrasena([FromBody] EstablecerContrasena data)
+    {
+        var r = await identidad.CambiarPassword(this.UsuarioId, data.Actual, data.Nueva);
+        if (r.Ok)
+        {
+            return Ok();
+        }
+        return BadRequest(r);
     }
 }

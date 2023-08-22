@@ -212,7 +212,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
        return usuario;
     }
 
-    public async Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaNueva)
+    public async Task<Respuesta> RestablecerPassword(string UsuarioId, string ContrasenaNueva)
     {
         var res = new Respuesta();
 
@@ -229,5 +229,27 @@ public partial class ServicioIdentidad: IServicioIdentidad
         await ActualizaUsuario(usuario);
         res.Ok = true;
         return res;
+    }
+    public async Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaActual, string ContrasenaNueva)
+    {
+        var res = new Respuesta();
+
+        var usuario = await UsuarioPorId(UsuarioId);
+
+        if(usuario!=null && SecretHasher.Verify(ContrasenaActual, usuario.HashContrasena))
+        {
+            usuario.HashContrasena = SecretHasher.Hash(ContrasenaNueva);
+            await ActualizaUsuario(usuario);
+            res.Ok = true;
+            return res;
+        }
+        else
+        {
+            res.Error = "E0";
+            res.HttpCode = HttpCode.BadRequest;
+            return res;
+
+        }
+
     }
 }
