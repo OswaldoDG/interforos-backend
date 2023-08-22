@@ -21,15 +21,17 @@ public class CastingService : ICastingService
     private readonly IServicioIdentidad identidad;
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
+    private readonly IServicioClientes servicioClientes;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioClientes servicioClientes)
     {
         this.db = db;
         this.cache = cache;
         this.identidad = servicioIdentidad;
         this.httpClient = httpClient;
         this.configuration = configuration;
+        this.servicioClientes = servicioClientes;
     }
 
 
@@ -743,6 +745,111 @@ public class CastingService : ICastingService
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload= votoRetorno;
+        return r;
+    }
+
+    public async Task<Respuesta> InscripcionCasting(string ClienteId, string PersonaId, string CastingId, string CategoriaId, bool Abandonar, string UsuarioId)
+    {
+        var r = new Respuesta();
+
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+        var cliente = await servicioClientes.ClientePorId(ClienteId);
+        if (casting.ClienteId == cliente.Id && casting.AceptaAutoInscripcion == true)
+        {
+            var categoriaEnCasting = casting.Categorias.FirstOrDefault(c => c.Id == CategoriaId);
+            if (categoriaEnCasting != null)
+            {
+                var personaAsociadaCliente = cliente.Documentacion.FirstOrDefault(p => p.Id == PersonaId);
+                if(personaAsociadaCliente != null)
+                {
+                    var personaEnCategoria = categoriaEnCasting.Modelos.FirstOrDefault(p => p.PersonaId == PersonaId);
+                    if (Abandonar == false && personaEnCategoria == null)
+                    {
+                        ModeloCasting modeloCasting = new ModeloCasting()
+                        {
+                            PersonaId = PersonaId,
+                            Origen = OrigenInscripcion.publico,
+                        };
+                        categoriaEnCasting.Modelos.Add(modeloCasting);
+                    }
+                    else
+                    {
+                        if(personaEnCategoria != null)
+                        {
+                            categoriaEnCasting.Modelos.Remove(personaEnCategoria);
+                        }
+                    }
+                }
+                else
+                {
+                    r.Ok = false;
+                    r.HttpCode = HttpCode.BadRequest;
+                    return r;
+                }
+            }
+            else
+            {
+                r.Ok = false;
+                r.HttpCode = HttpCode.BadRequest;
+                return r;
+            }
+        }
+        else
+        {
+            r.Ok = false;
+            r.HttpCode = HttpCode.BadRequest;
+        }
+        await db.Castings.AddOrUpdateAsync(casting);
+        r.Ok = true;
+        return r;
+    }
+
+    public async Task<RespuestaPayload<List<string>>> CategoriasModeloCasting(string ClienteId, string CastingId, string PersonaId, string UsuarioId)
+    {
+        var r = new RespuestaPayload<List<string>>();
+
+        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+        var cliente = await servicioClientes.ClientePorId(ClienteId);
+        if (casting.ClienteId == cliente.Id && casting.AceptaAutoInscripcion == true)
+        {
+            var categoriaEnCasting = casting.Categorias.Any();
+            if (categoriaEnCasting == true)
+            {
+                var personaAsociadaCliente = cliente.Documentacion.FirstOrDefault(p => p.Id == PersonaId);
+                if (personaAsociadaCliente != null)
+                {
+                    List<string> listaCategoriasPersona = new List<string>();
+                    casting.Categorias.ForEach(c =>
+                    {
+                        var lista = c.Modelos.FirstOrDefault(m => m.PersonaId == PersonaId);
+                        if(lista != null)
+                        {
+                            listaCategoriasPersona.Add(c.Id);
+
+                        }
+                    });
+                    r.Payload = listaCategoriasPersona;
+                }
+                else
+                {
+                    r.Ok = false;
+                    r.HttpCode = HttpCode.BadRequest;
+                    return r;
+                }
+            }
+            else
+            {
+                r.Ok = false;
+                r.HttpCode = HttpCode.BadRequest;
+                return r;
+            }
+        }
+        else
+        {
+            r.Ok = false;
+            r.HttpCode = HttpCode.BadRequest;
+        }
+        r.Ok = true;
         return r;
     }
     #endregion

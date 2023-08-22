@@ -33,7 +33,8 @@ public interface ICastingService
     Task<SelectorCastingCategoria> SelectorCastingCategoria(string ClienteId,string CastingId,string UsuarioId);
     Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId);
     Task<RespuestaPayload<VotoModeloCategoria>> VotoModelo(string userId, string modeloId, string clienteId, string castingId, string categoriaId, string nivel);
-
+    Task<Respuesta> InscripcionCasting(string ClienteId, string PersonaId, string CastingId, string CategoriaId, bool Abandonar, string UsuarioId);
+    Task<RespuestaPayload<List<string>>> CategoriasModeloCasting(string ClienteId, string CastingId, string PersonaId, string UsuarioId);
 }
 
 

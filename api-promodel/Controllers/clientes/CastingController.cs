@@ -1,5 +1,6 @@
 ﻿using api_promodel.middlewares;
 using Bogus.DataSets;
+using CouchDB.Driver.Query.Extensions;
 using ImageMagick;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -25,12 +26,16 @@ public class CastingController : ControllerUsoInterno
     private ICastingService castingService;
     private readonly IBogusService bogus;
     private readonly IServicioIdentidad identidad;
+    private readonly IServicioPersonas servicioPersonas;
 
-    public CastingController(ICastingService castingService, IServicioClientes clientes, IBogusService Bogus, IServicioIdentidad servicioIdentidad) : base(clientes,servicioIdentidad)
+    public CastingController(ICastingService castingService, IServicioClientes clientes, 
+    IBogusService Bogus, IServicioIdentidad servicioIdentidad, IServicioPersonas servicioPersonas) 
+    : base(clientes,servicioIdentidad)
     {
         this.castingService = castingService;
         bogus = Bogus;
         this.identidad = servicioIdentidad;
+        this.servicioPersonas = servicioPersonas;
     }
 
     [HttpGet]
@@ -119,7 +124,6 @@ public class CastingController : ControllerUsoInterno
         if (result.Ok)
         {
             return Ok(result.Payload);
-
         }
         else
         {
@@ -134,11 +138,6 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> ActualizaCasting([FromBody] Casting casting, string Id)
     {
-        //if (casting.Id != Id)
-        //{
-        //    return BadRequest();
-        //}
-
         var result = await castingService.ActualizaCasting(ClienteId, UsuarioId, Id, casting);
         if (result.Ok)
         {
@@ -474,6 +473,75 @@ public class CastingController : ControllerUsoInterno
         else
         {
             return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
+
+    [HttpGet("{castingId}/modelo/categorias")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<List<string>>> CategoriasModelo([FromRoute] string castingId)
+    {
+        var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
+        var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, ((Persona)personaPorUsuarioId.Payload).Id, this.UsuarioId);
+        if (result.Ok)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+    }
+
+    [HttpPost("{castingId}/categoria/{categoriaId}/inscribir")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> InscribirCategoria([FromRoute] string castingId, [FromRoute] string categoriaId)
+    {
+        var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
+        if(personaPorUsuarioId.Ok)
+        {
+            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, false, this.UsuarioId);
+
+            if (result.Ok)
+            {
+                return Ok(result.Ok);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+        else
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPost("{castingId}/categoria/{categoriaId}/abandonar")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> AbandonarCategoria([FromRoute] string castingId, [FromRoute] string categoriaId)
+    {
+        var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
+        if(personaPorUsuarioId.Ok)
+        {
+            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, true, this.UsuarioId);
+            if (result.Ok)
+            {
+                return Ok(result.Ok);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+        else
+        {
+            return NotFound();
         }
     }
 }
