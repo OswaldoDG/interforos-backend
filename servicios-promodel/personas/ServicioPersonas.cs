@@ -416,7 +416,8 @@ namespace promodel.servicios
             var p = await db.Personas.Where(p=>p.UsuarioId == Id).FirstOrDefaultAsync();
             if (p != null)
             {
-                r = r.OK(p);
+                r.Payload = p;
+                r.Ok = true;
             }
             else
             {
