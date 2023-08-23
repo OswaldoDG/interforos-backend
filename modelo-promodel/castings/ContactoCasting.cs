@@ -16,6 +16,11 @@ namespace promodel.modelo.proyectos
         public string? UsuarioId { get; set; }
 
         /// <summary>
+        /// nombre  de usuario registrado o invitado
+        /// </summary>
+        public string? NombreUsuario { get; set; }
+
+        /// <summary>
         /// Email de usuario registrado o invitado
         /// </summary>
         public string?  Email { get; set; }

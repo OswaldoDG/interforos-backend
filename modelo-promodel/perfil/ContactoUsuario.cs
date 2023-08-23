@@ -15,9 +15,9 @@ public class ContactoUsuario
     public string? Email { get; set; }
 
     /// <summary>
-    /// Nombre completo 
+    /// nombre  de usuario registrado o invitado
     /// </summary>
-    public string? NombreCompleto { get; set; }
+    public string? NombreUsuario { get; set; }
 
 
     /// <summary>

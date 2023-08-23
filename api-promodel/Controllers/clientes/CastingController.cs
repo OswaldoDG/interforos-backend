@@ -184,7 +184,7 @@ public class CastingController : ControllerUsoInterno
                 var usuario = new RegistroUsuario()
                 {
                     Email=contacto.Email,
-                    Nombre=contacto.NombreCompleto,
+                    Nombre=contacto.NombreUsuario,
                     Rol=(TipoRolCliente)contacto.Rol,
                     CastingId = castingId,
                     ClienteId = this.ClienteId
