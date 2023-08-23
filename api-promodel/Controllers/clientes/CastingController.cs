@@ -483,7 +483,7 @@ public class CastingController : ControllerUsoInterno
     public async Task<ActionResult<List<string>>> CategoriasModelo([FromRoute] string castingId)
     {
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
-        var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, ((Persona)personaPorUsuarioId.Payload).Id, this.UsuarioId);
+        var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, (Persona)personaPorUsuarioId.Payload, this.UsuarioId);
         if (result.Ok)
         {
             return Ok(result.Payload);
@@ -503,7 +503,7 @@ public class CastingController : ControllerUsoInterno
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
         if(personaPorUsuarioId.Ok)
         {
-            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, false, this.UsuarioId);
+            var result = await castingService.InscripcionCasting(this.ClienteId, (Persona)personaPorUsuarioId.Payload, castingId, categoriaId, false, this.UsuarioId);
 
             if (result.Ok)
             {
@@ -529,7 +529,7 @@ public class CastingController : ControllerUsoInterno
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
         if(personaPorUsuarioId.Ok)
         {
-            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, true, this.UsuarioId);
+            var result = await castingService.InscripcionCasting(this.ClienteId, (Persona)personaPorUsuarioId.Payload, castingId, categoriaId, true, this.UsuarioId);
             if (result.Ok)
             {
                 return Ok(result.Ok);
