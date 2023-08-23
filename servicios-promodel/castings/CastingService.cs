@@ -21,17 +21,17 @@ public class CastingService : ICastingService
     private readonly IServicioIdentidad identidad;
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
-    private readonly IServicioClientes servicioClientes;
+    private readonly IServicioPersonas servicioPersonas;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioClientes servicioClientes)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas)
     {
         this.db = db;
         this.cache = cache;
         this.identidad = servicioIdentidad;
         this.httpClient = httpClient;
         this.configuration = configuration;
-        this.servicioClientes = servicioClientes;
+        this.servicioPersonas = servicioPersonas;
     }
 
 
@@ -753,14 +753,14 @@ public class CastingService : ICastingService
         var r = new Respuesta();
 
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
-        var cliente = await servicioClientes.ClientePorId(ClienteId);
-        if (casting.ClienteId == cliente.Id && casting.AceptaAutoInscripcion == true)
+        if (casting.ClienteId == ClienteId && casting.AceptaAutoInscripcion == true)
         {
             var categoriaEnCasting = casting.Categorias.FirstOrDefault(c => c.Id == CategoriaId);
             if (categoriaEnCasting != null)
             {
-                var personaAsociadaCliente = cliente.Documentacion.FirstOrDefault(p => p.Id == PersonaId);
-                if(personaAsociadaCliente != null)
+                var persona = await servicioPersonas.PorId(PersonaId);
+                var personaAsociadaCliente = ((Persona)persona.Payload).Clientes.FirstOrDefault(clienteAsociado => clienteAsociado == ClienteId);
+                if (personaAsociadaCliente != null)
                 {
                     var personaEnCategoria = categoriaEnCasting.Modelos.FirstOrDefault(p => p.PersonaId == PersonaId);
                     if (Abandonar == false && personaEnCategoria == null)
@@ -809,13 +809,13 @@ public class CastingService : ICastingService
         var r = new RespuestaPayload<List<string>>();
 
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
-        var cliente = await servicioClientes.ClientePorId(ClienteId);
-        if (casting.ClienteId == cliente.Id && casting.AceptaAutoInscripcion == true)
+        if (casting.ClienteId == ClienteId && casting.AceptaAutoInscripcion == true)
         {
             var categoriaEnCasting = casting.Categorias.Any();
             if (categoriaEnCasting == true)
             {
-                var personaAsociadaCliente = cliente.Documentacion.FirstOrDefault(p => p.Id == PersonaId);
+                var persona = await servicioPersonas.PorId(PersonaId);
+                var personaAsociadaCliente = ((Persona)persona.Payload).Clientes.FirstOrDefault(clienteAsociado => clienteAsociado == ClienteId);
                 if (personaAsociadaCliente != null)
                 {
                     List<string> listaCategoriasPersona = new List<string>();

@@ -483,14 +483,21 @@ public class CastingController : ControllerUsoInterno
     public async Task<ActionResult<List<string>>> CategoriasModelo([FromRoute] string castingId)
     {
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
-        var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, ((Persona)personaPorUsuarioId.Payload).Id, this.UsuarioId);
-        if (result.Ok)
+        if (personaPorUsuarioId.Ok)
         {
-            return Ok(result.Payload);
+            var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, ((Persona)personaPorUsuarioId.Payload).Id, this.UsuarioId);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
         }
         else
         {
-            return ActionFromCode(result.HttpCode, result.Error);
+            return NotFound();
         }
     }
 
