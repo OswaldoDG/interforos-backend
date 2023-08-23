@@ -10,5 +10,7 @@ namespace promodel.modelo
         [Required]
         [MinLength(6)]
         public string Contrasena { get; set; }
+        [Required]
+        public string NombreUsuario { get; set; }
     }
 }

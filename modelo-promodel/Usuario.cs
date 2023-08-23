@@ -19,6 +19,12 @@ namespace promodel.modelo
         }
 
         /// <summary>
+        /// Nombre del usuario para el despliegue en la UI
+        /// </summary>
+        [JsonProperty("uname")]
+        public string? NombreUsuario { get; set; }
+
+        /// <summary>
         /// Nombre utilziado para el acceso
         /// </summary>
         [JsonProperty("nacc")]

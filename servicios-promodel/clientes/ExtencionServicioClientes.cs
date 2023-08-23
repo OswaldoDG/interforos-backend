@@ -17,7 +17,7 @@ public static  class ExtencionServicioClientes
             Id = usuario.Id,
             Email = usuario.Email,
             Localizado = false,
-            NombreCompleto = usuario.NombreAcceso,
+            NombreUsuario = usuario.NombreUsuario,
             Rol = tipo
         };
     }

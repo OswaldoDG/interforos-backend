@@ -20,6 +20,7 @@ public static class ExtensionesCastingServicios
             Rol = (TipoRolCliente)usuario.Rol,
             UltimoIngreso = UltimoAcceso,
             UsuarioId = usuario.Id,
+            NombreUsuario=usuario.NombreUsuario,
         };
     }
 

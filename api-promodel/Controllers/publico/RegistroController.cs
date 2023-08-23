@@ -111,6 +111,7 @@ namespace api_promodel.Controllers
                         if (usuarioNuevo != null)
                         {
                             usuarioNuevo.HashContrasena = SecretHasher.Hash(usuario.Contrasena);
+                            usuarioNuevo.NombreUsuario = usuario.NombreUsuario;
                             usuarioNuevo = await identidad.CreaUsuario(usuarioNuevo);
                         }
                     }
@@ -136,6 +137,7 @@ namespace api_promodel.Controllers
                         {
                             contacto.Confirmado = true;
                             contacto.UsuarioId = user.Id;
+                            contacto.NombreUsuario = user.NombreUsuario;
                         }
 
                         await castingService.ActualizaCasting(this.ClienteId, this.UsuarioId, casting.Id, casting);

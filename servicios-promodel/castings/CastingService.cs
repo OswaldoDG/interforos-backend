@@ -655,7 +655,7 @@ public class CastingService : ICastingService
                     MapaUsuarioNombre m = new MapaUsuarioNombre()
                     {
                         Id = user.Id,
-                        Nombre = user.Email,
+                        Nombre = user.NombreUsuario
                     };
                     castingSelector.Participantes.Add(m);
                 }
@@ -687,9 +687,10 @@ public class CastingService : ICastingService
                             new MapaUsuarioNombre()
                             {
                                 Id = user.Id,
-                                Nombre = user.Email
+                                Nombre = user.NombreUsuario,
+                                Email = user.Email
                             }
-                            );
+                            ); ;
                     }
                 });
                 return castingSelector;
