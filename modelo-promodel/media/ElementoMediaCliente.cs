@@ -24,5 +24,7 @@ namespace promodel.modelo.media
         /// </summary>
         public string FrameVideoId { get; set; }
 
+        public string ? Titulo { get; set; }
+
     }
 }
