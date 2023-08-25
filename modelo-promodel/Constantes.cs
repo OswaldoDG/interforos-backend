@@ -15,6 +15,14 @@ namespace promodel.modelo
     }
 
 
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum EstadoCasting
+    {
+        EnEdicion = 0, Abierto = 1, Cerrado = 2, Cancelado = 3
+    }
+
+
     /// <summary>
     /// Giro de la empresa que hospeda el dominio
     /// </summary>

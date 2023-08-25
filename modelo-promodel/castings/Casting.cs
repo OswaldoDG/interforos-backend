@@ -21,6 +21,10 @@ namespace promodel.modelo.proyectos
         public string Nombre { get; set; }
 
 
+        [JsonProperty("stt")]
+        public EstadoCasting Status { get; set; } = EstadoCasting.EnEdicion;
+
+
         /// <summary>
         /// NOmbre del cliente para quien va el proyecto por ejemplo la emrpesa
         /// </summary>
