@@ -23,6 +23,8 @@ namespace api_promodel.Controllers.personas
         {
             public string? Id { get; set; }
             public IFormFile formFile { get; set; }
+
+            public string? Titulo { get; set; }
         }
 
         private readonly IServicioPersonas personas;
@@ -394,7 +396,7 @@ namespace api_promodel.Controllers.personas
                 string FullPath = Path.Combine(uploadsDir, FileId);
                 string FileFrameId = $"{tempId}.jpg";
                 string FrameFullPath = Path.Combine(uploadsDir, FileFrameId);
-
+                string Titulo = "";
 
                 if (".jpg,.jpeg,.png,.gif".Contains(fi.Extension.ToLower(), StringComparison.CurrentCulture))
                 {
@@ -479,7 +481,7 @@ namespace api_promodel.Controllers.personas
 
                     el = await AddElementoMedio(archivoAlmacenado.Id, 
                         TipoMedio.Galería , fi.Extension, fileName.GetMimeTypeForFileExtension(),
-                        FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id);
+                        FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id, photo.Titulo);
 
                     await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", UsuarioId, EsFoto);
                     if (EsVideo)
@@ -519,7 +521,8 @@ namespace api_promodel.Controllers.personas
             bool SinSoporte = true,
             bool Pdf = false,
             bool Landscape = true, 
-            string? FrameId = null 
+            string? FrameId = null, 
+            string? Titulo = null
             )
         {
 
@@ -541,7 +544,8 @@ namespace api_promodel.Controllers.personas
                 Pdf = Pdf,
                 Tipo = Tipo ,
                 Audio = EsAudio,
-                SinSoporteWeb = SinSoporte
+                SinSoporteWeb = SinSoporte,
+                Titulo = Titulo
             };
 
             el = await this.media.AddElemento(el, UsuarioId);

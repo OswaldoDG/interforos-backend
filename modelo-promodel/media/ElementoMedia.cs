@@ -114,5 +114,8 @@ namespace promodel.modelo.media
         [JsonProperty("fv")]
         public string ? FrameVideoId { get; set; }
 
+        [JsonProperty("tit")]
+        public string? Titulo { get; set; }
+
     }
 }

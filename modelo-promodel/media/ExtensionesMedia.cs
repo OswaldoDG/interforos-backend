@@ -36,7 +36,8 @@ namespace promodel.modelo.media
                 Principal = item.Principal,
                 FrameVideoId = item.FrameVideoId,
                 Pdf = item.Pdf,
-                Tipo = item.Tipo
+                Tipo = item.Tipo,
+                Titulo = item.Titulo
             };
         }
     }
