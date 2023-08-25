@@ -31,6 +31,7 @@ public static class ExtensionesCastingServicios
             Id = casting.Id,
             Nombre = casting.Nombre,
             NombreCliente = casting.NombreCliente,
+            Status= casting.Status,
             FechaApertura = casting.FechaApertura,
             FechaCierre = casting.FechaCierre,
             AceptaAutoInscripcion = casting.AceptaAutoInscripcion,
