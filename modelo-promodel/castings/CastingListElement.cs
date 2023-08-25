@@ -34,6 +34,11 @@ public class CastingListElement
     public DateTime? FechaCierre { get; set; }
 
     /// <summary>
+    /// Muestra el estado del casting.
+    /// </summary>
+    public EstadoCasting Status { get; set; } = EstadoCasting.EnEdicion;
+
+    /// <summary>
     /// DEtrmina si acepta inscripcion por los modelos
     /// </summary>
     public bool AceptaAutoInscripcion { get; set; } = false;

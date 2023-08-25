@@ -267,6 +267,9 @@ public class CastingService : ICastingService
             tmpCasting.Contactos = casting.Contactos;
             tmpCasting.Categorias=casting.Categorias;
             tmpCasting.Eventos = casting.Eventos;
+            tmpCasting.AperturaAutomatica = casting.AperturaAutomatica;
+            tmpCasting.CierreAutomatico = casting.CierreAutomatico;
+            tmpCasting.AperturaAutomatica = casting.AperturaAutomatica;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }
