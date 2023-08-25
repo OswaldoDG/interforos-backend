@@ -678,20 +678,19 @@ public class CastingService : ICastingService
                 var castingSelector = casting.aSelectorCasting();
 
 
-                casting.Contactos.ForEach(async c =>
+                foreach (var a in casting.Contactos)
                 {
-                    var user = await identidad.UsuarioPorId(c.UsuarioId);
+                    var user = await identidad.UsuarioPorId(a.UsuarioId);
                     if (user != null)
                     {
-                        castingSelector.Participantes.Add(
-                            new MapaUsuarioNombre()
-                            {
-                                Id = user.Id,
-                                Nombre = user.Email
-                            }
-                            );
+                        MapaUsuarioNombre m = new MapaUsuarioNombre()
+                        {
+                            Id = user.Id,
+                            Nombre = user.Email,
+                        };
+                        castingSelector.Participantes.Add(m);
                     }
-                });
+                }
                 return castingSelector;
             }
 
