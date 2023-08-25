@@ -15,4 +15,6 @@ public interface IServicioIdentidad
     Task<Usuario?> UsuarioPorId(string id);
     Task<Respuesta> RestablecerPassword(string UsuarioId,string ContrasenaNueva);
     Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaActual,string ContrasenaNueva);
+    Task<Respuesta> EstableceAvatarUsuario(string usuarioId, string avatarBase64);
+    Task<string?> ObieneAvatarUsuario(string usuarioId);
 }

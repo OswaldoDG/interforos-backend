@@ -93,6 +93,12 @@ namespace promodel.modelo
         [JsonProperty("zht")]
         public decimal? OffsetHorario { get; set; }
 
+        /// <summary>
+        /// Avatar del usuario en formato base 64, la imagen almacenad debe medir 150 X 150 PX
+        /// </summary>
+        [JsonProperty("avt")]
+        public string? Avatar { get; set; }
+
 
         /// <summary>
         /// Lista de clientes a los que el usuario se encuentra adherido

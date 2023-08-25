@@ -252,4 +252,36 @@ public partial class ServicioIdentidad: IServicioIdentidad
         }
 
     }
+
+    public async Task<Respuesta> EstableceAvatarUsuario(string usuarioId, string avatarBase64)
+    {
+        var r = new Respuesta();
+
+        var user = await UsuarioPorId(usuarioId);
+        if (user !=null)
+        {
+
+            user.Avatar = avatarBase64;
+
+            await ActualizaUsuario(user);
+            r.Ok = true;
+            return r;
+
+        }
+        r.Error = "Usuario no encontrado";
+        r.HttpCode= HttpCode.BadRequest;
+        return r;
+
+    }
+
+    public async Task<string?> ObieneAvatarUsuario(string usuarioId)
+    {     
+        var user = await UsuarioPorId(usuarioId);
+        if (user != null)
+        {
+            return user.Avatar;
+        }
+        return null;
+
+    }
 }
