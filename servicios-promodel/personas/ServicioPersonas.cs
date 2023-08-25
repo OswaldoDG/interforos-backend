@@ -375,7 +375,7 @@ namespace promodel.servicios
                         AvatarBase64 = null,
                         Alias = usuario.Email,
                         UsuarioId = usuario.Id,
-                        NombreCompleto = usuario.Email,
+                        NombreCompleto = usuario.NombreUsuario,
                         TienePerfil = false,
                         RequirePerfil = usuario.RolesCliente.Any(x => x.ClienteId == ClienteId && x.Rol == TipoRolCliente.Modelo),
                         Roles = usuario.RolesCliente.Where(x=>x.ClienteId == ClienteId).Select(r=>r.Rol).ToList()
