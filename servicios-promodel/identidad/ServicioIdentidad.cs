@@ -252,4 +252,40 @@ public partial class ServicioIdentidad: IServicioIdentidad
         }
 
     }
+
+    public async Task<Respuesta> EstablecePerfilPublico(PerfilPublicoUsuario perfilUsuario)
+    {
+        var r = new Respuesta();
+
+        var user = await UsuarioPorId(perfilUsuario.Id);
+        if (user != null)
+        {
+
+            user.Avatar = perfilUsuario.Avatar;
+            user.NombreUsuario = perfilUsuario.Nombre;
+            await ActualizaUsuario(user);
+            r.Ok = true;
+            return r;
+
+        }
+        r.Error = "Usuario no encontrado";
+        r.HttpCode = HttpCode.BadRequest;
+        return r;
+    }
+
+    public async Task<PerfilPublicoUsuario?> ObtienePerfilPublico(string usuarioId)
+    {
+        var user = await UsuarioPorId(usuarioId);
+        if (user != null)
+        {
+            var perfilPublico = new PerfilPublicoUsuario()
+            {
+                Id = user.Id,
+                Nombre = user.NombreUsuario,
+                Avatar = "data:image/jpeg;base64," + user.Avatar
+            };
+            return perfilPublico;
+        };
+        return null;
+    }
 }
