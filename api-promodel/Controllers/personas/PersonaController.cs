@@ -324,15 +324,15 @@ public class PersonaController : ControllerPublico
         return f.Id;
     }
 
-    [HttpPost("avatar", Name = "PostAvatarUsuarioId")]
+    [HttpPost("perfilpublico", Name = "PostPerfilPublicoUsuarioId")]
 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> PostAvatarUsuarioId([FromBody] string AvatarBasse64)
+    public async Task<ActionResult> PostPerfilPublicoUsuarioId([FromBody] PerfilPublicoUsuario perfilUsuario)
     {
         var defalut = 250;
-        var cadena = AvatarBasse64.Split(",");
+        var cadena = perfilUsuario.Avatar.Split(",");
         //Convirtiendo de base64 a Stream
         byte[] imgByte = Convert.FromBase64String(cadena[1]);
         var imgStream = new MemoryStream(imgByte, 0, imgByte.Length);
@@ -350,26 +350,27 @@ public class PersonaController : ControllerPublico
         img.Quality = 80;
         img.Format = MagickFormat.Jpg;
 
+        perfilUsuario.Avatar = img.ToBase64();
 
-        var r = await identidad.EstableceAvatarUsuario(this.UsuarioId, img.ToBase64()); 
+        var r = await identidad.EstablecePerfilPublico(perfilUsuario);
         if (r.Ok)
         { return Ok(); }
 
         return BadRequest();
-        
     }
 
-    [HttpGet("avatar/{UsuarioId}", Name = "GetAvatarUsuarioId")]
+    [HttpGet("perfilpublico/{UsuarioId}", Name = "GetPostPerfilPublicoUsuarioIdId")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<string>> GetAvatarUsuarioId([FromRoute] string UsuarioId)
+    public async Task<ActionResult<PerfilPublicoUsuario>> GetPostPerfilPublicoUsuarioIdId([FromRoute] string UsuarioId)
     {
-        // Implementar salvar al repositorio 
-        string avatarB64 = await identidad.ObieneAvatarUsuario(this.UsuarioId);
-        var result = "data:image/jpeg;base64," + avatarB64;
-        
-        return Ok(JsonConvert.SerializeObject(result));
+        var perfil = await identidad.ObtienePerfilPublico(UsuarioId);
+       if (perfil!=null)
+        {
+            return Ok(perfil);
+        }
+        return NotFound();
     }
 }

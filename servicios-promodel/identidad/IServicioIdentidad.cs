@@ -1,4 +1,5 @@
 ﻿using promodel.modelo;
+using promodel.modelo.perfil;
 
 namespace promodel.servicios;
 
@@ -10,11 +11,11 @@ public interface IServicioIdentidad
     Task<InvitacionRegistro?> RegistroPorId(string Id);
     Task EliminaRegistroPorId(string Id);
     Task Registro(RegistroUsuario r);
-    Task<RespuestaLogin?> Login(string usuario, string contrasena,string ClienteId);
+    Task<RespuestaLogin?> Login(string usuario, string contrasena, string ClienteId);
     Task<RespuestaLogin?> RefreshToken(string RefreshToken, string UsuarioId, string clienteId);
     Task<Usuario?> UsuarioPorId(string id);
-    Task<Respuesta> RestablecerPassword(string UsuarioId,string ContrasenaNueva);
-    Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaActual,string ContrasenaNueva);
-    Task<Respuesta> EstableceAvatarUsuario(string usuarioId, string avatarBase64);
-    Task<string?> ObieneAvatarUsuario(string usuarioId);
+    Task<Respuesta> RestablecerPassword(string UsuarioId, string ContrasenaNueva);
+    Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaActual, string ContrasenaNueva);
+    Task<Respuesta> EstablecePerfilPublico(PerfilPublicoUsuario perfilUsuario);
+    Task<PerfilPublicoUsuario?> ObtienePerfilPublico(string usuarioId);
 }
