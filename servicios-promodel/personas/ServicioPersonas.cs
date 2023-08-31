@@ -346,6 +346,34 @@ namespace promodel.servicios
             return r;
         }
 
+        public async Task<RespuestaPayload<Persona>> CrearPersonaNew(Persona persona)
+        {
+
+            foreach (string cliente in persona.Clientes)
+            {
+                await validaIds(persona, cliente);
+
+            }
+
+            persona.NombreBusqueda = NombreBusuqedaPersona(persona);
+
+            if (persona.PropiedadesFisicas != null)
+            {
+                persona.PropiedadesFisicas.IMC = IMC(persona);
+            }
+
+            RespuestaPayload<Persona> r = new();
+            persona.Consecutivo = this.SiguienteId();
+            if (persona.FechaNacimiento.HasValue)
+            {
+                persona.TicksFechaNacimiento = persona.FechaNacimiento.Value.Ticks;
+            }
+            persona.Id = Guid.NewGuid().ToString();
+            await db.Personas.AddAsync(persona);
+
+            r = r.OK(persona);
+            return r;
+        }
         public async Task<Respuesta> Elmiminar(string Id)
         {
             Respuesta r = new ();
@@ -370,7 +398,7 @@ namespace promodel.servicios
                 if(usuario.RolesCliente.Any(x=>x.ClienteId == ClienteId))
                 {
                     var u = await db.Personas.Where(x => x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
-                    InformacionPerfil info = info = new InformacionPerfil()
+                    InformacionPerfil info = new InformacionPerfil()
                     {
                         AvatarBase64 = null,
                         Alias = usuario.Email,

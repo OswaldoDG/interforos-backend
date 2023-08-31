@@ -13,6 +13,7 @@ public interface IServicioPersonas
     Task<RespuestaPayload<Persona>> PorUsuarioId(string Id);
     Task<InformacionPerfil?> PerfilCliente(string UsuarioId, string ClienteId);
     Task<RespuestaPayload<Persona>> Crear(Persona persona);
+    Task<RespuestaPayload<Persona>> CrearPersonaNew(Persona persona);
     Task<RespuestaPayload<Persona>> Actualizar(Persona persona);
     Task<RespuestaPayload<Persona>> PorId(string Id);
     Task<Respuesta> Elmiminar(string Id);

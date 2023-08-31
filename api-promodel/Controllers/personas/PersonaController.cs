@@ -6,13 +6,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios;
 using promodel.servicios.comunes;
 using promodel.servicios.perfil;
+using promodel.servicios.personas;
 using System.Net;
+using System.Net.WebSockets;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace api_promodel.Controllers;
@@ -28,15 +31,52 @@ public class PersonaController : ControllerPublico
     private readonly IAlmacenamiento almacenamiento;
     private readonly IServicioClientes DbClientes;
     private readonly IServicioIdentidad identidad;
+    private readonly IServicioPersonasUsuario personasUsuario;
 
     public PersonaController(IServicioPersonas personas, IServicioCatalogos catalogos, 
-        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad) : base(servicioClientes)
+        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad, IServicioPersonasUsuario personasUsuario) : base(servicioClientes)
     {
         this.personas = personas; 
         this.catalogos = catalogos;
         this.almacenamiento = almacenamiento;
         this.DbClientes = servicioClientes;
         this.identidad = identidad;
+        this.personasUsuario = personasUsuario;
+    }
+    [HttpGet("NewPerfil", Name = "NewPerfile")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<Persona>> NewMiPerfil()
+    {       
+           
+        Persona persona = new Persona();
+        persona.UsuarioId = this.UsuarioId;
+        if (persona.Clientes == null || persona.Clientes.Count == 0)
+        {
+            persona.Clientes = new List<string>() { this.ClienteId };
+        }
+        else
+        {
+            if (!persona.Clientes.Any(x => x == ClienteId))
+            {
+                persona.Clientes.Add(ClienteId);
+            }
+        }
+
+        var folderId = await CreaFolderAlmacenamiento(persona);
+        persona.FolderContenidoId = folderId;
+
+        var r = await personas.CrearPersonaNew(persona);
+        if (r.Ok)
+                {
+                    return Ok(r.Payload);
+                }
+                else
+                {
+                    return ActionFromCode(r.HttpCode, r.Error);
+                }
+       
     }
 
     [HttpGet("mi",Name = "MiPerfile")]
@@ -373,4 +413,59 @@ public class PersonaController : ControllerPublico
         }
         return NotFound();
     }
+
+
+    [HttpPost("porusuario/{personaid}", Name = "CreaPersonaPorUsuario")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PersonasUsuario>> CreaPersonaPorUsuario([FromRoute ] string personaid)
+    {
+        var p = await identidad.UsuarioPorId(UsuarioId);
+        if (p != null && p.RolesCliente.Any(_ => _.ClienteId == this.ClienteId))
+        {
+            var r = await personasUsuario.AdicionaPersona(personaid,this.ClienteId,this.UsuarioId,null);
+        if (r.Ok)
+        {
+            return Ok(r.Payload);
+        }
+        return BadRequest(r.HttpCode + r.Error);
+        }
+
+        return StatusCode(403, "Acceso denegado");
+     
+    }
+
+    [HttpDelete("porusuario/{personaid}", Name = "EliminaPersonaPorUsuario")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> EliminaPersonaPorUsuario([FromRoute] string personaid)
+    {
+        var  p= await identidad.UsuarioPorId(UsuarioId);
+       if (p!=null && p.RolesCliente.Any(_=>_.ClienteId==this.ClienteId))
+        {
+            var r = await personasUsuario.RemuevePersona(personaid, this.ClienteId, this.UsuarioId, null);
+            if (r.Ok)
+            {
+                return Ok(r);
+            }
+            return BadRequest(r.HttpCode + r.Error);
+        }
+
+       return StatusCode(403, "Acceso denegado");
+
+    }
+
+    [HttpGet("porusuario", Name = "ObtienePersonasPorUsuario")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<string>>> ObtienePersonasPorUsuario()
+    {
+        var r = await personasUsuario.ObtienePersonasRegistradas(this.ClienteId, this.UsuarioId, null);
+       
+         return Ok(r.Payload);
+    }
+
 }

@@ -11,6 +11,7 @@ using promodel.servicios.almacenamiento;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.media;
 using promodel.servicios.perfil;
+using promodel.servicios.personas;
 using promodel.servicios.proyectos;
 using promodel.servicios.SolicitudServicio;
 using promodel.servicios.SolicitudSoporte;
@@ -84,6 +85,12 @@ builder.Services.AddCouchContext<PersonasCouchDbContext>(builder => builder
     .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
     password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
 
+builder.Services.AddCouchContext<PersonasUsuarioCouchDbContext>(builder => builder
+    .EnsureDatabaseExists()
+    .UseEndpoint(configuration.GetValue<string>("promodeldrivers:couchdb:endpoint"))
+    .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
+    password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
+
 builder.Services.AddCouchContext<CatalogosCouchDbContext>(builder => builder
     .EnsureDatabaseExists()
     .UseEndpoint(configuration.GetValue<string>("promodeldrivers:couchdb:endpoint"))
@@ -116,6 +123,7 @@ builder.Services.AddTransient<ICastingService, CastingService>();
 builder.Services.AddTransient<IServicioClientes, ServicioClientes>();
 builder.Services.AddTransient<IServicioIdentidad, ServicioIdentidad>();
 builder.Services.AddTransient<IServicioPersonas, ServicioPersonas>();
+builder.Services.AddTransient<IServicioPersonasUsuario, ServicioPersonasUsuario>();
 builder.Services.AddTransient<IServicioCatalogos, ServicioCatalogos>();
 builder.Services.AddTransient<IServicioSolicitudSoporteUsuario, ServicioSolicitudSoporteUsuario>();
 builder.Services.AddTransient<IServicioEmail, ServicioEmailSendGrid>();

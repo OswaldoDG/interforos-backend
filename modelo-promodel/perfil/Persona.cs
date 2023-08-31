@@ -53,14 +53,14 @@ namespace promodel.modelo.perfil
         /// Nombre de la persona
         /// </summary>
         [JsonProperty("n")]
-        [Required]
+        
         public string Nombre { get; set; }
 
         /// <summary>
         /// Nombre artístico de la persona
         /// </summary>
         [JsonProperty("na")]
-        [Required]
+       
         public string NombreArtistico { get; set; }
 
 

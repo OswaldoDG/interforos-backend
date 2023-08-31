@@ -22,7 +22,7 @@ namespace promodel.servicios.personas
 
         }
 
-        public CouchDatabase<Persona> Personas { get; set; }
+        public CouchDatabase<PersonasUsuario> Personas { get; set; }
 
 
         protected override void OnDatabaseCreating(CouchDatabaseBuilder databaseBuilder)
