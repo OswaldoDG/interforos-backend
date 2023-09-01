@@ -856,6 +856,42 @@ public class CastingService : ICastingService
         r.Ok = true;
         return r;
     }
+
+
+
+    public async Task<Respuesta> EstablecerEstadoCasting(string usuarioId, string castingId, string clienteId, EstadoCasting estado)
+    {
+        //  Creacion de un o tipo Respuesta
+        var r = new Respuesta();
+        var casting = await ObtieneCasting(clienteId, castingId, usuarioId);
+        //verifica que el parametro castingId de este metodo exixta en alguno de los castings
+        if (casting != null)
+        {
+            //verifica que el usurioId de es  dentro de los contactos busca todo los contactos que esten agregados los busca por su id de usuario y verifica que esos 
+            //usuarios tengan un rango de estaff o administrador
+            var BusquedaIdUsuarioEnContactosCasting = casting.Contactos.FirstOrDefault(x => x.UsuarioId == usuarioId && (x.Rol == TipoRolCliente.Staff || x.Rol == TipoRolCliente.Administrador));
+            if (BusquedaIdUsuarioEnContactosCasting != null)
+            {
+                casting.Status = estado;
+                await db.Castings.AddOrUpdateAsync(casting);
+                r.Ok = true;
+                return r;
+            }
+            else
+            {
+                r.HttpCode = HttpCode.Forbidden;
+            }
+        }
+        else
+        {
+            r.HttpCode = HttpCode.Forbidden;
+        }
+        return r;
+    }
+
+
+
+
     #endregion
     #region Acceso
     #endregion

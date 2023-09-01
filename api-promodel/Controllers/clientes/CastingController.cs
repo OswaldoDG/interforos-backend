@@ -551,5 +551,27 @@ public class CastingController : ControllerUsoInterno
             return NotFound();
         }
     }
+
+
+    [HttpPut("estadocasting/{castingId}/{estado}")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> EstadoCasting([FromRoute] string castingId, [FromRoute] EstadoCasting estado)
+    {
+        var result = await castingService.EstablecerEstadoCasting(this.UsuarioId, castingId, this.ClienteId, estado);
+        if (result.Ok)
+        {
+            return Ok();
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, null);
+        }
+    }
+
+
+
+
 }
 
