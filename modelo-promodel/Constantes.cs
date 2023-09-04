@@ -11,7 +11,7 @@ namespace promodel.modelo
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TipoRolCliente
     {
-        Administrador = 0, Staff = 1, Modelo=2, RevisorExterno=3, Ninguno = -1
+        Administrador = 0, Staff = 1, Modelo=2, RevisorExterno=3, Agencia = 4, Ninguno = -1
     }
 
 

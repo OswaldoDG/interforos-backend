@@ -112,6 +112,9 @@ namespace promodel.modelo
         public List<RolCliente> RolesCliente { get; set; }
 
 
-
+        /// <summary>
+        /// Identificador de la agencia a la que pertenece el usuario
+        /// </summary>
+        public string? AgenciaId { get; set; }
     }
 }

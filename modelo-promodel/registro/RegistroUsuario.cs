@@ -28,5 +28,10 @@ namespace promodel.modelo
         /// Se llena cuando la invitación se origina en un casting
         /// </summary>
         public string? CastingId { get; set; }
+
+        /// <summary>
+        /// Identificador de la agencia a la que pertenece el usuario
+        /// </summary>
+        public string? AgenciaId { get; set; }
     }
 }
