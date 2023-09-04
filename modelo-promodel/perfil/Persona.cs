@@ -188,6 +188,19 @@ namespace promodel.modelo.perfil
         [JsonProperty("act")]
         public List<string> ActividadesIds { get; set; }
 
+        /// <summary>
+        /// Identificador del suaurio que registró al modelo
+        /// </summary>
+        [JsonProperty("ureg")]
+        public string? UsuarioRegistroId { get; set; }
+
+
+        /// <summary>
+        /// FEcha de registro del usaurio convertido a ticks
+        /// </summary>
+        [JsonProperty("freg")]
+        public long? FechaRegistro { get; set; }
+
 
         /// <summary>
         /// Detalle de las propiedades físicas del usuario
