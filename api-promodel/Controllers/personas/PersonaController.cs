@@ -67,7 +67,7 @@ public class PersonaController : ControllerPublico
         var folderId = await CreaFolderAlmacenamiento(persona);
         persona.FolderContenidoId = folderId;
 
-        var r = await personas.CrearPersonaNew(persona);
+        var r = await personas.CrearPersonaNew(persona,this.UsuarioId);
         if (r.Ok)
                 {
                     return Ok(r.Payload);

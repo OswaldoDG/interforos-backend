@@ -346,7 +346,7 @@ namespace promodel.servicios
             return r;
         }
 
-        public async Task<RespuestaPayload<Persona>> CrearPersonaNew(Persona persona)
+        public async Task<RespuestaPayload<Persona>> CrearPersonaNew(Persona persona,string UsuarioId)
         {
 
             foreach (string cliente in persona.Clientes)
@@ -369,6 +369,8 @@ namespace promodel.servicios
                 persona.TicksFechaNacimiento = persona.FechaNacimiento.Value.Ticks;
             }
             persona.Id = Guid.NewGuid().ToString();
+            persona.UsuarioRegistroId = UsuarioId;
+            persona.FechaRegistro = DateTime.UtcNow.Ticks;
             await db.Personas.AddAsync(persona);
 
             r = r.OK(persona);
