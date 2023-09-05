@@ -1,9 +1,14 @@
-﻿using Bogus;
+﻿using Amazon.Auth.AccessControlPolicy;
+using Bogus;
 using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Query.Extensions;
+using CouchDB.Driver.Views;
+using MailKit.Search;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
@@ -524,6 +529,34 @@ namespace promodel.servicios
                     expressions.Add(ex);
                 }
 
+
+                Expression<Func<Persona, object>> ordenar = null;
+                string[] orden = null;
+                if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
+                {
+
+                    switch (busqueda.OrdenarPor)
+                    {
+                        case "consecutivo":
+                            ordenar = OrdenarPorConsecutivo();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };
+                            break;
+                        case "NombreArtistico":
+                            ordenar = OrdenarPorNombreArtistico();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBREARTISTICO};
+                            break;
+                        case "edad":
+                            ordenar =OrdenarPorEdad();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_EDAD };
+                            break;
+                        default:
+                            ordenar = OrdenarPorNombre();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBRE };
+                            break;
+                    }
+                }
+             
+
                 int total = 0;
                 List<Persona> personas = new List<Persona>();
                 if (expressions.Count > 0)
@@ -535,14 +568,34 @@ namespace promodel.servicios
                         expresion = expresion.And(expressions[i]);
                     }
 
-                    if (busqueda.Contar) {
-                        var todos = db.Personas.Where(expresion).ToList();
-                        total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina -1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                    } else
+                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
                     {
-                        personas = db.Personas.Where(expresion).Skip((busqueda.Pagina -1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        if (busqueda.Contar)
+                        {
+                            var todos = db.Personas.Where(expresion).UseIndex(orden).ToList();
+                            total = todos.Count();
+                            personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        }
+                        else
+                        {
+                            personas = db.Personas.Where(expresion).UseIndex(orden).Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        }
+
                     }
+                    else
+                    {
+                        if (busqueda.Contar)
+                        {
+                            var todos = db.Personas.Where(expresion).OrderByDescending(ordenar).ToList();
+                            total = todos.Count();
+                            personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        }
+                        else
+                        {
+                            personas = db.Personas.Where(expresion).OrderByDescending(ordenar).Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        }
+                    }
+                        
 
                    
                 }
@@ -571,9 +624,8 @@ namespace promodel.servicios
                 }
 #endif
 
-
                 return new ResponsePaginado<Persona>() { 
-                    Elementos = personas, 
+                    Elementos = personas,
                     Pagina = busqueda.Pagina, 
                     Tamano = busqueda.Tamano, 
                     Total = total };
@@ -584,8 +636,23 @@ namespace promodel.servicios
                 Console.WriteLine(ex);
                 throw;
             }
-       
-        
+        }
+
+        private Expression<Func<Persona, object>> OrdenarPorNombre()
+        {
+            return p => p.Nombre;
+        }
+        private Expression<Func<Persona, object>> OrdenarPorNombreArtistico()
+        {
+            return p => p.NombreArtistico;
+        }
+        private Expression<Func<Persona, object>> OrdenarPorConsecutivo()
+        {
+            return p => p.Consecutivo;
+        }
+        private Expression<Func<Persona, object>> OrdenarPorEdad()
+        {
+            return p => p.Edad;
         }
 
         public async Task<ResponsePaginado<Persona>> BuscarPersonasId( RequestPaginado<BusquedaPersonasId> busqueda)
