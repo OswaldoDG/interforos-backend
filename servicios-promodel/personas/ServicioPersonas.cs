@@ -18,7 +18,7 @@ using promodel.servicios.comunes;
 using promodel.servicios.perfil;
 using promodel.servicios.personas;
 using System.Linq.Expressions;
-
+using System.Reflection.PortableExecutable;
 
 namespace promodel.servicios
 {
@@ -570,59 +570,19 @@ namespace promodel.servicios
 
                     if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
                     {
-                        if (busqueda.Contar)
-                        {
-                            var todos = db.Personas.Where(expresion).UseIndex(orden).ToList();
-                            total = todos.Count();
-                            personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                        }
-                        else
-                        {
-                            personas = db.Personas.Where(expresion).UseIndex(orden).Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                        }
-
+                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderBy(ordenar).ToList();
+                        total = todos.Count();
+                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
                     }
                     else
                     {
-                        if (busqueda.Contar)
-                        {
-                            var todos = db.Personas.Where(expresion).OrderByDescending(ordenar).ToList();
-                            total = todos.Count();
-                            personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                        }
-                        else
-                        {
-                            personas = db.Personas.Where(expresion).OrderByDescending(ordenar).Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                        }
-                    }
-                        
+                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderByDescending(ordenar).ToList();
+                        total = todos.Count();
+                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
 
-                   
-                }
-
-
-#if DEBUG
-
-                var fcontacto = new Faker<Contacto>()
-         .RuleFor(o => o.AccesoDireccion, f => new AccesoInformacion() {  Amigos = true, Profesionales =true})
-         .RuleFor(o => o.AccesoEmail, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoRedes, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoTelefono, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.Direccion, f=>f.Address.StreetAddress())
-         .RuleFor(o => o.Email, f => f.Person.Email)
-         .RuleFor(o => o.Telefono, f => f.Person.Phone)
-         .RuleFor(o => o.Twitter, f => f.Person.UserName)
-         .RuleFor(o => o.FaceBook, f => f.Person.Website);
-
-
-                foreach (var p in personas)
-                {
-                    if(p.Contacto == null)
-                    {
-                        p.Contacto = fcontacto.Generate();
                     }
                 }
-#endif
+
 
                 return new ResponsePaginado<Persona>() { 
                     Elementos = personas,
