@@ -17,6 +17,10 @@ namespace promodel.modelo.perfil
         /// Nombre del usuario para ser identificado por otros usuarios
         /// </summary>
         public string Nombre { get; set; }
+        /// <summary>
+        /// Id de la agencia con la queesta relacionadoel usuario
+        /// </summary>
+        public string? AgenciaId { get; set; }
 
         /// <summary>
         /// Avatar del usuario en base 64 

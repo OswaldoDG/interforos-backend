@@ -282,6 +282,7 @@ public partial class ServicioIdentidad: IServicioIdentidad
             {
                 Id = user.Id,
                 Nombre = user.NombreUsuario,
+                AgenciaId= user.AgenciaId,
                 Avatar = "data:image/jpeg;base64," + user.Avatar
             };
             return perfilPublico;
