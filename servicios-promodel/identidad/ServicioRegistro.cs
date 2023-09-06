@@ -70,6 +70,9 @@ namespace promodel.servicios
                 case TipoRolCliente.RevisorExterno:
                     return "Revisor del casting";
 
+                case TipoRolCliente.Agencia:
+                    return "Agencia";
+
                 default:
                     return "";
             }
