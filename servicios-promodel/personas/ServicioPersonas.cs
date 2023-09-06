@@ -17,6 +17,7 @@ using promodel.modelo.proyectos;
 using promodel.servicios.comunes;
 using promodel.servicios.perfil;
 using promodel.servicios.personas;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 
@@ -530,16 +531,16 @@ namespace promodel.servicios
                 }
 
 
-                Expression<Func<Persona, object>> ordenar = null;
+                Func<Persona, object> ordenar = null;
                 string[] orden = null;
-                if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
+                if (busqueda.OrdernarASC != null)
                 {
 
                     switch (busqueda.OrdenarPor)
                     {
                         case "consecutivo":
-                            ordenar = OrdenarPorConsecutivo();
-                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };
+                            ordenar = OrdenarPorConsecutivo();                           
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };                        
                             break;
                         case "NombreArtistico":
                             ordenar = OrdenarPorNombreArtistico();
@@ -568,7 +569,7 @@ namespace promodel.servicios
                         expresion = expresion.And(expressions[i]);
                     }
 
-                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
+                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC ==true)
                     {
                         var todos = db.Personas.Where(expresion).UseIndex(orden).OrderBy(ordenar).ToList();
                         total = todos.Count();
@@ -598,19 +599,19 @@ namespace promodel.servicios
             }
         }
 
-        private Expression<Func<Persona, object>> OrdenarPorNombre()
+        private Func<Persona, object> OrdenarPorNombre()
         {
             return p => p.Nombre;
         }
-        private Expression<Func<Persona, object>> OrdenarPorNombreArtistico()
+        private Func<Persona, object> OrdenarPorNombreArtistico()
         {
             return p => p.NombreArtistico;
         }
-        private Expression<Func<Persona, object>> OrdenarPorConsecutivo()
+        private Func<Persona, object> OrdenarPorConsecutivo()
         {
             return p => p.Consecutivo;
         }
-        private Expression<Func<Persona, object>> OrdenarPorEdad()
+        private Func<Persona, object> OrdenarPorEdad()
         {
             return p => p.Edad;
         }
@@ -618,29 +619,51 @@ namespace promodel.servicios
         public async Task<ResponsePaginado<Persona>> BuscarPersonasId( RequestPaginado<BusquedaPersonasId> busqueda)
         {
             try
-            {     
+            {
+                Func<Persona, object> ordenar = null;
+                string[] orden = null;
+                if (busqueda.OrdernarASC != null)
+                {
+
+                    switch (busqueda.OrdenarPor)
+                    {
+                        case "consecutivo":
+                            ordenar = OrdenarPorConsecutivo();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };
+                            break;
+                        case "NombreArtistico":
+                            ordenar = OrdenarPorNombreArtistico();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBREARTISTICO };
+                            break;
+                        case "edad":
+                            ordenar = OrdenarPorEdad();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_EDAD };
+                            break;
+                        default:
+                            ordenar = OrdenarPorNombre();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBRE };
+                            break;
+                    }
+                }
+
+
                 int total = 0;
                 List<Persona> personas = new List<Persona>();
                 List<Persona> todos = new List<Persona>();
                 if (busqueda.Request.Ids.Count > 0)
                 {
-                    foreach (var id in busqueda.Request.Ids)
+                    todos = await db.Personas.FindManyAsync(busqueda.Request.Ids);
+                    if (busqueda.OrdernarASC==true)
                     {
-                        var p = db.Personas.FirstOrDefault(_ => _.Id == id);
-                        if (p!=null)
-                        {
-                            todos.Add(p);
-                        }
-                    }    
-                    if (busqueda.Contar)
-                    {
-                        total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                       todos= todos.OrderBy(ordenar).ToList();
                     }
                     else
                     {
-                        personas = todos;
+                        todos = todos.OrderByDescending(ordenar).ToList();
                     }
+                    total = todos.Count();
+                    personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                  
                 }
 #if DEBUG
 
