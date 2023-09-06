@@ -39,6 +39,7 @@ namespace promodel.modelo
                     HashContrasena = null,
                     Id = Guid.NewGuid().ToString(),
                     NombreAcceso = r.Registro.Email.ToLower(),
+                    AgenciaId = r.Registro.AgenciaId
                 };
 
                 return u;
