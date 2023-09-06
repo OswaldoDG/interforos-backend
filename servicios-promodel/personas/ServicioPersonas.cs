@@ -665,28 +665,6 @@ namespace promodel.servicios
                     personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
                   
                 }
-#if DEBUG
-
-                var fcontacto = new Faker<Contacto>()
-         .RuleFor(o => o.AccesoDireccion, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoEmail, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoRedes, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoTelefono, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.Direccion, f => f.Address.StreetAddress())
-         .RuleFor(o => o.Email, f => f.Person.Email)
-         .RuleFor(o => o.Telefono, f => f.Person.Phone)
-         .RuleFor(o => o.Twitter, f => f.Person.UserName)
-         .RuleFor(o => o.FaceBook, f => f.Person.Website);
-
-
-                foreach (var p in personas)
-                {
-                    if (p.Contacto == null)
-                    {
-                        p.Contacto = fcontacto.Generate();
-                    }
-                }
-#endif
 
                 return new ResponsePaginado<Persona>()
                 {
