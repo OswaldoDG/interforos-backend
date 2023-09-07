@@ -58,5 +58,11 @@ namespace promodel.modelo.clientes
         [JsonProperty("docs")]
         public List<DocumentoModelo> Documentacion { get; set; }
 
+        /// <summary>
+        /// Lista de consentimiantos del cliente
+        /// </summary>
+        [JsonProperty("cns")]
+        public List<Consentimiento> Consentimientos { get;}
+
     }
 }

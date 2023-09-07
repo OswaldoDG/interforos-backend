@@ -1,5 +1,7 @@
 ﻿using CouchDB.Driver.Types;
 using Newtonsoft.Json;
+using promodel.modelo.clientes;
+using System.Security.Principal;
 
 namespace promodel.modelo.perfil
 {
@@ -40,5 +42,10 @@ namespace promodel.modelo.perfil
         /// Roles del usuario en el cliente
         /// </summary>
         public List<TipoRolCliente> Roles { get; set; }
+
+        /// <summary>
+        /// LIsta de los consentimientos aceptados por el usuario
+        /// </summary>
+        public List<AceptacionConsentimiento> CosentimientosAceptados { get; set; }
     }
 }

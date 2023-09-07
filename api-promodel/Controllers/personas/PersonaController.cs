@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.castings;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios;
@@ -468,4 +469,15 @@ public class PersonaController : ControllerPublico
          return Ok(r.Payload);
     }
 
+
+    [HttpPost("consentimiento/{consentimientoId}", Name = "AceptarConsentimiento")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AceptacionConsentimiento>> AceptarConsentimiento([FromRoute] string consentimientoId)
+    {
+
+
+        return Ok();
+    }
 }

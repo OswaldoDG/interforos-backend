@@ -15,5 +15,10 @@
         public Contacto Contacto { get; set; }
 
         public List<DocumentoModelo> Documentacion { get; set; }
+
+        /// <summary>
+        /// Consentimientos del cliente
+        /// </summary>
+        public List<Consentimiento> Consentimientos { get; set; }
     }
 }

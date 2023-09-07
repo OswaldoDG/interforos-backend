@@ -1,6 +1,7 @@
 ﻿using CouchDB.Driver.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using promodel.modelo.clientes;
 using promodel.modelo.registro;
 
 namespace promodel.modelo
@@ -116,5 +117,11 @@ namespace promodel.modelo
         /// Identificador de la agencia a la que pertenece el usuario
         /// </summary>
         public string? AgenciaId { get; set; }
+
+        /// <summary>
+        /// Consentimientos aceptados por el usuario
+        /// </summary>
+        [JsonProperty("acns")]
+        public List<AceptacionConsentimiento> AceptacionConsentimientos { get; set; }
     }
 }
