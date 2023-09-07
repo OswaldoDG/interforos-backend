@@ -29,7 +29,9 @@ namespace promodel.servicios.identidad
                     return _configuration.GetValue<string>("emailing:tema-email-registro");
                    
                 case TipoRolCliente.RevisorExterno:
-                    return _configuration.GetValue<string>("emailing:tema-email-registro-revisor");                  
+                    return _configuration.GetValue<string>("emailing:tema-email-registro-revisor");
+                case TipoRolCliente.Agencia:
+                    return _configuration.GetValue<string>("emailing:tema-email-registro");
 
                 default:
                     return null;
@@ -65,6 +67,9 @@ namespace promodel.servicios.identidad
                     break;
                 case TipoRolCliente.RevisorExterno:
                     plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro-revisor");
+                    break;
+                case TipoRolCliente.Agencia:
+                    plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro");
                     break;
 
             }

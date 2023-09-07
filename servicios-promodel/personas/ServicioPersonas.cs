@@ -1,9 +1,14 @@
-﻿using Bogus;
+﻿using Amazon.Auth.AccessControlPolicy;
+using Bogus;
 using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Query.Extensions;
+using CouchDB.Driver.Views;
+using MailKit.Search;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
@@ -12,8 +17,9 @@ using promodel.modelo.proyectos;
 using promodel.servicios.comunes;
 using promodel.servicios.perfil;
 using promodel.servicios.personas;
+using System.Linq;
 using System.Linq.Expressions;
-
+using System.Reflection.PortableExecutable;
 
 namespace promodel.servicios
 {
@@ -526,6 +532,34 @@ namespace promodel.servicios
                     expressions.Add(ex);
                 }
 
+
+                Func<Persona, object> ordenar = null;
+                string[] orden = null;
+                if (busqueda.OrdernarASC != null)
+                {
+
+                    switch (busqueda.OrdenarPor)
+                    {
+                        case "consecutivo":
+                            ordenar = OrdenarPorConsecutivo();                           
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };                        
+                            break;
+                        case "NombreArtistico":
+                            ordenar = OrdenarPorNombreArtistico();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBREARTISTICO};
+                            break;
+                        case "edad":
+                            ordenar =OrdenarPorEdad();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_EDAD };
+                            break;
+                        default:
+                            ordenar = OrdenarPorNombre();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBRE };
+                            break;
+                    }
+                }
+             
+
                 int total = 0;
                 List<Persona> personas = new List<Persona>();
                 if (expressions.Count > 0)
@@ -537,45 +571,24 @@ namespace promodel.servicios
                         expresion = expresion.And(expressions[i]);
                     }
 
-                    if (busqueda.Contar) {
-                        var todos = db.Personas.Where(expresion).ToList();
+                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC ==true)
+                    {
+                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderBy(ordenar).ToList();
                         total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina -1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
-                    } else
-                    {
-                        personas = db.Personas.Where(expresion).Skip((busqueda.Pagina -1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
                     }
-
-                   
-                }
-
-
-#if DEBUG
-
-                var fcontacto = new Faker<Contacto>()
-         .RuleFor(o => o.AccesoDireccion, f => new AccesoInformacion() {  Amigos = true, Profesionales =true})
-         .RuleFor(o => o.AccesoEmail, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoRedes, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoTelefono, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.Direccion, f=>f.Address.StreetAddress())
-         .RuleFor(o => o.Email, f => f.Person.Email)
-         .RuleFor(o => o.Telefono, f => f.Person.Phone)
-         .RuleFor(o => o.Twitter, f => f.Person.UserName)
-         .RuleFor(o => o.FaceBook, f => f.Person.Website);
-
-
-                foreach (var p in personas)
-                {
-                    if(p.Contacto == null)
+                    else
                     {
-                        p.Contacto = fcontacto.Generate();
+                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderByDescending(ordenar).ToList();
+                        total = todos.Count();
+                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+
                     }
                 }
-#endif
 
 
                 return new ResponsePaginado<Persona>() { 
-                    Elementos = personas, 
+                    Elementos = personas,
                     Pagina = busqueda.Pagina, 
                     Tamano = busqueda.Tamano, 
                     Total = total };
@@ -586,59 +599,74 @@ namespace promodel.servicios
                 Console.WriteLine(ex);
                 throw;
             }
-       
-        
+        }
+
+        private Func<Persona, object> OrdenarPorNombre()
+        {
+            return p => p.Nombre;
+        }
+        private Func<Persona, object> OrdenarPorNombreArtistico()
+        {
+            return p => p.NombreArtistico;
+        }
+        private Func<Persona, object> OrdenarPorConsecutivo()
+        {
+            return p => p.Consecutivo;
+        }
+        private Func<Persona, object> OrdenarPorEdad()
+        {
+            return p => p.Edad;
         }
 
         public async Task<ResponsePaginado<Persona>> BuscarPersonasId( RequestPaginado<BusquedaPersonasId> busqueda)
         {
             try
-            {     
+            {
+                Func<Persona, object> ordenar = null;
+                string[] orden = null;
+                if (busqueda.OrdernarASC != null)
+                {
+
+                    switch (busqueda.OrdenarPor)
+                    {
+                        case "consecutivo":
+                            ordenar = OrdenarPorConsecutivo();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };
+                            break;
+                        case "NombreArtistico":
+                            ordenar = OrdenarPorNombreArtistico();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBREARTISTICO };
+                            break;
+                        case "edad":
+                            ordenar = OrdenarPorEdad();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_EDAD };
+                            break;
+                        default:
+                            ordenar = OrdenarPorNombre();
+                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBRE };
+                            break;
+                    }
+                }
+
+
                 int total = 0;
                 List<Persona> personas = new List<Persona>();
                 List<Persona> todos = new List<Persona>();
                 if (busqueda.Request.Ids.Count > 0)
                 {
-                    foreach (var id in busqueda.Request.Ids)
+                    todos = await db.Personas.FindManyAsync(busqueda.Request.Ids);
+                    if (busqueda.OrdernarASC==true)
                     {
-                        var p = db.Personas.FirstOrDefault(_ => _.Id == id);
-                        if (p!=null)
-                        {
-                            todos.Add(p);
-                        }
-                    }    
-                    if (busqueda.Contar)
-                    {
-                        total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                       todos= todos.OrderBy(ordenar).ToList();
                     }
                     else
                     {
-                        personas = todos;
+                        todos = todos.OrderByDescending(ordenar).ToList();
                     }
+                    total = todos.Count();
+                    personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                  
                 }
-#if DEBUG
-
-                var fcontacto = new Faker<Contacto>()
-         .RuleFor(o => o.AccesoDireccion, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoEmail, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoRedes, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.AccesoTelefono, f => new AccesoInformacion() { Amigos = true, Profesionales = true })
-         .RuleFor(o => o.Direccion, f => f.Address.StreetAddress())
-         .RuleFor(o => o.Email, f => f.Person.Email)
-         .RuleFor(o => o.Telefono, f => f.Person.Phone)
-         .RuleFor(o => o.Twitter, f => f.Person.UserName)
-         .RuleFor(o => o.FaceBook, f => f.Person.Website);
-
-
-                foreach (var p in personas)
-                {
-                    if (p.Contacto == null)
-                    {
-                        p.Contacto = fcontacto.Generate();
-                    }
-                }
-#endif
 
                 return new ResponsePaginado<Persona>()
                 {
