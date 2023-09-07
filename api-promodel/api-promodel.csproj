@@ -19,6 +19,7 @@
     <None Remove="archivos\demo\fotos\008.jpg" />
     <None Remove="archivos\demo\fotos\009.jpg" />
     <None Remove="archivos\demo\fotos\010.jpg" />
+    <None Remove="archivos\plantillas\email\registro - Copia.html" />
     <None Remove="archivos\plantillas\email\registro-revisor.html" />
     <None Remove="archivos\plantillas\email\registro-staff.html" />
     <None Remove="archivos\plantillas\email\registro.html" />
