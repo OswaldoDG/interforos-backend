@@ -46,6 +46,8 @@ namespace promodel.servicios
                 Remitente = inv.Registro.Nombre,
                 Rol = RolComoTexto(inv.Registro.Rol),
                 Logo64 = c.WebLogoBase64,
+                Mensaje = inv.Registro.Mensaje,
+                MensajeDe = inv.Registro.MensajeDe
             };
 
             MensajeEmail m = new()

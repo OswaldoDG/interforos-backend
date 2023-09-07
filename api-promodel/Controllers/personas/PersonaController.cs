@@ -136,7 +136,7 @@ public class PersonaController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<Persona>> PurUsuarioId(string usuarioid)
-    {
+   {
         var r = await personas.PorUsuarioId(usuarioid);
         if (r.Ok)
         {

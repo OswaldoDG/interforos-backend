@@ -57,13 +57,22 @@ namespace promodel.servicios.identidad
         public static string LeePlantillaRegistro(this IConfiguration _configuration, IWebHostEnvironment _environment, InvitacionRegistro inv)
         {
             string plantilla="";
+
             switch (inv.Registro.Rol)
             {
                 case TipoRolCliente.Staff:
                     plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro-staff");
                     break;
                 case TipoRolCliente.Modelo:
-                    plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro");
+
+                    if (!string.IsNullOrEmpty(inv.Registro.Mensaje))
+                    {
+                        plantilla = _configuration.GetValue<string>("emailing:plantilla-email-invitacion-modelo");
+                    }
+                    else
+                    {
+                        plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro");
+                    }
                     break;
                 case TipoRolCliente.RevisorExterno:
                     plantilla = _configuration.GetValue<string>("emailing:plantilla-email-registro-revisor");

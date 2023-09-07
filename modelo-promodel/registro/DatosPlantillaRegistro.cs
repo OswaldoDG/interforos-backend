@@ -15,7 +15,9 @@ namespace promodel.modelo.registro
         public string FechaLimite { get; set; }
         public string Remitente { get; set; }
         public string Rol { get; set; }
-        public string Logo64 { get; set; } 
+        public string Logo64 { get; set; }
+        public string? Mensaje { get; set; }
+        public string? MensajeDe { get; set; }
 
     }
 }

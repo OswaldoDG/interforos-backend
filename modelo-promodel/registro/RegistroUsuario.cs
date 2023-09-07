@@ -33,5 +33,8 @@ namespace promodel.modelo
         /// Identificador de la agencia a la que pertenece el usuario
         /// </summary>
         public string? AgenciaId { get; set; }
+
+        public string? Mensaje { get; set; }
+        public string? MensajeDe { get; set; }
     }
 }
