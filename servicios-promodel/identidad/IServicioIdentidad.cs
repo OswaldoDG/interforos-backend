@@ -1,4 +1,5 @@
 ﻿using promodel.modelo;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 
 namespace promodel.servicios;
@@ -18,4 +19,5 @@ public interface IServicioIdentidad
     Task<Respuesta> CambiarPassword(string UsuarioId, string ContrasenaActual, string ContrasenaNueva);
     Task<Respuesta> EstablecePerfilPublico(PerfilPublicoUsuario perfilUsuario);
     Task<PerfilPublicoUsuario?> ObtienePerfilPublico(string usuarioId);
+    Task<RespuestaPayload<AceptacionConsentimiento>> AceptarCosentimiento(string usuarioId, string consentimientoId);
 }

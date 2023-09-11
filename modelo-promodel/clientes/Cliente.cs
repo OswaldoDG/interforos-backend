@@ -61,8 +61,14 @@ namespace promodel.modelo.clientes
         /// <summary>
         /// Lista de consentimiantos del cliente
         /// </summary>
+        [JsonProperty("showCns")]
+        public bool MostrarConsentimientos { get; set; }
+
+        /// <summary>
+        /// Lista de consentimiantos del cliente
+        /// </summary>
         [JsonProperty("cns")]
-        public List<Consentimiento> Consentimientos { get;}
+        public List<Consentimiento> Consentimientos { get; set; }
 
     }
 }

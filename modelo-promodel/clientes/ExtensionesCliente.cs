@@ -11,11 +11,16 @@
                 MailLogoURL = cliente.MailLogoURL,
                 Nombre = cliente.Nombre,
                 Url = cliente.Url,
-                WebLogoBase64 = cliente.WebLogoBase64
+                WebLogoBase64 = cliente.WebLogoBase64,
+                MostrarConsentimientos = cliente.MostrarConsentimientos
+                
+                
+                
             };
 
             c.Contacto = cliente.Contacto;
             c.Documentacion = cliente.Documentacion;
+            c.Consentimientos= cliente.Consentimientos;
 
             return c;
         }

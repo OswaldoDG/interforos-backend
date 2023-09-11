@@ -31,7 +31,6 @@ public class ClientesController : ControllerUsoInterno
         {
             return NotFound();
         }
-
         return Ok(c.ToClienteView());
     }
 

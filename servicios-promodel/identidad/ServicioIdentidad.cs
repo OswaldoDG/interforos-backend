@@ -289,4 +289,33 @@ public partial class ServicioIdentidad: IServicioIdentidad
         };
         return null;
     }
+
+    public async Task<RespuestaPayload<AceptacionConsentimiento>> AceptarCosentimiento(string usuarioId, string consentimientoId)
+    {
+        var r = new RespuestaPayload<AceptacionConsentimiento>();
+        var user = await UsuarioPorId(usuarioId);
+        if (user != null)
+        {
+            if(!user.AceptacionConsentimientos.Any(_=>_.Id== consentimientoId))
+            {
+                var c= new AceptacionConsentimiento() {Id = consentimientoId, FechaAceptacion= DateTime.UtcNow };
+                user.AceptacionConsentimientos.Add(c);
+                await ActualizaUsuario(user);
+                r.Ok = true;
+                r.Payload = c;
+               
+            }
+            {
+                r.Error = "Aceptacion existente";
+                r.HttpCode = HttpCode.Conflict;
+            }
+            return r;
+            
+           
+           
+        };
+        r.Error = "Usuario no encontrado";
+        r.HttpCode = HttpCode.NotFound;
+        return null;
+    }
 }
