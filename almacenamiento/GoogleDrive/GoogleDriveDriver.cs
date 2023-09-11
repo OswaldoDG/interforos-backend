@@ -38,6 +38,9 @@ namespace almacenamiento.GoogleDrive
             {
                 ParentFolderId = cfg.RootDirectory;
             }
+            {
+                ParentFolderId = cfg.CastingDirectory;
+            }
 
             FilesResource.ListRequest listRequest = service.Files.List();
             listRequest.PageSize = 1;

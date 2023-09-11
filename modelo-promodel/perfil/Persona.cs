@@ -255,7 +255,7 @@ namespace promodel.modelo.perfil
         /// CaStings en los que participan las personas
         /// </summary>
         [JsonProperty("cas")]
-        public List<CastingPersona> Castings { get; set; }
+        public List<CastingPersona>? Castings { get; set; }
 
 
         [NotMapped]
