@@ -25,6 +25,12 @@ namespace api_promodel.Controllers.personas
             public IFormFile formFile { get; set; }
 
             public string? Titulo { get; set; }
+
+            /// <summary>
+            /// Especifica el casting al que pertenece el medio o documento
+            /// </summary>
+            public string?  CastingId { get; set; }
+
         }
 
         private readonly IServicioPersonas personas;

@@ -22,5 +22,10 @@ namespace almacenamiento.GoogleDrive
         /// Direcotio compartido a tomar como raíz, se puede obtener al navegar al folder en el navegador 
         /// </summary>
         public string RootDirectory { get; set; }
+
+        /// <summary>
+        /// Folder para el alamcenamiento de castings
+        /// </summary>
+        public string CastingDirectory { get; set; }
     }
 }

@@ -19,4 +19,8 @@ public interface IServicioPersonas
     Task<Respuesta> Elmiminar(string Id);
     Task<bool> EliminarLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId);
     Task<bool> UpsertLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId, string AlmacenamientoId);
+
+    Task<RespuestaPayload<CastingPersona>> MisCastings(string personaId);
+    Task<Respuesta> AdicionarCasting(string personaId, string clienteId, string castingId);
+    Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId);
 }

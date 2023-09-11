@@ -119,5 +119,11 @@ namespace promodel.modelo.proyectos
         /// Eventos asociados al casting
         /// </summary>
         public List<EventoCasting> Eventos { get; set; } = new List<EventoCasting>();
+
+        /// <summary>
+        /// Identificador único del folder de almacenamiento en google drive del castins
+        /// </summary>
+        [JsonProperty("fid")]
+        public string FolderId { get; set; }
     }
 }

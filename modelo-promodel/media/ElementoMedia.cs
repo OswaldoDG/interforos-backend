@@ -117,5 +117,12 @@ namespace promodel.modelo.media
         [JsonProperty("tit")]
         public string? Titulo { get; set; }
 
+        /// <summary>
+        /// IDentificador único del casting al que pertenece el medio, 
+        /// nulo para medios del perfil
+        /// </summary>
+        [JsonProperty("casid")]
+        public string? CastingId { get; set; }
+
     }
 }

@@ -252,6 +252,14 @@ public class PersonaController : ControllerPublico
         return ActionFromCode(r.HttpCode, r.Error);
     }
 
+    [HttpGet("castings/activos", Name = "MisCastingsActivos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<CastingPersona>>> MisCastingsActivos(string Id)
+    {
+        return Ok();
+    }
+
 
     [HttpGet("catalogo/{tipo}", Name = "ObtenerCatalogo")]
     [ProducesResponseType(StatusCodes.Status200OK)]

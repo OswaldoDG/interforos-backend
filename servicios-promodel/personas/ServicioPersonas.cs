@@ -936,6 +936,19 @@ namespace promodel.servicios
             return f.Value.Ticks;
         }
 
+        public Task<RespuestaPayload<CastingPersona>> MisCastings(string personaId)
+        {
+            throw new NotImplementedException();
+        }
 
+        public Task<Respuesta> AdicionarCasting(string personaId, string clienteId, string castingId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

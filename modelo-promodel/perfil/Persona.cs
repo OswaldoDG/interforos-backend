@@ -250,6 +250,14 @@ namespace promodel.modelo.perfil
         [JsonProperty("cn")]
         public Contacto? Contacto { get; set; } = new Contacto();
 
+
+        /// <summary>
+        /// CaStings en los que participan las personas
+        /// </summary>
+        [JsonProperty("cas")]
+        public List<CastingPersona> Castings { get; set; }
+
+
         [NotMapped]
         public int Edad { get { return FechaNacimiento.DiferenciaAnos(); } }
 
