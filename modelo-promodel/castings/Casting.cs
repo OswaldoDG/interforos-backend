@@ -124,6 +124,6 @@ namespace promodel.modelo.proyectos
         /// Identificador único del folder de almacenamiento en google drive del castins
         /// </summary>
         [JsonProperty("fid")]
-        public string FolderId { get; set; }
+        public string? FolderId { get; set; }
     }
 }

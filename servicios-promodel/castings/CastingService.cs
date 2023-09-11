@@ -1,4 +1,6 @@
-﻿using CouchDB.Driver.Extensions;
+﻿using almacenamiento;
+using almacenamiento.GoogleDrive;
+using CouchDB.Driver.Extensions;
 using EllipticCurve.Utils;
 using Google.Apis.Drive.v3;
 using Microsoft.Extensions.Caching.Distributed;
@@ -22,9 +24,11 @@ public class CastingService : ICastingService
     private readonly HttpClient httpClient;
     private readonly IConfiguration configuration;
     private readonly IServicioPersonas servicioPersonas;
+    private readonly IAlmacenamiento almacenamiento;
+    private readonly IGoogleDriveConfigProvider provider;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider)
     {
         this.db = db;
         this.cache = cache;
@@ -32,6 +36,8 @@ public class CastingService : ICastingService
         this.httpClient = httpClient;
         this.configuration = configuration;
         this.servicioPersonas = servicioPersonas;
+        this.almacenamiento = almacenamiento;
+        this.provider = provider;
     }
 
 
@@ -240,12 +246,16 @@ public class CastingService : ICastingService
 
     public async Task<RespuestaPayload<Casting>> CreaCasting(string ClienteId, string UsuarioId, Casting casting)
     {
+        var cfg = await provider.GetConfig(ClienteId);
+        var f= await almacenamiento.CreateFolder(ClienteId, casting.Nombre,cfg.CastingDirectory);
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
         casting.ClienteId = ClienteId;
         casting.UsuarioId = UsuarioId;
         casting.Contactos = new List<ContactoCasting>();
+        if(f!=null)
+        { casting.FolderId = f.Id; }       
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload = casting;
@@ -259,6 +269,10 @@ public class CastingService : ICastingService
         if (tmpCasting != null)
         {
             tmpCasting.Descripcion = casting.Descripcion;
+            if (!tmpCasting.Nombre.Equals(casting.Nombre))
+            {
+                 await almacenamiento.RemameFolder(ClienteId, tmpCasting.FolderId, casting.Nombre);
+            }
             tmpCasting.Nombre = casting.Nombre;
             tmpCasting.NombreCliente = casting.NombreCliente;
             tmpCasting.FechaApertura = casting.FechaApertura;

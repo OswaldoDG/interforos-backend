@@ -24,7 +24,8 @@ namespace promodel.servicios.almacenamiento
             {
                 Account = config["GoogleDriveConfig:Account"],
                 AuthJsonPath = config["GoogleDriveConfig:AuthJsonPath"],
-                RootDirectory = config["GoogleDriveConfig:RootDirectory"]
+                RootDirectory = config["GoogleDriveConfig:RootDirectory"],
+                CastingDirectory = config["GoogleDriveConfig:CastingDirectory"]
             };
 
             return Task.FromResult(c);
