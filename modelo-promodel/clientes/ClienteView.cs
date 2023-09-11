@@ -15,6 +15,7 @@
         public Contacto Contacto { get; set; }
 
         public List<DocumentoModelo> Documentacion { get; set; }
+        public bool MostrarConsentimientos { get; set; }
 
         /// <summary>
         /// Consentimientos del cliente

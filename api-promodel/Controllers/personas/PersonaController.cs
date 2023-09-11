@@ -484,8 +484,12 @@ public class PersonaController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AceptacionConsentimiento>> AceptarConsentimiento([FromRoute] string consentimientoId)
     {
+        var r = await identidad.AceptarCosentimiento(this.UsuarioId,consentimientoId);
 
-
-        return Ok();
+        if (r.Ok)
+        {
+            return Ok(r.Payload);
+        }
+        return BadRequest(r.HttpCode + r.Error);
     }
 }

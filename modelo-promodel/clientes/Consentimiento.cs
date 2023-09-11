@@ -34,14 +34,14 @@ public class Consentimiento
     /// Idioma del texto de consentimiento
     /// </summary>
     [JsonProperty("i")]
-    public string Idioma { get; set; }
+    public string Idioma { get; set; } //es-MX
 
     /// <summary>
     /// Define si el cosentimiento es el default de idioma para el contenido de hmtl 
     /// si no existe el idioma solicitado
     /// </summary>
     [JsonProperty("di")]
-    public bool IdiomaDefault { get; set; }
+    public bool IdiomaDefault { get; set; } // true
 
     /// <summary>
     /// Título para el cosentimiento

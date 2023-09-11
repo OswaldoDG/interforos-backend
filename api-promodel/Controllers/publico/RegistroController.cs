@@ -1,7 +1,9 @@
 ﻿using api_promodel.Controllers.publico;
+using Bogus.DataSets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using promodel.modelo;
+using promodel.modelo.clientes;
 using promodel.servicios;
 using promodel.servicios.proyectos;
 
@@ -124,6 +126,7 @@ namespace api_promodel.Controllers
                             await identidad.ActualizaUsuario(u);
                         }
                     }
+                 
 
                     var user = await identidad.UsuarioPorEmail(r.Registro.Email);
 
@@ -141,6 +144,15 @@ namespace api_promodel.Controllers
                         }
 
                         await castingService.ActualizaCasting(this.ClienteId, this.UsuarioId, casting.Id, casting);
+                    }
+                    if (user.RolesCliente.Any(x => x.ClienteId == r.Registro.ClienteId && x.Rol == TipoRolCliente.Modelo))
+                    {
+                        user.AceptacionConsentimientos.Add(new AceptacionConsentimiento()
+                        {
+                            Id= "c-modelo",
+                            FechaAceptacion=DateTime.UtcNow
+                        });
+                        await identidad.ActualizaUsuario(user);
                     }
 
 

@@ -423,6 +423,7 @@ namespace promodel.servicios
                         info.AvatarBase64 = u.AvatarBase64;
                         info.NombreCompleto = u.Nombre;
                         info.Alias = u.NombreArtistico;
+                        info.CosentimientosAceptados = usuario.AceptacionConsentimientos;
                     }
                     return info;
                 }

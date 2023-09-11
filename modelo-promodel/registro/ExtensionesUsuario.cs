@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using promodel.modelo.clientes;
+using System.Text;
 
 namespace promodel.modelo
 {
@@ -39,8 +40,9 @@ namespace promodel.modelo
                     HashContrasena = null,
                     Id = Guid.NewGuid().ToString(),
                     NombreAcceso = r.Registro.Email.ToLower(),
-                    AgenciaId = r.Registro.AgenciaId
-                };
+                    AgenciaId = r.Registro.AgenciaId,
+                    AceptacionConsentimientos = new List<AceptacionConsentimiento>(),
+            };
 
                 return u;
             }
