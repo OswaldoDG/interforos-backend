@@ -1,4 +1,5 @@
-﻿using Amazon.Auth.AccessControlPolicy;
+﻿using almacenamiento;
+using Amazon.Auth.AccessControlPolicy;
 using Bogus;
 using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Query.Extensions;
@@ -17,6 +18,7 @@ using promodel.modelo.proyectos;
 using promodel.servicios.comunes;
 using promodel.servicios.perfil;
 using promodel.servicios.personas;
+using promodel.servicios.proyectos;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
@@ -29,17 +31,19 @@ namespace promodel.servicios
         private readonly IdentidadCouchDbContext dbidentity;
         private readonly IDistributedCache cache;
         private readonly IConfiguration configuration;
+        private readonly IAlmacenamiento almacenamiento;
         private readonly IServicioCatalogos servicioCatalogos;
         private readonly IServicioClientes servicioClientes;
         public ServicioPersonas(PersonasCouchDbContext db,
             IServicioClientes servicioClientes,
             IServicioCatalogos servicioCatalogos,
-            IdentidadCouchDbContext dbidentity, IDistributedCache cache, IConfiguration configuration)
+            IdentidadCouchDbContext dbidentity, IDistributedCache cache, IConfiguration configuration, IAlmacenamiento almacenamiento)
         {
             this.db = db;
             this.dbidentity = dbidentity;
             this.cache = cache;
             this.configuration = configuration;
+            this.almacenamiento = almacenamiento;
             this.servicioCatalogos = servicioCatalogos;
             this.servicioClientes = servicioClientes;
             // Demo();
@@ -344,6 +348,7 @@ namespace promodel.servicios
                 {
                     persona.TicksFechaNacimiento = persona.FechaNacimiento.Value.Ticks;
                 }
+                persona.Castings = new List<CastingPersona>();
                 persona.Id = Guid.NewGuid().ToString();
                 await db.Personas.AddAsync(persona);
             }
@@ -937,19 +942,54 @@ namespace promodel.servicios
             return f.Value.Ticks;
         }
 
-        public Task<RespuestaPayload<CastingPersona>> MisCastings(string personaId)
+        public async Task<RespuestaPayload<CastingPersona>> MisCastings(string usuarioId)
         {
-            throw new NotImplementedException();
+            var r = new RespuestaPayload<CastingPersona>();
+            var rPersona = await PorUsuarioId(usuarioId);
+            if(rPersona.Ok)
+            {
+                var persona = (Persona)rPersona.Payload;
+                r.Ok = true;
+                r.Payload = persona.Castings;
+            }
+            return r;
         }
 
-        public Task<Respuesta> AdicionarCasting(string personaId, string clienteId, string castingId)
+        public async Task<Respuesta> AdicionarCasting(string personaId, string clienteId, string castingId, string folderId)
         {
-            throw new NotImplementedException();
+            var respuesta = new Respuesta();
+            var r = await PorId(personaId);
+            var persona = (Persona)r.Payload;
+            if(r.Ok)
+            {
+                var personaCasting = new CastingPersona() { CastingId = castingId, ClienteId = clienteId, Declinado = false, FechaAdicion = DateTime.UtcNow };
+                var nameFolder = $"{persona.Consecutivo}-{persona.NombreArtistico}-{persona.Nombre}{persona.Apellido1}{persona.Apellido2}";
+                var f = await almacenamiento.CreateFolder(clienteId,nameFolder,folderId);
+                if(f!=null)
+                {
+                    personaCasting.FolderId = f.Id;
+                }
+                persona.Castings.Add(personaCasting);
+                await Actualizar(persona);
+                respuesta.Ok = true;
+
+            }
+            return respuesta;
         }
 
-        public Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId)
+        public async Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId)
         {
-            throw new NotImplementedException();
+            var respuesta = new Respuesta();
+            var r = await PorId(personaId);
+            var persona = (Persona)r.Payload;
+            if (r.Ok)
+            {
+                persona.Castings.Remove(persona.Castings.FirstOrDefault(_=>_.CastingId==castingId));
+                await Actualizar(persona);
+                respuesta.Ok = true;
+
+            }
+            return respuesta;
         }
     }
 }

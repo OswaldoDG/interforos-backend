@@ -36,6 +36,7 @@ public interface ICastingService
     Task<Respuesta> InscripcionCasting(string ClienteId, string PersonaId, string CastingId, string CategoriaId, bool Abandonar, string UsuarioId);
     Task<RespuestaPayload<List<string>>> CategoriasModeloCasting(string ClienteId, string CastingId, string PersonaId, string UsuarioId);
     Task<Respuesta> EstablecerEstadoCasting(string clienteId, string usuarioId, string castingId, EstadoCasting estado);
+    Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
 }
 
 

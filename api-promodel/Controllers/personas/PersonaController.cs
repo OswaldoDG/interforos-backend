@@ -15,6 +15,7 @@ using promodel.servicios;
 using promodel.servicios.comunes;
 using promodel.servicios.perfil;
 using promodel.servicios.personas;
+using promodel.servicios.proyectos;
 using System.Net;
 using System.Net.WebSockets;
 using static System.Net.Mime.MediaTypeNames;
@@ -33,9 +34,11 @@ public class PersonaController : ControllerPublico
     private readonly IServicioClientes DbClientes;
     private readonly IServicioIdentidad identidad;
     private readonly IServicioPersonasUsuario personasUsuario;
+    private readonly IServicioPersonas servicioPersonas;
+    private readonly ICastingService castingService;
 
     public PersonaController(IServicioPersonas personas, IServicioCatalogos catalogos, 
-        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad, IServicioPersonasUsuario personasUsuario) : base(servicioClientes)
+        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad, IServicioPersonasUsuario personasUsuario, IServicioPersonas servicioPersonas, ICastingService castingService) : base(servicioClientes)
     {
         this.personas = personas; 
         this.catalogos = catalogos;
@@ -43,6 +46,8 @@ public class PersonaController : ControllerPublico
         this.DbClientes = servicioClientes;
         this.identidad = identidad;
         this.personasUsuario = personasUsuario;
+        this.servicioPersonas = servicioPersonas;
+        this.castingService = castingService;
     }
     [HttpGet("NewPerfil", Name = "NewPerfile")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -255,9 +260,38 @@ public class PersonaController : ControllerPublico
     [HttpGet("castings/activos", Name = "MisCastingsActivos")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<List<CastingPersona>>> MisCastingsActivos(string Id)
+    public async Task<ActionResult<List<CastingPersonaCompleto>>> MisCastingsActivos()
     {
-        return Ok();
+
+        var r = await servicioPersonas.MisCastings(this.UsuarioId);
+
+        if (r.Ok)
+        {
+            var castingsActuales = (List<CastingPersona>)r.Payload;
+            var castingActivos= new List<CastingPersonaCompleto>();
+
+            foreach (CastingPersona casting in castingsActuales)
+            {
+                var nombreActivo = await castingService.NombreActivo(ClienteId, UsuarioId, casting.CastingId);
+                if (nombreActivo!=null)
+                {
+                    castingActivos.Add(new CastingPersonaCompleto()
+                    {
+                        CastingId = casting.CastingId,
+                        ClienteId = casting.ClienteId,
+                        Declinado = casting.Declinado,
+                        FechaAdicion = casting.FechaAdicion,
+                        FolderId = casting.FolderId,
+                        Nombre = nombreActivo
+                    }) ;
+                }
+            }
+
+
+            return Ok(castingActivos);
+        }   
+
+        return BadRequest(r.HttpCode + r.Error);
     }
 
 
@@ -491,5 +525,6 @@ public class PersonaController : ControllerPublico
             return Ok(r.Payload);
         }
         return BadRequest(r.HttpCode + r.Error);
-    }
+    } 
+    
 }
