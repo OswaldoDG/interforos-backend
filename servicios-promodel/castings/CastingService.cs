@@ -470,7 +470,7 @@ public class CastingService : ICastingService
     public async Task<Respuesta> AdicionarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
     {
         var r = new Respuesta();
-        var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
+        var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == CastingId);
         if (casting != null)
         {
             var categoria = casting.Categorias.FirstOrDefault(c => c.Id == CategoríaId);
@@ -478,8 +478,10 @@ public class CastingService : ICastingService
             {
                 categoria.Modelos.Add(new ModeloCasting() { PersonaId = PersonaId, Origen = origen });
                 await db.Castings.AddOrUpdateAsync(casting);
+                await servicioPersonas.AdicionarCasting(PersonaId, ClienteId, CastingId,casting.FolderId);
                 r.Ok = true;
             }
+          
         }
         r.HttpCode = HttpCode.BadRequest;
         r.Error = "No se pudo agregar modelo";
@@ -499,6 +501,7 @@ public class CastingService : ICastingService
                 {
                     categoria.Modelos.Remove(modelo);
                     await db.Castings.AddOrUpdateAsync(casting);
+                    await servicioPersonas.RemoverCasting(PersonaId, ClienteId, CastingId);
                     r.Ok = true;
                 }
             }
@@ -901,6 +904,21 @@ public class CastingService : ICastingService
             r.HttpCode = HttpCode.Forbidden;
         }
         return r;
+    }
+
+    public async Task<string?> NombreActivo(string ClienteId, string UsuarioId, string castingId)
+    {
+        var rCasting = await FullCasting(ClienteId, castingId, UsuarioId);
+        if (rCasting.Ok)
+        {
+            var casting = (Casting)rCasting.Payload;
+            if (casting.Activo)
+            {
+                return casting.Nombre;
+            }
+        }
+
+        return null;
     }
 
 
