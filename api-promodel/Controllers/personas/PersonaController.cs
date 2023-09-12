@@ -260,7 +260,7 @@ public class PersonaController : ControllerPublico
     [HttpGet("castings/activos", Name = "MisCastingsActivos")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<List<CastingPersona>>> MisCastingsActivos()
+    public async Task<ActionResult<List<CastingPersonaCompleto>>> MisCastingsActivos()
     {
 
         var r = await servicioPersonas.MisCastings(this.UsuarioId);
