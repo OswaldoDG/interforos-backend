@@ -9,13 +9,23 @@ namespace promodel.modelo.media
     public static class ExtensionesMedia
     {
 
-        public static MediaCliente ToMediaClienteFotosYVideo(this MediaModelo media, string ClienteId)
+        public static MediaCliente ToMediaClienteFotosYVideo(this MediaModelo media, string ClienteId, string? CastingId)
         {
             var m = new MediaCliente() { UsuarioId = media.UsuarioId };
             // && x.ClienteIds.Contains(ClienteId)))
-            foreach (var item in media.Elementos.Where(x=>(x.Imagen == true || x.Video == true))) 
+            if(!string.IsNullOrEmpty(CastingId))
             {
-                m.Elementos.Add(item.ToElementoMediaCliente());
+                foreach (var item in media.Elementos.Where(x => (x.Imagen == true || x.Video == true)&& x.CastingId==CastingId))
+                {
+                    m.Elementos.Add(item.ToElementoMediaCliente());
+                }
+            }
+            else
+            {
+                foreach (var item in media.Elementos.Where(x => (x.Imagen == true || x.Video == true)))
+                {
+                    m.Elementos.Add(item.ToElementoMediaCliente());
+                }
             }
 
             return m;
