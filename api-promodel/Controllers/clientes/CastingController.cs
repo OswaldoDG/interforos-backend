@@ -158,7 +158,7 @@ public class CastingController : ControllerUsoInterno
     public async Task<ActionResult<CastingListElement>> EliminarCasting([FromRoute] string CastingId)
     {
 
-        var result = await castingService.EliminarCasting(ClienteId, UsuarioId, CastingId);
+        var result = await castingService.EliminarCasting(ClienteId, CastingId, UsuarioId);
         if (result.Ok)
         {
             return Ok();
