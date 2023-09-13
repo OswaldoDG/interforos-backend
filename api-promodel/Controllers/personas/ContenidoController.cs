@@ -53,16 +53,16 @@ public class ContenidoController : ControllerPublico
     }
 
 
-    [HttpGet("mi", Name = "MisMedios")]
+    [HttpPost("mi", Name = "MisMedios")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MediaCliente>> MisFotos()
+    public async Task<ActionResult<MediaCliente>> MisFotos([FromBody]string? CastingId)
     {
         var mm=  await media.GetByUsuarioId(UsuarioId);
         if(mm!=null)
         {
-            return Ok(mm.ToMediaClienteFotosYVideo(ClienteId));
+            return Ok(mm.ToMediaClienteFotosYVideo(ClienteId,CastingId));
         }
         return NotFound();
     }
@@ -77,7 +77,7 @@ public class ContenidoController : ControllerPublico
         var mm = await media.GetByUsuarioId(id);
         if (mm != null)
         {
-            return Ok(mm.ToMediaClienteFotosYVideo(id));
+            return Ok(mm.ToMediaClienteFotosYVideo(id,null));
         }
         return NotFound();
     }

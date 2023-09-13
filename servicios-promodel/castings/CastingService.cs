@@ -868,7 +868,6 @@ public class CastingService : ICastingService
     }
 
 
-
     public async Task<Respuesta> EstablecerEstadoCasting(string usuarioId, string castingId, string clienteId, EstadoCasting estado)
     {
         //  Creacion de un o tipo Respuesta
