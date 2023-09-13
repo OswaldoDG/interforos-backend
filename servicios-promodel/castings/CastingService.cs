@@ -159,12 +159,9 @@ public class CastingService : ICastingService
     }
 
 
-
-
-
     public async Task<Casting?> ObtieneCasting(string CLienteId, string CastingId, string UsuarioId)
     {
-        return await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == CLienteId && x.Id == CastingId);
+        return await db.Castings.FindAsync(CastingId);
     }
 
     #region Castings
@@ -380,8 +377,6 @@ public class CastingService : ICastingService
         return r;
     }
 
-
-
     public async Task<RespuestaPayload<CastingListElement>> CastingsActuales(string CLienteId)
     {
         var r = new RespuestaPayload<CastingListElement>();
@@ -571,8 +566,6 @@ public class CastingService : ICastingService
         }
         return r;
     }
-
-
 
     public async Task<Respuesta> EliminarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, string ComentarioId)
     {

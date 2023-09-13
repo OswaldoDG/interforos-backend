@@ -38,9 +38,6 @@ namespace almacenamiento.GoogleDrive
             {
                 ParentFolderId = cfg.RootDirectory;
             }
-            {
-                ParentFolderId = cfg.CastingDirectory;
-            }
 
             FilesResource.ListRequest listRequest = service.Files.List();
             listRequest.PageSize = 1;
@@ -103,13 +100,13 @@ namespace almacenamiento.GoogleDrive
             StorageObjectDescriptor f = new();
             var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
             .CreateScoped(DriveService.ScopeConstants.Drive);
-
             var service = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
                 ApplicationName = "promodel"
             });
 
+            
             var request = service.Files.Delete(FileId);
             var result = request.Execute();
             return true;
