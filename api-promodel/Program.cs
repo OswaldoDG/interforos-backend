@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using promodel.servicios;
 using promodel.servicios.almacenamiento;
+using promodel.servicios.BitacoraCastings;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.media;
 using promodel.servicios.perfil;
@@ -115,6 +116,12 @@ builder.Services.AddCouchContext<SolicitudSoporteCouchDbContext>(builder => buil
     .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
     password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
 
+builder.Services.AddCouchContext<BitacoraCastingCouchDbContext>(builder => builder
+    .EnsureDatabaseExists()
+    .UseEndpoint(configuration.GetValue<string>("promodeldrivers:couchdb:endpoint"))
+    .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
+    password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
+
 builder.Services.Configure<SMTPConfig>(builder.Configuration.GetSection("SMTPConfig"));
 builder.Services.Configure<CacheAlmacenamientoLocalConfig>(builder.Configuration.GetSection("CacheAlmacenamientoLocalConfig"));
 
@@ -133,6 +140,7 @@ builder.Services.AddTransient<IAlmacenamiento, GoogleDriveDriver>();
 builder.Services.AddTransient<ICacheAlmacenamiento, CacheAlmacenamientoLocal>();
 builder.Services.AddTransient<IMedia, MediaService>();
 builder.Services.AddTransient<IBogusService, BogusService>();
+builder.Services.AddTransient<IServicioBitacoraCasting, ServicioBitacoraCasting>();
 
 builder.Services.AddHttpClient();
 

@@ -12,6 +12,7 @@ using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.modelo.registro;
 using promodel.servicios;
+using promodel.servicios.BitacoraCastings;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
 using System.Text.Json;
@@ -27,15 +28,17 @@ public class CastingController : ControllerUsoInterno
     private readonly IBogusService bogus;
     private readonly IServicioIdentidad identidad;
     private readonly IServicioPersonas servicioPersonas;
+    private readonly IServicioBitacoraCasting servicioBitacora;
 
-    public CastingController(ICastingService castingService, IServicioClientes clientes, 
-    IBogusService Bogus, IServicioIdentidad servicioIdentidad, IServicioPersonas servicioPersonas) 
+    public CastingController(ICastingService castingService, IServicioClientes clientes,
+    IBogusService Bogus, IServicioIdentidad servicioIdentidad, IServicioPersonas servicioPersonas, IServicioBitacoraCasting servicioBitacora) 
     : base(clientes,servicioIdentidad)
     {
         this.castingService = castingService;
         bogus = Bogus;
         this.identidad = servicioIdentidad;
         this.servicioPersonas = servicioPersonas;
+        this.servicioBitacora = servicioBitacora;
     }
 
     [HttpGet]
@@ -570,7 +573,23 @@ public class CastingController : ControllerUsoInterno
         }
     }
 
+    [HttpGet("bitacora/{Id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<List<BitacoraCasting>>> BitacoraCasting([FromRoute] string  Id)
+    {
+        var result = await servicioBitacora.LeerBitacora(this.ClienteId, Id,this.UsuarioId);
 
+        if (result.Ok)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            return ActionFromCode(result.HttpCode, null);
+        }
+    }
 
 
 }
