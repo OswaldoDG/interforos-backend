@@ -172,6 +172,7 @@ namespace promodel.servicios
                 persona.ElementoMedioPrincipalId = p.ElementoMedioPrincipalId;
                 persona.Documentos = p.Documentos;
                 persona.DocumentacionCompleta = p.DocumentacionCompleta;
+                persona.Castings = p.Castings;
                 await db.Personas.AddOrUpdateAsync(persona);
 
                 r = r.OK(persona);
@@ -970,7 +971,7 @@ namespace promodel.servicios
                     personaCasting.FolderId = f.Id;
                 }
                 persona.Castings.Add(personaCasting);
-                await Actualizar(persona);
+                await db.Personas.AddOrUpdateAsync(persona);
                 respuesta.Ok = true;
 
             }
