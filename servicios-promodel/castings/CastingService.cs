@@ -176,10 +176,10 @@ public class CastingService : ICastingService
                 castings = await CastingsAdministrador(ClienteId, incluirInactivos);
                 break;
             case TipoRolCliente.Staff:
-                castings = await CastingsStaffRevisor(usuarioId, incluirInactivos);
+                castings = await CastingsStaffRevisor(usuarioId, incluirInactivos,rol);
                 break;
             case TipoRolCliente.RevisorExterno:
-                castings = await CastingsStaffRevisor(usuarioId, incluirInactivos);
+                castings = await CastingsStaffRevisor(usuarioId, incluirInactivos,rol);
                 break;
             default:
                 castings = null;
@@ -212,17 +212,18 @@ public class CastingService : ICastingService
             return await db.Castings.Where(c => c.ClienteId == ClienteId && c.Activo == true).ToListAsync();
         }
     }
-    protected async Task<List<Casting>> CastingsStaffRevisor(string usuarioId, Boolean incluirInactivos)
+    protected async Task<List<Casting>> CastingsStaffRevisor(string usuarioId, Boolean incluirInactivos, TipoRolCliente rol)
     {
         if (incluirInactivos)
         {
-            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == usuarioId)).ToListAsync();
+            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == usuarioId && x.Rol==rol)).ToListAsync();
         }
         else
         {
-            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == usuarioId) && c.Activo == true).ToListAsync();
+            return await db.Castings.Where(c => c.Contactos.Any(x => x.UsuarioId == usuarioId && x.Rol == rol) && c.Activo == true).ToListAsync();
         }
     }
+
 
 
     public async Task<RespuestaPayload<Casting>> FullCasting(string ClienteId, string CastingId, string UsuarioId)
@@ -300,6 +301,7 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             await db.Castings.RemoveAsync(casting);
+            await almacenamiento.DeleteFile(ClienteId, casting.FolderId);
             r.Ok = true;
         }
         else
