@@ -273,7 +273,7 @@ public class PersonaController : ControllerPublico
             foreach (CastingPersona casting in castingsActuales)
             {
                 var nombreActivo = await castingService.NombreActivo(ClienteId, UsuarioId, casting.CastingId);
-                if (nombreActivo!=null)
+                if (nombreActivo!=null && !castingActivos.Any(_=>_.CastingId==casting.CastingId))
                 {
                     castingActivos.Add(new CastingPersonaCompleto()
                     {
