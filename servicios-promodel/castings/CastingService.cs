@@ -475,6 +475,7 @@ public class CastingService : ICastingService
                 await db.Castings.AddOrUpdateAsync(casting);
                 await servicioPersonas.AdicionarCasting(PersonaId, ClienteId, CastingId,casting.FolderId);
                 r.Ok = true;
+                return r;
             }
           
         }
