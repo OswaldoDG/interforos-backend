@@ -57,7 +57,7 @@ public class PersonaController : ControllerPublico
     {       
            
         Persona persona = new Persona();
-        persona.UsuarioId = this.UsuarioId;
+        persona.UsuarioId = null;
         if (persona.Clientes == null || persona.Clientes.Count == 0)
         {
             persona.Clientes = new List<string>() { this.ClienteId };

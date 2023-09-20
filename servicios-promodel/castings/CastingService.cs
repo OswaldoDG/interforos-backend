@@ -684,13 +684,13 @@ public class CastingService : ICastingService
         return null;
     }
 
-    public async Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId)
+    public async Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId,TipoRolCliente rol)
     {
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
 
         if (casting != null)
         {
-            if (casting.Contactos.Any(_ => _.UsuarioId == UsuarioId))
+            if (casting.Contactos.Any(_ => _.UsuarioId == UsuarioId  && _.Rol==rol)|| rol==TipoRolCliente.Administrador)
             {
                 var castingSelector = casting.aSelectorCasting();
 
