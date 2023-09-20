@@ -357,7 +357,7 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SelectorCastingCategoria>> SelectorCategoriaRevisor([FromRoute] string CastingId)
     {
-        var result = await castingService.SelectorCastingCategoriaRevisor(this.ClienteId, CastingId, this.UsuarioId);
+        var result = await castingService.SelectorCastingCategoriaRevisor(this.ClienteId, CastingId, this.UsuarioId ,RolUsuario);
         if (result != null)
         {
             return Ok(result);
