@@ -562,6 +562,9 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> EstadoCasting([FromRoute] string castingId, [FromRoute] EstadoCasting estado)
     {
+        if (this.RolUsuario == TipoRolCliente.Staff || this.RolUsuario==TipoRolCliente.Administrador)
+        { 
+
         var result = await castingService.EstablecerEstadoCasting(this.UsuarioId, castingId, this.ClienteId, estado);
         if (result.Ok)
         {
@@ -571,6 +574,12 @@ public class CastingController : ControllerUsoInterno
         {
             return ActionFromCode(result.HttpCode, null);
         }
+        }
+        else
+        {
+            return Unauthorized();
+        }
+    
     }
 
     [HttpGet("bitacora/{Id}")]
