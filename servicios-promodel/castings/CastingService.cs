@@ -384,7 +384,9 @@ public class CastingService : ICastingService
         var r = new RespuestaPayload<CastingListElement>();
         var castingsResult = new List<CastingListElement>();
         var castings = await db.Castings
-            .Where(_ => _.Activo == true && _.AceptaAutoInscripcion == true && _.FechaApertura >= DateTime.Now && _.FechaCierre > DateTime.Now).ToListAsync();
+            .Where(_ => _.Activo == true && _.AceptaAutoInscripcion == true && _.Status == modelo.EstadoCasting.Abierto &&
+                   (_.FechaApertura <= DateTime.UtcNow) && (_.FechaCierre > DateTime.UtcNow))
+            .ToListAsync();
 
         if (castings != null)
         {
