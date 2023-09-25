@@ -1,11 +1,13 @@
 ﻿
 
+using ImageMagick;
+using Org.BouncyCastle.Asn1.X500;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
-using System.Globalization;
-using System.Runtime.CompilerServices;
+using System;
+using System.Text.Json;
 
 namespace promodel.servicios.castings;
 
@@ -74,7 +76,7 @@ public static class ExtensionesCastingServicios
     }
 
 
-    public static SelectorCastingCategoria aSelectorCasting(this Casting casting)
+    public static SelectorCastingCategoria aSelectorCasting(this Casting casting, IServicioPersonas personasDb)
     {
         var selectorCastig = new SelectorCastingCategoria()
         {
@@ -91,13 +93,22 @@ public static class ExtensionesCastingServicios
                 var c = new SelectorCategoria();
                 c.Id = categoria.Id;
                 c.Nombre = categoria.Nombre;
-                c.Modelos = new List<string>();
+                c.Modelos = new List<ModeloOrdenable>();
                 c.Comentarios = new List<ComentarioCategoriaModeloCasting>();
                 c.Votos = new List<VotoModeloMapeo>();
-                categoria.Modelos.ForEach(m =>
+                categoria.Modelos.ForEach(async m =>
                 {
-                    c.Modelos.Add(m.PersonaId);
+                    var r = personasDb.PorId(m.PersonaId).Result;
+                   if(r.Ok)
+                    {
+                        var persona = (Persona)r.Payload;
+                        string p = JsonSerializer.Serialize(persona);
+                        ModeloOrdenable mo = JsonSerializer.Deserialize<ModeloOrdenable>(p);
 
+                        mo.calificacion = m.CalificacionCalculada;
+
+                        c.Modelos.Add(mo);
+                    }
                     m.Comentarios.ForEach(co =>
                     {
                         var comentario = new ComentarioCategoriaModeloCasting()
@@ -131,6 +142,65 @@ public static class ExtensionesCastingServicios
             });
         }
         return selectorCastig;
+    }
+    public static int CalcularCalificaion(this List<VotoModeloCategoria> votos)
+    {
+        int total = 0;
+        int MegustaMucho = 0;
+        int Megusta = 0;
+        int NomeGusta = 0;
+
+        if (votos.Count>0)
+        {
+            votos.ForEach(voto=>
+            {
+            switch (voto.NivelLike) 
+             {
+                    case 0: 
+                        {
+                            NomeGusta += 1;
+                            break;
+                        }
+                    case 2:
+                        {
+                            Megusta+= 1;
+                            break;
+                        }
+                    case 3:
+                        {
+                            MegustaMucho+= 1;
+                            break;
+                        }
+                }
+            
+            });
+        }
+
+        total = (int)(Math.Pow(MegustaMucho, 2) + Megusta - Math.Pow(NomeGusta, 2));
+    return total;
+    }
+
+
+    public static  List<ModeloOrdenable> Ordenar( this SelectorCategoria categoria,string orden)
+    {
+       
+
+
+        switch (orden)
+        {
+            case "mayor":
+                {
+                    return categoria.Modelos.OrderByDescending(_ => _.calificacion).ToList();                   
+                }
+            case "menor":
+                {
+                    return categoria.Modelos.OrderBy(_ => _.calificacion).ToList();
+                }
+            default:
+                return categoria.Modelos.OrderBy(_ => _.NombreArtistico).ToList();
+        }
+        
+
     }
 
 }

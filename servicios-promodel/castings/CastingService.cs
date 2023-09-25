@@ -662,7 +662,7 @@ public class CastingService : ICastingService
         if (casting != null)
         {
            
-            var castingSelector = casting.aSelectorCasting();
+            var castingSelector = casting.aSelectorCasting(servicioPersonas);
 
 
             foreach (var a in casting.Contactos)
@@ -686,7 +686,7 @@ public class CastingService : ICastingService
         return null;
     }
 
-    public async Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId,TipoRolCliente rol)
+    public async Task<SelectorCastingCategoria> SelectorCastingCategoriaRevisor(string ClienteId, string CastingId, string UsuarioId,TipoRolCliente rol,string orden)
     {
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
 
@@ -694,8 +694,13 @@ public class CastingService : ICastingService
         {
             if (casting.Contactos.Any(_ => _.UsuarioId == UsuarioId  && _.Rol==rol)|| rol==TipoRolCliente.Administrador)
             {
-                var castingSelector = casting.aSelectorCasting();
-
+                var castingSelector = casting.aSelectorCasting(servicioPersonas);
+                castingSelector.Categorias.ForEach(c =>
+                {
+                    var modelos = c.Ordenar(orden);
+                    c.Modelos = modelos;
+                }
+                );
 
                 foreach (var a in casting.Contactos)
                 {
@@ -761,6 +766,7 @@ public class CastingService : ICastingService
             modelo.Votos.Add(voto);
             votoRetorno = voto;
         }
+        modelo.CalificacionCalculada = modelo.Votos.CalcularCalificaion(); ;
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload= votoRetorno;
@@ -917,7 +923,6 @@ public class CastingService : ICastingService
 
         return null;
     }
-
 
 
 

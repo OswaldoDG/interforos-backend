@@ -349,15 +349,15 @@ public class CastingController : ControllerUsoInterno
         }
     }
 
-    [HttpGet("{CastingId}/selector/revisor")]
+    [HttpGet("{CastingId}/selector/revisor/{orden}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<SelectorCastingCategoria>> SelectorCategoriaRevisor([FromRoute] string CastingId)
+    public async Task<ActionResult<SelectorCastingCategoria>> SelectorCategoriaRevisor([FromRoute] string CastingId,string orden)
     {
-        var result = await castingService.SelectorCastingCategoriaRevisor(this.ClienteId, CastingId, this.UsuarioId ,RolUsuario);
+        var result = await castingService.SelectorCastingCategoriaRevisor(this.ClienteId, CastingId, this.UsuarioId ,RolUsuario,orden);
         if (result != null)
         {
             return Ok(result);

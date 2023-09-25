@@ -39,6 +39,11 @@ namespace promodel.modelo.proyectos
 
         [JsonProperty("o")]
         public OrigenInscripcion Origen { get; set; }
+        [JsonProperty("cali")]
+        /// <summary>
+        /// Calificaion obtenida en la categoria inscrita
+        /// </summary>
+        public int CalificacionCalculada { get; set; }
 
         /// <summary>
         /// Comentarios realizados sobre la persona en la categoría

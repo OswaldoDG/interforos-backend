@@ -8,7 +8,7 @@ public class SelectorCategoria
 
     public string Nombre { get; set; }
 
-    public List<string> Modelos { get; set; }
+    public List<ModeloOrdenable> Modelos { get; set; }
 
     public List<ComentarioCategoriaModeloCasting> Comentarios { get; set;}
 
