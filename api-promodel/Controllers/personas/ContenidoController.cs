@@ -57,12 +57,14 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MediaCliente>> MisFotos([FromBody]string? CastingId)
+    public async Task<ActionResult<MediaCliente>> MisFotos([FromQuery] string? uid, [FromBody]string? CastingId)
     {
-        var mm=  await media.GetByUsuarioId(UsuarioId);
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+
+        var mm=  await media.GetByUsuarioId(usuarioFinal);
         if(mm!=null)
         {
-            return Ok(mm.ToMediaClienteFotosYVideo(ClienteId,CastingId));
+            return Ok(mm.ToMediaClienteFotosYVideo(ClienteId!,CastingId));
         }
         return NotFound();
     }
@@ -86,12 +88,13 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MediaCliente>> FotoPrincipal(string id)
+    public async Task<ActionResult<MediaCliente>> FotoPrincipal([FromQuery] string? uid, string id)
     {
-        var mm = await media.EstablecerPrincipal(UsuarioId, id);
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        var mm = await media.EstablecerPrincipal(usuarioFinal, id);
         if (mm)
         {
-            var pp = await personas.EstableceFotoPrincipal(UsuarioId, id);
+            var pp = await personas.EstableceFotoPrincipal(usuarioFinal, id);
             if (pp)
             {
                 return Ok();
@@ -105,9 +108,10 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MediaCliente>> FotoPermanente(string id)
+    public async Task<ActionResult<MediaCliente>> FotoPermanente([FromQuery] string? uid, string id)
     {
-        var mm = await media.AlternarBloqueo(UsuarioId, id);
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        var mm = await media.AlternarBloqueo(usuarioFinal, id);
         if (mm)
         {
             return Ok();
@@ -120,9 +124,10 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MediaCliente>> FotoEliminar(string id)
+    public async Task<ActionResult<MediaCliente>> FotoEliminar([FromQuery] string? uid, string id)
     {
-        var mm = await media.EliminarElemento(ClienteId,UsuarioId, id);
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        var mm = await media.EliminarElemento(ClienteId!, usuarioFinal, id);
         if (mm)
         {
             return Ok();
@@ -142,12 +147,6 @@ public class ContenidoController : ControllerPublico
         Console.WriteLine(a);
         var stream = System.IO.File.OpenRead(a);
         return new FileStreamResult(stream, "video/mp4");
-
-
-        //FileInfo fi = new FileInfo(a);
-        //string type = a.GetMimeTypeForFileExtension();
-        //var stream = System.IO.File.OpenRead(a);
-        //return stream;
     }
 
 
@@ -161,7 +160,7 @@ public class ContenidoController : ControllerPublico
 
         if (Guid.Empty.ToString() == id)
         {
-            string ruta = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "archivos", "demo", "fotos");
+            string ruta = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "archivos", "demo", "fotos");
             var files = Directory.GetFiles(ruta, "*.jpg");
             Random r = new Random(DateTime.Now.Millisecond);
             int n = r.Next(1, files.Length);
@@ -196,9 +195,11 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ElementoMediaCliente>> UploadDocumentacion([FromForm] Medio documento)
+    public async Task<ActionResult<ElementoMediaCliente>> UploadDocumentacion([FromQuery] string? uid, [FromForm] Medio documento)
     {
-        if (string.IsNullOrEmpty(UsuarioId) || string.IsNullOrEmpty(ClienteId))
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+
+        if (string.IsNullOrEmpty(usuarioFinal) || string.IsNullOrEmpty(ClienteId))
             return BadRequest();
 
         if (!Request.Form.Files.Any())
@@ -226,7 +227,7 @@ public class ContenidoController : ControllerPublico
             return BadRequest("Documento no válido");
         }
 
-        var queryPersona = await personas.PorUsuarioId(this.UsuarioId);
+        var queryPersona = await personas.PorUsuarioId(usuarioFinal);
         Persona p = null;
         if (queryPersona.Ok)
         {
@@ -249,7 +250,7 @@ public class ContenidoController : ControllerPublico
             if(doc!=null)
             {
                 await almacenamiento.DeleteFile(ClienteId, doc.IdAlmacenamiento);
-                await this.media.DelElemento(doc.IdAlmacenamiento, UsuarioId);
+                await this.media.DelElemento(doc.IdAlmacenamiento, usuarioFinal);
             }
             string? castingId = null;
             if (!string.IsNullOrEmpty(documento.CastingId)) { castingId = documento.CastingId; }
@@ -265,7 +266,7 @@ public class ContenidoController : ControllerPublico
            
 
             string webRootPath = configuration["UploadTempDir"];
-            string uploadsDir = Path.Combine(webRootPath, "uploads", UsuarioId);
+            string uploadsDir = Path.Combine(webRootPath, "uploads", usuarioFinal);
 
 
 
@@ -341,12 +342,12 @@ public class ContenidoController : ControllerPublico
             {
                 // Añade el registro a la base de datos
                 FileInfo FiSaved = new(FullPath);
-                el = await AddElementoMedio(archivoAlmacenado.Id,
+                el = await AddElementoMedio(usuarioFinal, archivoAlmacenado.Id,
                      TipoMedio.Documento, fi.Extension, fileName.GetMimeTypeForFileExtension(),
                      FiSaved.Length, false, false, true, Landscape,false,false,null,castingId);
 
-                await personas.UpsertLinkDocumento(ClienteId, UsuarioId, documento.Id, archivoAlmacenado.Id);
-                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", UsuarioId, esImagen);
+                await personas.UpsertLinkDocumento(ClienteId, usuarioFinal, documento.Id, archivoAlmacenado.Id);
+                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", usuarioFinal, esImagen);
             }
 
             try
@@ -374,9 +375,11 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ElementoMediaCliente>> UploadFoto([FromForm] Medio photo)
+    public async Task<ActionResult<ElementoMediaCliente>> UploadFoto([FromQuery] string? uid, [FromForm] Medio photo)
     {
-        if (string.IsNullOrEmpty(UsuarioId))
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+
+        if (string.IsNullOrEmpty(usuarioFinal))
             return BadRequest();
 
         if (!Request.Form.Files.Any())
@@ -388,7 +391,7 @@ public class ContenidoController : ControllerPublico
         if (Request.Form.Files[0].Length <= 0)
             return BadRequest("Invalid file length, seems to be empty");
 
-        var queryPersona = await personas.PorUsuarioId(this.UsuarioId);
+        var queryPersona = await personas.PorUsuarioId(usuarioFinal);
         Persona p = null;
         if (queryPersona.Ok)
         {
@@ -413,7 +416,7 @@ public class ContenidoController : ControllerPublico
                 }
             }
             string webRootPath = configuration["UploadTempDir"];
-            string uploadsDir = Path.Combine(webRootPath, "uploads", UsuarioId);
+            string uploadsDir = Path.Combine(webRootPath, "uploads", usuarioFinal);
 
             if (!Directory.Exists(uploadsDir))
                 Directory.CreateDirectory(uploadsDir);
@@ -515,14 +518,14 @@ public class ContenidoController : ControllerPublico
                 // Añade el registro a la base de datos
                 FileInfo FiSaved = new(FullPath);
 
-                el = await AddElementoMedio(archivoAlmacenado.Id, 
+                el = await AddElementoMedio(usuarioFinal, archivoAlmacenado.Id, 
                     TipoMedio.Galería , fi.Extension, fileName.GetMimeTypeForFileExtension(),
                     FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id, photo.Titulo,castingId);
 
-                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", UsuarioId, EsFoto);
+                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", usuarioFinal, EsFoto);
                 if (EsVideo)
                 {
-                    await cacheAlmacenamiento.CreaArchivoImagen(FrameFullPath, $"{frameAlmacenado.Id}.jpg", UsuarioId, true);
+                    await cacheAlmacenamiento.CreaArchivoImagen(FrameFullPath, $"{frameAlmacenado.Id}.jpg", usuarioFinal, true);
                 }
             }
 
@@ -546,6 +549,7 @@ public class ContenidoController : ControllerPublico
 
 
     private async Task<ElementoMedia> AddElementoMedio(
+        string usuarioId,
         string Id,
         TipoMedio Tipo,
         string Extension, 
@@ -587,7 +591,7 @@ public class ContenidoController : ControllerPublico
 
         };
 
-        el = await this.media.AddElemento(el, UsuarioId);
+        el = await this.media.AddElemento(el, usuarioId);
 
         return el;
     }
@@ -601,12 +605,7 @@ public class ContenidoController : ControllerPublico
         startInfo.FileName = configuration["ffmpegfullpath"];
         startInfo.Arguments = $"-i {Archivo} -vf \"select=eq(n\\,1)\" -frames:v 1 {ArchivoSalida}";
         startInfo.RedirectStandardOutput = true;
-        //startInfo.RedirectStandardError = true;
 
-        //Console.WriteLine(string.Format(
-        //    "Executing \"{0}\" with arguments \"{1}\".\r\n",
-        //    startInfo.FileName,
-        //    startInfo.Arguments));
 
         try
         {
