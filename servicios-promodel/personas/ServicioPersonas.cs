@@ -94,7 +94,7 @@ namespace promodel.servicios
 
         public async Task<bool> UpsertLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId, string AlmacenamientoId)
         {
-            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
+            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId || x.Id== UsuarioId).FirstOrDefaultAsync();
             if (p != null)
             {
                 var link = p.Documentos.FirstOrDefault(d => d.Id == DocumentoId);

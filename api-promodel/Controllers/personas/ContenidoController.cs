@@ -227,7 +227,7 @@ public class ContenidoController : ControllerPublico
             return BadRequest("Documento no válido");
         }
 
-        var queryPersona = await personas.PorUsuarioId(usuarioFinal);
+        var queryPersona = await personas.PorId(usuarioFinal);
         Persona p = null;
         if (queryPersona.Ok)
         {
