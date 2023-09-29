@@ -116,7 +116,7 @@ namespace promodel.servicios
 
         public async Task<bool> EstableceFotoPrincipal(string UsuarioId, string? ElementoId)
         {
-            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
+            var p = await db.Personas.Where(x => x.Id == UsuarioId || x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
             if (p != null)
             {
                 p.ElementoMedioPrincipalId = ElementoId;
@@ -946,12 +946,11 @@ namespace promodel.servicios
         public async Task<RespuestaPayload<CastingPersona>> MisCastings(string usuarioId)
         {
             var r = new RespuestaPayload<CastingPersona>();
-            var rPersona = await PorUsuarioId(usuarioId);
-            if(rPersona.Ok)
+            var Persona = await db.Personas.FirstOrDefaultAsync(_ => _.Id == usuarioId || _.UsuarioId == usuarioId);
+            if(Persona!=null)
             {
-                var persona = (Persona)rPersona.Payload;
                 r.Ok = true;
-                r.Payload = persona.Castings;
+                r.Payload = Persona.Castings;
             }
             return r;
         }
