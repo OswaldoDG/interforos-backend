@@ -421,7 +421,17 @@ namespace promodel.servicios
                         TienePerfil = false,
                         RequirePerfil = usuario.RolesCliente.Any(x => x.ClienteId == ClienteId && x.Rol == TipoRolCliente.Modelo),
                         Roles = usuario.RolesCliente.Where(x=>x.ClienteId == ClienteId).Select(r=>r.Rol).ToList()
-                    };
+                         
+                };
+
+                    if (usuario.AceptacionConsentimientos != null)
+                    {
+                        info.CosentimientosAceptados = usuario.AceptacionConsentimientos;
+                    }
+                    else
+                    {
+                        info.CosentimientosAceptados = new List<AceptacionConsentimiento>();
+                    }
 
                     if (u != null)
                     {
@@ -429,7 +439,8 @@ namespace promodel.servicios
                         info.AvatarBase64 = u.AvatarBase64;
                         info.NombreCompleto = u.Nombre;
                         info.Alias = u.NombreArtistico;
-                        info.CosentimientosAceptados = usuario.AceptacionConsentimientos;
+                       
+
                     }
                     return info;
                 }
