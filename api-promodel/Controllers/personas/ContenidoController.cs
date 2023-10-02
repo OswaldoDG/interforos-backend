@@ -390,8 +390,16 @@ public class ContenidoController : ControllerPublico
 
         if (Request.Form.Files[0].Length <= 0)
             return BadRequest("Invalid file length, seems to be empty");
-
-        var queryPersona = await personas.PorId(usuarioFinal);
+        RespuestaPayload<Persona> queryPersona; 
+        if (string.IsNullOrEmpty(uid))
+        {
+            queryPersona = await personas.PorUsuarioId(usuarioFinal);
+        }
+        else
+        {
+             queryPersona = await personas.PorId(usuarioFinal);
+        }
+        
         Persona p = null;
         if (queryPersona.Ok)
         {
