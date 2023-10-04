@@ -565,7 +565,7 @@ public class CastingController : ControllerUsoInterno
         if (this.RolUsuario == TipoRolCliente.Staff || this.RolUsuario==TipoRolCliente.Administrador)
         { 
 
-        var result = await castingService.EstablecerEstadoCasting(this.UsuarioId, castingId, this.ClienteId, estado);
+        var result = await castingService.EstablecerEstadoCasting(this.UsuarioId, castingId, this.ClienteId, estado,RolUsuario);
         if (result.Ok)
         {
             return Ok();

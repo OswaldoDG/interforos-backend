@@ -873,7 +873,7 @@ public class CastingService : ICastingService
     }
 
 
-    public async Task<Respuesta> EstablecerEstadoCasting(string usuarioId, string castingId, string clienteId, EstadoCasting estado)
+    public async Task<Respuesta> EstablecerEstadoCasting(string usuarioId, string castingId, string clienteId, EstadoCasting estado,TipoRolCliente Rol)
     {
         //  Creacion de un o tipo Respuesta
         var r = new Respuesta();
@@ -882,9 +882,10 @@ public class CastingService : ICastingService
         if (casting != null)
         {
             //verifica que el usurioId de es  dentro de los contactos busca todo los contactos que esten agregados los busca por su id de usuario y verifica que esos 
-            //usuarios tengan un rango de estaff o administrador
-            var BusquedaIdUsuarioEnContactosCasting = casting.Contactos.FirstOrDefault(x => x.UsuarioId == usuarioId && (x.Rol == TipoRolCliente.Staff || x.Rol == TipoRolCliente.Administrador));
-            if (BusquedaIdUsuarioEnContactosCasting != null)
+            //usuarios tengan un rango de estaff o  si el usuario es administrador
+          
+            var puedeEditar = casting.Contactos.Any(x => x.UsuarioId == usuarioId && (x.Rol == TipoRolCliente.Staff)) || TipoRolCliente.Administrador==Rol;
+            if (puedeEditar)
             {
                 casting.Status = estado;
                 await db.Castings.AddOrUpdateAsync(casting);
