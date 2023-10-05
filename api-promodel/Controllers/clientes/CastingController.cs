@@ -483,12 +483,13 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<List<string>>> CategoriasModelo([FromRoute] string castingId)
+    public async Task<ActionResult<List<string>>> CategoriasModelo([FromRoute] string castingId, [FromQuery] string? personaId)
     {
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
         if (personaPorUsuarioId.Ok)
         {
-            var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, ((Persona)personaPorUsuarioId.Payload).Id, this.UsuarioId);
+            string persona = !string.IsNullOrEmpty(personaId) ? personaId : ((Persona)personaPorUsuarioId.Payload).Id!;
+            var result = await castingService.CategoriasModeloCasting(this.ClienteId, castingId, persona, this.UsuarioId);
             if (result.Ok)
             {
                 return Ok(result.Payload);
@@ -508,12 +509,14 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> InscribirCategoria([FromRoute] string castingId, [FromRoute] string categoriaId)
+    public async Task<IActionResult> InscribirCategoria([FromRoute] string castingId, [FromRoute] string categoriaId, [FromQuery] string? personaId)
     {
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
         if(personaPorUsuarioId.Ok)
         {
-            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, false, this.UsuarioId);
+            string personaInscribir = !string.IsNullOrEmpty(personaId) ? personaId : ((Persona)personaPorUsuarioId.Payload).Id!;
+
+            var result = await castingService.InscripcionCasting(this.ClienteId,personaInscribir , castingId, categoriaId, false, this.UsuarioId);
 
             if (result.Ok)
             {
@@ -534,12 +537,13 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> AbandonarCategoria([FromRoute] string castingId, [FromRoute] string categoriaId)
+    public async Task<IActionResult> AbandonarCategoria([FromRoute] string castingId, [FromRoute] string categoriaId, [FromQuery] string? personaId)
     {
         var personaPorUsuarioId = await servicioPersonas.PorUsuarioId(this.UsuarioId);
         if(personaPorUsuarioId.Ok)
         {
-            var result = await castingService.InscripcionCasting(this.ClienteId, ((Persona)personaPorUsuarioId.Payload).Id, castingId, categoriaId, true, this.UsuarioId);
+            string personaEliminar = !string.IsNullOrEmpty(personaId) ? personaId : ((Persona)personaPorUsuarioId.Payload).Id!;
+            var result = await castingService.InscripcionCasting(this.ClienteId, personaEliminar, castingId, categoriaId, true, this.UsuarioId);
             if (result.Ok)
             {
                 return Ok(result.Ok);

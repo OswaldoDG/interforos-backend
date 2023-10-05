@@ -1,5 +1,7 @@
 ﻿using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Query.Extensions;
+using Org.BouncyCastle.Asn1.Ess;
+using promodel.modelo.castings;
 using promodel.modelo.perfil;
 
 
@@ -8,10 +10,12 @@ namespace promodel.servicios.personas;
 public class ServicioPersonasUsuario : IServicioPersonasUsuario
 {
     private readonly PersonasUsuarioCouchDbContext db;
+    private readonly IServicioPersonas servicioPersonas;
 
-    public ServicioPersonasUsuario(PersonasUsuarioCouchDbContext db)
+    public ServicioPersonasUsuario(PersonasUsuarioCouchDbContext db, IServicioPersonas servicioPersonas)
     {
         this.db = db;
+        this.servicioPersonas = servicioPersonas;
     }
 
     public async Task<RespuestaPayload<PersonasUsuario>> AdicionaPersona(string personaId, string clienteId, string usuarioId, string? agenciaId = null)
@@ -57,14 +61,24 @@ public class ServicioPersonasUsuario : IServicioPersonasUsuario
         return r;
     }
 
-    public async Task<RespuestaPayload<List<string>>> ObtienePersonasRegistradas(string clienteId, string usuarioId, string? agenciaId = null)
+    public async Task<RespuestaPayload<List<MapaUsuarioNombre>>> ObtienePersonasRegistradas(string clienteId, string usuarioId, string? agenciaId = null)
     {
-        var r = new RespuestaPayload<List<string>>();
-        r.Payload = new List<string>();
+        var r = new RespuestaPayload<List<MapaUsuarioNombre>>();
+        var modelos = new List<MapaUsuarioNombre>();
         var personaUsuario = await PersonaUsuarioPorId(clienteId, usuarioId, agenciaId);
         if (personaUsuario != null)
         {
-            r.Payload = personaUsuario.IdPersonas;           
+            personaUsuario.IdPersonas.ForEach( p =>
+            {
+                var personaR =  servicioPersonas.PorId(p).Result;
+
+                if (personaR.Ok)
+                {
+                    var persona = (Persona)personaR.Payload;
+                    modelos.Add(new MapaUsuarioNombre() { Id = persona.Id, Nombre = persona.NombreArtistico, Email = null });
+                }
+            });
+            r.Payload = modelos;
         }
         r.Ok = true;
         return r;

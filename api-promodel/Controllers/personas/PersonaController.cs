@@ -503,7 +503,7 @@ public class PersonaController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<List<string>>> ObtienePersonasPorUsuario()
+    public async Task<ActionResult<List<MapaUsuarioNombre>>> ObtienePersonasPorUsuario()
     {
         var r = await personasUsuario.ObtienePersonasRegistradas(this.ClienteId, this.UsuarioId, null);
        

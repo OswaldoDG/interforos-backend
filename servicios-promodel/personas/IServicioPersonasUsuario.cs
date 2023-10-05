@@ -1,4 +1,5 @@
-﻿using promodel.modelo.perfil;
+﻿using promodel.modelo.castings;
+using promodel.modelo.perfil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,6 @@ namespace promodel.servicios.personas
 
         Task<RespuestaPayload<PersonasUsuario>> AdicionaPersona(string personaId, string clienteId, string usuarioId, string? agenciaId = null);
         Task<Respuesta> RemuevePersona(string personaId, string clienteId, string usuarioId, string? agenciaId = null);
-        Task<RespuestaPayload<List<string>>> ObtienePersonasRegistradas(string clienteId, string usuarioId, string? agenciaId = null);
+        Task<RespuestaPayload<List<MapaUsuarioNombre>>> ObtienePersonasRegistradas(string clienteId, string usuarioId, string? agenciaId = null);
     }
 }
