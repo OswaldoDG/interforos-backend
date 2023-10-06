@@ -34,8 +34,8 @@ namespace promodel.servicios
               .HasIndex(IDX_PERSONA_X_UID, b => b.IndexBy(b => b.UsuarioId));
 
 
-            databaseBuilder.Document<Persona>()
-              .HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexBy(b => b.Consecutivo)).HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexByDescending(b => b.Consecutivo));
+           // databaseBuilder.Document<Persona>()
+             // .HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexBy(b => b.Consecutivo)).HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexByDescending(b => b.Consecutivo));
 
             //databaseBuilder.Document<Persona>()
             //    .HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexBy(b => b.NombreArtistico)).HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexByDescending(b => b.NombreArtistico));
