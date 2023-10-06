@@ -243,14 +243,14 @@ public class ContenidoController : ControllerPublico
 
         if (!string.IsNullOrEmpty(p.FolderContenidoId))
         {
-
-            // Elimina el contenido anterior si ya existe para el elemento
-            var plantilla = cliente.Documentacion.FirstOrDefault(d => d.Id == documento.Id);
+           
+                // Elimina el contenido anterior si ya existe para el elemento
+                var plantilla = cliente.Documentacion.FirstOrDefault(d => d.Id == documento.Id);
             var doc = p.Documentos.FirstOrDefault(d => d.Id == documento.Id);
             if(doc!=null)
             {
-                await almacenamiento.DeleteFile(ClienteId, doc.IdAlmacenamiento);
-                await this.media.DelElemento(doc.IdAlmacenamiento, usuarioFinal);
+                    await almacenamiento.DeleteFile(ClienteId, doc.IdAlmacenamiento);
+                    await this.media.DelElemento(doc.IdAlmacenamiento, usuarioFinal);   
             }
             string? castingId = null;
             if (!string.IsNullOrEmpty(documento.CastingId)) { castingId = documento.CastingId; }
