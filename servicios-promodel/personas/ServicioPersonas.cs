@@ -559,20 +559,16 @@ namespace promodel.servicios
                     switch (busqueda.OrdenarPor)
                     {
                         case "consecutivo":
-                            ordenar = OrdenarPorConsecutivo();                           
-                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_CONSEC };                        
+                            ordenar = OrdenarPorConsecutivo();                                                 
                             break;
                         case "NombreArtistico":
                             ordenar = OrdenarPorNombreArtistico();
-                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBREARTISTICO};
                             break;
                         case "edad":
                             ordenar =OrdenarPorEdad();
-                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_EDAD };
                             break;
                         default:
                             ordenar = OrdenarPorNombre();
-                            orden = new[] { "design_document", PersonasCouchDbContext.IDX_PERSONA_X_NOMBRE };
                             break;
                     }
                 }
@@ -591,13 +587,13 @@ namespace promodel.servicios
 
                     if (busqueda.OrdernarASC != null && busqueda.OrdernarASC ==true)
                     {
-                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderBy(ordenar).ToList();
+                        var todos = db.Personas.Where(expresion).OrderBy(ordenar).ToList();
                         total = todos.Count();
                         personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
                     }
                     else
                     {
-                        var todos = db.Personas.Where(expresion).UseIndex(orden).OrderByDescending(ordenar).ToList();
+                        var todos = db.Personas.Where(expresion).OrderByDescending(ordenar).ToList();
                         total = todos.Count();
                         personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
 
