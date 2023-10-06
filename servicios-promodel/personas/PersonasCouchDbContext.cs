@@ -36,12 +36,15 @@ namespace promodel.servicios
 
             databaseBuilder.Document<Persona>()
               .HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexBy(b => b.Consecutivo)).HasIndex(IDX_PERSONA_X_CONSEC, b => b.IndexByDescending(b => b.Consecutivo));
-            databaseBuilder.Document<Persona>()
-                .HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexBy(b => b.NombreArtistico)).HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexByDescending(b => b.NombreArtistico));
-            databaseBuilder.Document<Persona>()
-               .HasIndex(IDX_PERSONA_X_EDAD, b => b.IndexBy(b => b.Edad)).HasIndex(IDX_PERSONA_X_EDAD, b => b.IndexByDescending(b => b.Edad));
-            databaseBuilder.Document<Persona>()
-               .HasIndex(IDX_PERSONA_X_NOMBRE, b => b.IndexBy(b => b.Nombre)).HasIndex(IDX_PERSONA_X_NOMBRE, b => b.IndexByDescending(b => b.Nombre));
+
+            //databaseBuilder.Document<Persona>()
+            //    .HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexBy(b => b.NombreArtistico)).HasIndex(IDX_PERSONA_X_NOMBREARTISTICO, b => b.IndexByDescending(b => b.NombreArtistico));
+
+            //databaseBuilder.Document<Persona>()
+            //   .HasIndex(IDX_PERSONA_X_EDAD, b => b.IndexBy(b => b.Edad)).HasIndex(IDX_PERSONA_X_EDAD, b => b.IndexByDescending(b => b.Edad));
+
+            //databaseBuilder.Document<Persona>()
+            //   .HasIndex(IDX_PERSONA_X_NOMBRE, b => b.IndexBy(b => b.Nombre)).HasIndex(IDX_PERSONA_X_NOMBRE, b => b.IndexByDescending(b => b.Nombre));
 
 
             databaseBuilder.Document<Persona>()
