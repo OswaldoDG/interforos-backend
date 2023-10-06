@@ -94,7 +94,7 @@ namespace promodel.servicios
 
         public async Task<bool> UpsertLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId, string AlmacenamientoId)
         {
-            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
+            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId || x.Id== UsuarioId).FirstOrDefaultAsync();
             if (p != null)
             {
                 var link = p.Documentos.FirstOrDefault(d => d.Id == DocumentoId);
@@ -116,7 +116,7 @@ namespace promodel.servicios
 
         public async Task<bool> EstableceFotoPrincipal(string UsuarioId, string? ElementoId)
         {
-            var p = await db.Personas.Where(x => x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
+            var p = await db.Personas.Where(x => x.Id == UsuarioId || x.UsuarioId == UsuarioId).FirstOrDefaultAsync();
             if (p != null)
             {
                 p.ElementoMedioPrincipalId = ElementoId;
@@ -421,7 +421,17 @@ namespace promodel.servicios
                         TienePerfil = false,
                         RequirePerfil = usuario.RolesCliente.Any(x => x.ClienteId == ClienteId && x.Rol == TipoRolCliente.Modelo),
                         Roles = usuario.RolesCliente.Where(x=>x.ClienteId == ClienteId).Select(r=>r.Rol).ToList()
-                    };
+                         
+                };
+
+                    if (usuario.AceptacionConsentimientos != null)
+                    {
+                        info.CosentimientosAceptados = usuario.AceptacionConsentimientos;
+                    }
+                    else
+                    {
+                        info.CosentimientosAceptados = new List<AceptacionConsentimiento>();
+                    }
 
                     if (u != null)
                     {
@@ -429,7 +439,8 @@ namespace promodel.servicios
                         info.AvatarBase64 = u.AvatarBase64;
                         info.NombreCompleto = u.Nombre;
                         info.Alias = u.NombreArtistico;
-                        info.CosentimientosAceptados = usuario.AceptacionConsentimientos;
+                       
+
                     }
                     return info;
                 }
@@ -946,12 +957,11 @@ namespace promodel.servicios
         public async Task<RespuestaPayload<CastingPersona>> MisCastings(string usuarioId)
         {
             var r = new RespuestaPayload<CastingPersona>();
-            var rPersona = await PorUsuarioId(usuarioId);
-            if(rPersona.Ok)
+            var Persona = await db.Personas.FirstOrDefaultAsync(_ => _.Id == usuarioId || _.UsuarioId == usuarioId);
+            if(Persona!=null)
             {
-                var persona = (Persona)rPersona.Payload;
                 r.Ok = true;
-                r.Payload = persona.Castings;
+                r.Payload = Persona.Castings;
             }
             return r;
         }
