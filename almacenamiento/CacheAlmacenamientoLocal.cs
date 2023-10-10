@@ -23,7 +23,7 @@ namespace almacenamiento
             await this.almacenamiento.DownloadFile(ClientId, FileId);
         }
 
-        public async Task EliminaArchivo(string NombreArchivo, string Folder)
+        public async Task EliminaArchivo(string ClientId, string NombreArchivo, string Folder)
         {
             string Ruta = Path.Combine(config.Ruta, Folder, NombreArchivo);
 
@@ -33,12 +33,22 @@ namespace almacenamiento
             }
         }
 
-        public string? FotoById(string usuarioid, string id, string tipo)
+        public async Task<string?> FotoById(string ClientId, string usuarioid, string id, string tipo)
         {
             string dir = Path.Combine(config.Ruta, usuarioid);
             if (Directory.Exists(dir))
             {
-                return Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                var archivo = Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                if(archivo!= null)
+                {
+                    return archivo;
+                } else
+                {
+                    // Inyectar el servicio de medios 
+                    var file = await almacenamiento.DownloadFile(ClientId, id);
+                    // CreaArchivoImagen
+                }
+                
             }
 
             return null;
