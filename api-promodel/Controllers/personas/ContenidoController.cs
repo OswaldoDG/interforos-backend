@@ -143,7 +143,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<FileStreamResult> StreamById(string usuarioid, string id, string tipo)
     {
-        var a = cacheAlmacenamiento.FotoById(usuarioid, id, tipo);
+        var a = await cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo);
         var stream = System.IO.File.OpenRead(a);
         return new FileStreamResult(stream, "video/mp4");
     }
@@ -157,7 +157,7 @@ public class ContenidoController : ControllerPublico
     public IActionResult FotoById(string usuarioid, string id, string tipo)
     {
 
-        var a = cacheAlmacenamiento.FotoById(usuarioid, id, tipo);
+        var a = cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo).Result;
         if (a != null)
         {
             FileInfo fi = new FileInfo(a);
