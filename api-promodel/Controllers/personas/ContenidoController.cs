@@ -143,8 +143,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<FileStreamResult> StreamById(string usuarioid, string id, string tipo)
     {
-        var a = cacheAlmacenamiento.FotoById(usuarioid, id, tipo);
-        Console.WriteLine(a);
+        var a = await cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo);
         var stream = System.IO.File.OpenRead(a);
         return new FileStreamResult(stream, "video/mp4");
     }
@@ -158,34 +157,24 @@ public class ContenidoController : ControllerPublico
     public IActionResult FotoById(string usuarioid, string id, string tipo)
     {
 
-        if (Guid.Empty.ToString() == id)
+        var a = cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo).Result;
+        if (a != null)
         {
-            string ruta = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "archivos", "demo", "fotos");
-            var files = Directory.GetFiles(ruta, "*.jpg");
-            Random r = new Random(DateTime.Now.Millisecond);
-            int n = r.Next(1, files.Length);
-            var image = System.IO.File.OpenRead(files[n]);
-            return File(image, files[n].GetMimeTypeForFileExtension());
+            FileInfo fi = new FileInfo(a);
+            var stream = System.IO.File.OpenRead(a);
+
+            return new FileStreamResult(stream, a.GetMimeTypeForFileExtension())
+            {
+                EnableRangeProcessing = false,
+                FileDownloadName = fi.Name
+            };
         }
         else
         {
-            var a = cacheAlmacenamiento.FotoById(usuarioid, id, tipo);
-            if(a!=null)
-            {
-                FileInfo fi = new FileInfo(a);
-                var stream = System.IO.File.OpenRead(a);
-
-                return new FileStreamResult(stream, a.GetMimeTypeForFileExtension())
-                {
-                    EnableRangeProcessing = false, FileDownloadName = fi.Name
-                };
-            } else
-            {
-                return NotFound();
-            }
-
-
+            return NotFound();
         }
+
+
     }
 
 

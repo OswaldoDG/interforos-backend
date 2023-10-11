@@ -1,6 +1,7 @@
 ﻿using ImageMagick;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace almacenamiento
 {
@@ -16,6 +17,7 @@ namespace almacenamiento
         public CacheAlmacenamientoLocal(IAlmacenamiento almacenamiento, IOptions<CacheAlmacenamientoLocalConfig> options)
         {
             this.config = options.Value;
+            this.almacenamiento = almacenamiento;
         }
 
         public async Task VerificaArchivo(string ClientId, string FileId)
@@ -23,7 +25,7 @@ namespace almacenamiento
             await this.almacenamiento.DownloadFile(ClientId, FileId);
         }
 
-        public async Task EliminaArchivo(string NombreArchivo, string Folder)
+        public async Task EliminaArchivo(string ClientId, string NombreArchivo, string Folder)
         {
             string Ruta = Path.Combine(config.Ruta, Folder, NombreArchivo);
 
@@ -32,19 +34,51 @@ namespace almacenamiento
                 File.Delete(Ruta);
             }
         }
-
-        public string? FotoById(string usuarioid, string id, string tipo)
+        public async Task<string?> FotoById(string ClientId, string usuarioid, string id, string tipo)
         {
+
             string dir = Path.Combine(config.Ruta, usuarioid);
-            if (Directory.Exists(dir))
+           
+            if (!Directory.Exists(dir))
             {
-                return Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                Directory.CreateDirectory(dir);
             }
 
-            return null;
+                var archivo = Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                if(archivo!= null)
+                {
+                    return archivo;
+                } else
+                {
+                    var file = await almacenamiento.DownloadFile(ClientId, id);
+                    await CreaArchivoImagen(file, $"{id}", usuarioid,true);
+                    return Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                }
+               }
+
+        public async Task CreaArchivoImagen(MemoryStream Archivo, string NuevoNombre, string Folder, bool EsImagen)
+        {
+            if (Archivo!=null)
+            {
+                string dir = Path.Combine(config.Ruta, Folder);
+                var ImgGoogleDrive = $"{dir}\\{NuevoNombre}.jpg";
+                FileStream file = new FileStream(ImgGoogleDrive, FileMode.Create, FileAccess.Write);
+                Archivo.WriteTo(file);
+                file.Close();
+                Archivo.Close();
+                                              
+                FileInfo fi = new(ImgGoogleDrive);
+                string Ruta = Path.Combine(dir, NuevoNombre);
+                string FullFile = $"{Ruta.Replace(fi.Extension, "")}-{TAMANO_FULL}{fi.Extension}";
+                File.Copy(ImgGoogleDrive, FullFile);
+                File.Delete(ImgGoogleDrive);
+                if (EsImagen && File.Exists(FullFile))
+                {
+                    await CreaImagen(FullFile, TAMANO_CARD, fi.Extension, config.Quality, config.TamanoCard);
+                    await CreaImagen(FullFile, TAMANO_THUMB, fi.Extension, config.Quality, config.TamanoThumb);
+                }
+            }
         }
-
-
         public async Task CreaArchivoImagen(string Archivo, string NuevoNombre, string Folder, bool EsImagen)
         {
             if(File.Exists(Archivo))
@@ -103,6 +137,5 @@ namespace almacenamiento
                 return name;
             }
         }
-
     }
 }
