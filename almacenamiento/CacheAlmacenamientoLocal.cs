@@ -51,8 +51,12 @@ namespace almacenamiento
                 } else
                 {
                     var file = await almacenamiento.DownloadFile(ClientId, id);
-                    await CreaArchivoImagen(file, $"{id}", usuarioid,true);
+                    if(file!=null)
+                {
+                    await CreaArchivoImagen(file, $"{id}", usuarioid, true);
                     return Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
+                }
+                    else { return null; }
                 }
                }
 
