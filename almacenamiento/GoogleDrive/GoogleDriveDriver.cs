@@ -1,7 +1,11 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
+using Newtonsoft.Json.Linq;
+using System.Data;
+using System.Security;
 
 namespace almacenamiento.GoogleDrive
 {
@@ -297,9 +301,36 @@ namespace almacenamiento.GoogleDrive
             return valido;
         }
 
-        public Task AccesoPublico(string archivoId, bool publico)
+        public async Task AccesoPublico(string ClientId,string archivoId, bool publico)
         {
-            throw new NotImplementedException();
+
+            var cfg = await provider.GetConfig(ClientId);
+
+            StorageObjectDescriptor f = new();
+
+            var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
+                .CreateScoped(DriveService.ScopeConstants.Drive);
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "promodel"
+            });
+            if(publico)
+            {
+            Permission newPermission = new Permission();
+            newPermission.Role = "reader";
+            newPermission.Type = "anyone";
+            try
+            {
+                 service.Permissions.Create(newPermission, archivoId).Execute();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("An error occurred: " + e.Message);
+            }
+            }
+
         }
     }
 }
