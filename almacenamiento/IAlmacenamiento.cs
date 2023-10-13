@@ -61,5 +61,14 @@
         /// <param name="FileId"></param>
         /// <returns></returns>
         Task<bool> DeleteFile(string ClientId, string FileId);
+
+
+        /// <summary>
+        /// Establece o elimina el acceso público a un contenido
+        /// </summary>
+        /// <param name="archivoId"></param>
+        /// <param name="publico"></param>
+        /// <returns></returns>
+        Task AccesoPublico(string archivoId, bool publico);
     }
 }

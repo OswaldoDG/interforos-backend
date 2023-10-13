@@ -296,5 +296,10 @@ namespace almacenamiento.GoogleDrive
 
             return valido;
         }
+
+        public Task AccesoPublico(string archivoId, bool publico)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -124,5 +124,12 @@ namespace promodel.modelo.media
         [JsonProperty("casid")]
         public string? CastingId { get; set; }
 
+
+        /// <summary>
+        /// Determina si un elemento ha sido mrcado como de acceso público
+        /// </summary>
+        [JsonProperty("pub")]
+        public bool Publico { get; set; } = false;
+
     }
 }

@@ -3,6 +3,7 @@ using api_promodel.Controllers.publico;
 using ImageMagick;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using promodel.modelo.media;
 using promodel.modelo.perfil;
 using promodel.servicios;
@@ -37,12 +38,13 @@ public class ContenidoController : ControllerPublico
     private readonly IAlmacenamiento almacenamiento;
     private readonly IMedia media;
     private readonly ICacheAlmacenamiento cacheAlmacenamiento;
-
+    private readonly IDistributedCache cache;
     public ContenidoController(
         IServicioPersonas personas,
         ICacheAlmacenamiento cacheAlmacenamiento,
         IConfiguration configuration, 
         IAlmacenamiento almacenamiento,
+        IDistributedCache cache,
         IMedia media, IServicioClientes servicioClientes) : base(servicioClientes)
     {
         this.cacheAlmacenamiento = cacheAlmacenamiento;
@@ -50,6 +52,7 @@ public class ContenidoController : ControllerPublico
         this.almacenamiento = almacenamiento;
         this.media = media;
         this.personas = personas;
+        this.cache = cache;
     }
 
 
@@ -157,6 +160,7 @@ public class ContenidoController : ControllerPublico
     public async Task<IActionResult> FotoById(string usuarioid, string id, string tipo)
     {
 
+        await ValidaPublicarVideos(usuarioid);
         var a = await cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo);
         if (a != null)
         {
@@ -175,6 +179,28 @@ public class ContenidoController : ControllerPublico
         }
 
 
+    }
+
+    private async Task ValidaPublicarVideos(string usuarioid)
+    {
+        string clave = $"mediospublicos-{usuarioid}";
+
+        if(string.IsNullOrEmpty(cache.GetString( clave)))
+        {
+            // Si no hay un valor en el cache 
+            // 1. Obtener todos los medios del usuario
+            // para todos los medios de tipo video ejecutar
+
+            // Con cada resultado ejecutar si la propieda Publio = false
+            await almacenamiento.AccesoPublico("id_del_video", true);
+            
+            // Y modificar la nueva propiedad Publico = true en ElementoMedia
+
+            // FInalmente actualizar el cache
+            // Este valor puede contener cualquier cosa sólo es para verificar que los permisos se hayan propagado 
+            // Y para no saturar la memoria del equipo se establce que el valor se remueva del caché despues de 1 hora
+            cache.SetString(clave, "1", new DistributedCacheEntryOptions() {  SlidingExpiration = TimeSpan.FromMinutes(60) });
+        }
     }
 
 
