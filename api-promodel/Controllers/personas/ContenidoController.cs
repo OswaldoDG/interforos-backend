@@ -187,19 +187,17 @@ public class ContenidoController : ControllerPublico
 
         if(string.IsNullOrEmpty(cache.GetString( clave)))
         {
-            // Si no hay un valor en el cache 
-            // 1. Obtener todos los medios del usuario
-            // para todos los medios de tipo video ejecutar
-
-            // Con cada resultado ejecutar si la propieda Publio = false
-            await almacenamiento.AccesoPublico("id_del_video", true);
-            
-            // Y modificar la nueva propiedad Publico = true en ElementoMedia
-
-            // FInalmente actualizar el cache
-            // Este valor puede contener cualquier cosa sólo es para verificar que los permisos se hayan propagado 
-            // Y para no saturar la memoria del equipo se establce que el valor se remueva del caché despues de 1 hora
-            cache.SetString(clave, "1", new DistributedCacheEntryOptions() {  SlidingExpiration = TimeSpan.FromMinutes(60) });
+            var medios = await media.GetByUsuarioId(usuarioid);
+            foreach (var m in medios.Elementos)
+            {
+                if(m.Video)
+                {
+                    await almacenamiento.AccesoPublico(ClienteId,m.Id, true);
+                    m.Publico = true;
+                  
+                }
+            };
+            cache.SetString(clave, "1", new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(60) });
         }
     }
 
@@ -523,6 +521,7 @@ public class ContenidoController : ControllerPublico
             {
                 ///Crea el archvo en el almacenamiento para obtener su Id
                 archivoAlmacenado = await almacenamiento.CreateFile(ClienteId, FullPath, FileId, FolderId);
+                
             }
             else
             {
@@ -538,18 +537,13 @@ public class ContenidoController : ControllerPublico
             ElementoMedia el = null;
             if (archivoAlmacenado != null)
             {
+                await almacenamiento.AccesoPublico(ClienteId, archivoAlmacenado.Id, true);
                 // Añade el registro a la base de datos
                 FileInfo FiSaved = new(FullPath);
 
                 el = await AddElementoMedio(usuarioFinal, archivoAlmacenado.Id, 
                     TipoMedio.Galería , fi.Extension, fileName.GetMimeTypeForFileExtension(),
                     FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id, photo.Titulo,castingId);
-
-                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, $"{archivoAlmacenado.Id}{fi.Extension}", usuarioFinal, EsFoto);
-                if (EsVideo)
-                {
-                    await cacheAlmacenamiento.CreaArchivoImagen(FrameFullPath, $"{frameAlmacenado.Id}.jpg", usuarioFinal, true);
-                }
             }
 
             try

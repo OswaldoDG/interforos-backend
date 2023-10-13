@@ -69,6 +69,6 @@
         /// <param name="archivoId"></param>
         /// <param name="publico"></param>
         /// <returns></returns>
-        Task AccesoPublico(string archivoId, bool publico);
+        Task AccesoPublico(string ClientId ,string archivoId, bool publico);
     }
 }
