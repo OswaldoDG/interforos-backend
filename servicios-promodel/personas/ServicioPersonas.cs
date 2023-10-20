@@ -576,6 +576,7 @@ namespace promodel.servicios
 
                 int total = 0;
                 List<Persona> personas = new List<Persona>();
+                List<Persona> filtro = new List<Persona>();
                 if (expressions.Count > 0)
                 {
                     var expresion = expressions[0];
@@ -585,17 +586,19 @@ namespace promodel.servicios
                         expresion = expresion.And(expressions[i]);
                     }
 
-                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC ==true)
+                    if (busqueda.OrdernarASC != null && busqueda.OrdernarASC == true)
                     {
                         var todos = db.Personas.Where(expresion).OrderBy(ordenar).ToList();
-                        total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        var personasFiltradas = todos.Where(p => p.DatosCompletos == true).ToList();
+                        total = personasFiltradas.Count();
+                        personas = personasFiltradas.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
                     }
                     else
                     {
                         var todos = db.Personas.Where(expresion).OrderByDescending(ordenar).ToList();
-                        total = todos.Count();
-                        personas = todos.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
+                        var personasFiltradas = todos.Where(p => p.DatosCompletos == true).ToList();
+                        total = personasFiltradas.Count();
+                        personas = personasFiltradas.Skip((busqueda.Pagina - 1) * busqueda.Tamano).Take(busqueda.Tamano).ToList();
 
                     }
                 }
