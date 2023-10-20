@@ -118,6 +118,8 @@ namespace promodel.modelo.perfil
         /// </summary>
         [JsonProperty("pac")]
         public string PaisActualId { get; set; }
+        [JsonProperty("cpt")]
+        public bool DatosCompletos { get; set; }
 
 
         /// <summary>
