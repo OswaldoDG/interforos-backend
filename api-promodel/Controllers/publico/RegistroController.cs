@@ -154,9 +154,15 @@ namespace api_promodel.Controllers
                         });
                         await identidad.ActualizaUsuario(user);
                     }
-
-
-
+                    if (user.RolesCliente.Any(x => x.ClienteId == r.Registro.ClienteId && x.Rol == TipoRolCliente.Agencia))
+                    {
+                        user.AceptacionConsentimientos.Add(new AceptacionConsentimiento()
+                        {
+                            Id = "c-agencia",
+                            FechaAceptacion = DateTime.UtcNow
+                        });
+                        await identidad.ActualizaUsuario(user);
+                    }
 
                     await identidad.EliminaRegistroPorId(r.Id);
 
