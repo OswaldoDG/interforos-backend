@@ -16,41 +16,50 @@ namespace api_promodel.middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            string? origin = context.Request.Headers["Origin"];
-            if(origin == null)
+            if (context.Request.Path == "/" ||
+               (context.Request.Path.HasValue && context.Request.Path.Value.Contains("webhooks", StringComparison.InvariantCultureIgnoreCase)))
             {
-                origin = context.Request.Headers["Referer"];
+                await _next(context);
             }
-            if (!string.IsNullOrEmpty(origin))
-            {
-                origin = origin.TrimEnd('/');
-            }
-            origin ??= "https://localhost";
-            bool deny = true;
-
-            var c = await servicioClientes.ClientePorUrl(origin);
-            if(c!=null)
-            {
-                if (c.Activo)
+            else {
+                string? origin = context.Request.Headers["Origin"];
+                if (origin == null)
                 {
-                    deny  = false;
-                    if(context.Request.Headers.Any(x=>x.Key == HCLIENTEID))
-                    {
-                        context.Request.Headers.Remove(HCLIENTEID);
-                    }
-
-                    context.Request.Headers.Add(HCLIENTEID, c.Id);
-                    // Call the next delegate/middleware in the pipeline.
-                    await _next(context);
+                    origin = context.Request.Headers["Referer"];
                 }
-            } 
+                if (!string.IsNullOrEmpty(origin))
+                {
+                    origin = origin.TrimEnd('/');
+                }
+                origin ??= "https://localhost";
+                bool deny = true;
 
-            if(deny)
-            {
-                context.Response.Clear();
-                context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+                var c = await servicioClientes.ClientePorUrl(origin);
+                if (c != null)
+                {
+                    if (c.Activo)
+                    {
+                        deny = false;
+                        if (context.Request.Headers.Any(x => x.Key == HCLIENTEID))
+                        {
+                            context.Request.Headers.Remove(HCLIENTEID);
+                        }
+
+                        context.Request.Headers.Add(HCLIENTEID, c.Id);
+                        // Call the next delegate/middleware in the pipeline.
+                        await _next(context);
+                    }
+                }
+
+                if (deny)
+                {
+                    context.Response.Clear();
+                    context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+                }
+
             }
-            
+
+
         }
 
     }
