@@ -107,7 +107,6 @@ namespace promodel.modelo.proyectos
         [JsonProperty("ca")]
         public List<CategoriaCasting>? Categorias { get; set; } = new List<CategoriaCasting>();
 
-
         /// <summary>
         /// Imagen para el casting en formato base 64 
         /// </summary>
