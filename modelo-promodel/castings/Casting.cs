@@ -114,6 +114,8 @@ namespace promodel.modelo.proyectos
         [JsonProperty("logo")]
         public string? LogoCasting { get; set; }
 
+        [JsonProperty("pext")]
+        public PermisosCasting PernisosEcternos { get; set;  } =new PermisosCasting();  
 
         /// <summary>
         /// Eventos asociados al casting

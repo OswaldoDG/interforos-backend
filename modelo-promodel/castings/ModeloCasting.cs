@@ -41,6 +41,18 @@ namespace promodel.modelo.proyectos
         public OrigenInscripcion Origen { get; set; }
 
         /// <summary>
+        /// Identificador único del medio utilizado para la prtada
+        /// </summary>
+        [JsonProperty("pimid")]
+        public string? ImagenPortadaId { get; set; }
+
+        /// <summary>
+        /// Identificador único del medio utilizado para el video
+        /// </summary>
+        [JsonProperty("vimid")]
+        public string? VideoPortadaId { get; set; }
+
+        /// <summary>
         /// Comentarios realizados sobre la persona en la categoría
         /// </summary>
         [JsonProperty("cs")]
