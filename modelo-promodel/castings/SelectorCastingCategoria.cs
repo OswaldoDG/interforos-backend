@@ -1,5 +1,4 @@
-﻿
-namespace promodel.modelo.castings;
+﻿namespace promodel.modelo.castings;
 
 public class SelectorCastingCategoria
 {
@@ -9,4 +8,5 @@ public class SelectorCastingCategoria
 
     public List<SelectorCategoria> Categorias { get; set; }
     public List<MapaUsuarioNombre> Participantes { get; set; }
+    public PermisosCasting PernisosEcternos { get; set; } = new PermisosCasting();
 }

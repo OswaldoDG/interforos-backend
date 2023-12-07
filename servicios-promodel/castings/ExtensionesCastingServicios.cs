@@ -81,7 +81,8 @@ public static class ExtensionesCastingServicios
             Id = casting.Id,
             Nombre = casting.Nombre,
             Categorias = new List<SelectorCategoria>(),
-            Participantes= new List<MapaUsuarioNombre>()
+            Participantes= new List<MapaUsuarioNombre>(),
+            PernisosEcternos = casting.PernisosEcternos
     };
 
        if (casting.Categorias!=null)
