@@ -6,6 +6,7 @@ using Google.Apis.Services;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Security;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace almacenamiento.GoogleDrive
 {
@@ -250,6 +251,9 @@ namespace almacenamiento.GoogleDrive
             });
 
             var request = service.Files.Get(fileId);
+            request.Fields = "parents";
+            var response = request.Execute();
+            response.Parents.ToList().ForEach(x => { Console.WriteLine($"{x}"); });
             var stream = new MemoryStream();
 
             // Add a handler which will be notified on progress changes.
@@ -278,8 +282,77 @@ namespace almacenamiento.GoogleDrive
                     }
                 };
             request.Download(stream);
-
             return stream;
+        }
+
+
+
+        /// <summary>
+        /// Desacarga un archivo en base al Id
+        /// </summary>
+        /// <param name="ClientId"></param>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
+        public async Task<List<string>> ObtienePadre(string ClientId, string fileId)
+        {
+            Google.Apis.Drive.v3.Data.File response = null;
+            var padre = new List<string>(); 
+            var cfg = await provider.GetConfig(ClientId);
+
+            var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
+                .CreateScoped(DriveService.ScopeConstants.Drive);
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "promodel"
+            });
+
+            var request = service.Files.Get(fileId);
+            request.Fields = "parents";
+            try
+            {
+                response = request.Execute();
+                padre = response.Parents.ToList();
+            }
+            catch
+            {
+            }
+            return padre;     
+        }
+
+        /// <summary>
+        /// Obtiene los metadatos de un archivo
+        /// </summary>
+        /// <param name="ClientId"></param>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
+        public async Task<Google.Apis.Drive.v3.Data.File> getMetadatos(string ClientId, string fileId)
+        {
+            Google.Apis.Drive.v3.Data.File response=null;
+            var cfg = await provider.GetConfig(ClientId);
+
+            var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
+                .CreateScoped(DriveService.ScopeConstants.Drive);
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "promodel"
+            });
+
+            var request = service.Files.Get(fileId);
+            request.Fields = "*";
+            try
+            {
+                response = request.Execute();
+            }
+            catch
+            {
+            }
+           
+            return response;
+
         }
 
         public string NombreValidoFolder(string Nombre)
@@ -300,7 +373,13 @@ namespace almacenamiento.GoogleDrive
 
             return valido;
         }
-
+/// <summary>
+/// Aaigna Acceso pusblico a un archivo en google drive
+/// </summary>
+/// <param name="ClientId"></param>
+/// <param name="archivoId"></param>
+/// <param name="publico"></param>
+/// <returns></returns>
         public async Task AccesoPublico(string ClientId,string archivoId, bool publico)
         {
 

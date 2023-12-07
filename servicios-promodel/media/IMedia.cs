@@ -8,6 +8,7 @@ public interface IMedia
     Task<bool> EstablecerPrincipal(string UsuarioId, string ElementoId);
     Task<bool> AlternarBloqueo(string UsuarioId, string ElementoId);
     Task<MediaModelo> GetByUsuarioId(string UsuarioId);
+    Task<MediaModelo> GetByElementoId(string ElementoId);
     Task<ElementoMedia> AddElemento(ElementoMedia el, string UsuarioId);
     Task DelElemento(string Id, string UsuarioId);
 }

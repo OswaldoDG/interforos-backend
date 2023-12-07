@@ -70,5 +70,23 @@
         /// <param name="publico"></param>
         /// <returns></returns>
         Task AccesoPublico(string ClientId ,string archivoId, bool publico);
+
+
+        /// <summary>
+        /// Obtiene el id del folder padre de un  contenido
+        /// </summary>
+        /// <param name="archivoId"></param>
+        /// <param name="publico"></param>
+        /// <returns></returns>
+        public Task<List<string>> ObtienePadre(string ClientId, string fileId);
+
+
+        /// <summary>
+        /// Obtiene los metadatos de un contenido
+        /// </summary>
+        /// <param name="archivoId"></param>
+        /// <param name="publico"></param>
+        /// <returns></returns>
+        public Task<Google.Apis.Drive.v3.Data.File> getMetadatos(string ClientId, string fileId);
     }
 }

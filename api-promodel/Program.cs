@@ -123,6 +123,12 @@ builder.Services.AddCouchContext<BitacoraCastingCouchDbContext>(builder => build
     .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
     password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
 
+builder.Services.AddCouchContext<GoogleDriveDbContext>(builder => builder
+    .EnsureDatabaseExists()
+    .UseEndpoint(configuration.GetValue<string>("promodeldrivers:couchdb:endpoint"))
+    .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
+    password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
+
 builder.Services.Configure<SMTPConfig>(builder.Configuration.GetSection("SMTPConfig"));
 builder.Services.Configure<CacheAlmacenamientoLocalConfig>(builder.Configuration.GetSection("CacheAlmacenamientoLocalConfig"));
 
@@ -142,6 +148,7 @@ builder.Services.AddTransient<ICacheAlmacenamiento, CacheAlmacenamientoLocal>();
 builder.Services.AddTransient<IMedia, MediaService>();
 builder.Services.AddTransient<IBogusService, BogusService>();
 builder.Services.AddTransient<IServicioBitacoraCasting, ServicioBitacoraCasting>();
+builder.Services.AddTransient<IServicioGoogleDrivePushNotifications,ServicioGoogleDrivePushNotifications>();
 
 builder.Services.AddCouchContext<GoogleDriveDbContext>(builder => builder
     .EnsureDatabaseExists()

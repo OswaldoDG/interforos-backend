@@ -965,9 +965,9 @@ namespace promodel.servicios
             return r;
         }
 
-        public async Task<Respuesta> AdicionarCasting(string personaId, string clienteId, string castingId, string folderId)
+        public async Task<RespuestaPayload<CastingPersona>> AdicionarCasting(string personaId, string clienteId, string castingId, string folderId)
         {
-            var respuesta = new Respuesta();
+            var respuesta = new RespuestaPayload<CastingPersona>();
             var r = await PorId(personaId);
             var persona = (Persona)r.Payload;
             if(r.Ok)
@@ -981,6 +981,7 @@ namespace promodel.servicios
                 }
                 persona.Castings.Add(personaCasting);
                 await db.Personas.AddOrUpdateAsync(persona);
+                respuesta.Payload=personaCasting;
                 respuesta.Ok = true;
 
             }
