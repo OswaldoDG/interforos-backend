@@ -282,6 +282,7 @@ public class CastingService : ICastingService
             tmpCasting.AperturaAutomatica = casting.AperturaAutomatica;
             tmpCasting.CierreAutomatico = casting.CierreAutomatico;
             tmpCasting.AperturaAutomatica = casting.AperturaAutomatica;
+            tmpCasting.PernisosEcternos = casting.PernisosEcternos;
             await db.Castings.AddOrUpdateAsync(tmpCasting);
             r.Ok = true;
         }
