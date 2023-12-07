@@ -1,4 +1,5 @@
 ﻿using almacenamiento;
+using Amazon.SimpleEmail.Model.Internal.MarshallTransformations;
 using CouchDB.Driver.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -257,4 +258,9 @@ public class MediaService: IMedia
      
     }
 
+    public async Task<MediaModelo> GetByElementoId(string ElementoId)
+    {
+        var r = await db.Medios.Where(x=>x.Elementos.Any(y=>y.Id==ElementoId)).FirstOrDefaultAsync();
+        return r;
+    }
 }

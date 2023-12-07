@@ -1,4 +1,5 @@
 ﻿using promodel.modelo.webhooks;
+using promodel.servicios;
 using promodel.servicios.webhooks;
 using Serilog;
 
@@ -8,12 +9,16 @@ public class GoogleDriveBS: BackgroundService
 {
     private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
     private readonly IServicioGoogleDrivePushNotifications _servicioGoogleDrivePush;
+    private readonly IConfiguration configuracion;
     private bool EnEjecucionServicioGoogleDrivePush = false;
+    private string ClienteId = null;
 
-    public GoogleDriveBS(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush)
+    public GoogleDriveBS(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush, IConfiguration configuracion)
     {
         _servicioGoogleDrivePush = servicioGoogleDrivePush;
-        Log.Debug("Iniciando servicio GoogleDriveBS");
+        this.configuracion = configuracion;
+        this.ClienteId = configuracion.GetValue<string>("ClienteId")
+;        Log.Debug("Iniciando servicio GoogleDriveBS");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stopToken)
@@ -31,7 +36,6 @@ public class GoogleDriveBS: BackgroundService
         }
     }
 
-
     private async Task ProcesaColaGoogleDrive()
     {
         try
@@ -43,6 +47,22 @@ public class GoogleDriveBS: BackgroundService
                 {
                     var evento = (GoogleDrivePushNotification)resultado.Payload!;
                     Log.Debug($"Procesando evento {evento.Id}");
+                    Respuesta respuesta = new Respuesta();
+                    switch (evento.ResourceState)
+                    {
+                        case ReourceState.sync:
+                            break;
+                        case ReourceState.add:
+                            respuesta = await _servicioGoogleDrivePush.ProcesaEventoCrear(this.ClienteId, evento.ResourceUri.Split("files/")[1]);
+                            break;
+                        case ReourceState.remove:
+                            respuesta = await _servicioGoogleDrivePush.ProcesaEventoEliminar(this.ClienteId, evento.ResourceUri.Split("files/")[1]);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    await _servicioGoogleDrivePush.FinalizaProcesamientoEvento(evento.Id, respuesta.Ok, respuesta.Error);
                 }
                 else
                 {
@@ -57,9 +77,6 @@ public class GoogleDriveBS: BackgroundService
         catch (Exception ex)
         {
             Log.Debug($"Error al ejecutar GoogleDriveBS {ex}");
-        }
-     
+        }     
     }
-
-
 }

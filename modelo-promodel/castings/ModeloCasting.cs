@@ -60,6 +60,11 @@ namespace promodel.modelo.proyectos
 
         [JsonProperty("vo")]
         public List<VotoModeloCategoria> Votos { get; set; } = new List<VotoModeloCategoria>();
+        /// <summary>
+        /// Identificador único del folder de almacenamiento en google drive de casting
+        /// </summary>
+        [JsonProperty("fid")]
+        public string? FolderId { get; set; }
 
     }
 }
