@@ -11,6 +11,7 @@ using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 
 namespace promodel.servicios.proyectos;
@@ -393,7 +394,9 @@ public class CastingService : ICastingService
         {
             castings.ForEach(casting =>
             {
-                castingsResult.Add(casting.aCastingListElement());
+                var temp = casting.aCastingListElement();
+                temp.Logo = "data:image/jpeg;base64," + Convert.ToBase64String(ObtieneLogo(CLienteId,casting.Id).Result);
+                castingsResult.Add(temp);
             });
 
             r.Payload = castingsResult.OrderBy(_ => _.FechaApertura);
@@ -647,11 +650,10 @@ public class CastingService : ICastingService
         var base64String = Convert.ToBase64String(
            System.Text.Encoding.ASCII.GetBytes($"{User}:{Pass}"));
         httpClient.DefaultRequestHeaders.Add("Accept", "application/octet-stream");
-        httpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + base64String);
-
+        httpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Basic", base64String);
         var response = await httpClient.GetAsync(url);
         var result = await response.Content.ReadAsByteArrayAsync();
-
         return result;
 
     }
