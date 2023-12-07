@@ -36,7 +36,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
     public Task<RespuestaPayload<GoogleDrivePushNotification?>> ObtieneEventoPendiente()
     {
         // Debe devolver el siguiente evento de procesamiento cuyo valor Procesado = false o null si no se licaliza
-        throw new NotImplementedException();
+        return Task.FromResult (new RespuestaPayload<GoogleDrivePushNotification?>() {  Ok = true, Payload = null });
     }
 
     public Task<Respuesta> FinalizaProcesamientoEvento(string Id, bool Ok, string? error)

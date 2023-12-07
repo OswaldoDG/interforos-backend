@@ -1,5 +1,6 @@
 using almacenamiento;
 using almacenamiento.GoogleDrive;
+using api_promodel.BackGroundServices;
 using api_promodel.middlewares;
 using comunicaciones.email;
 using CouchDB.Driver.DependencyInjection;
@@ -16,6 +17,7 @@ using promodel.servicios.personas;
 using promodel.servicios.proyectos;
 using promodel.servicios.SolicitudServicio;
 using promodel.servicios.SolicitudSoporte;
+using promodel.servicios.webhooks;
 using Serilog;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -23,11 +25,10 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-//builder.Host.UseSerilog((HostBuilderContext ctx, LoggerConfiguration loggerConfiguration) =>
-//    {
-//        loggerConfiguration.ReadFrom.Configuration(ctx.Configuration);
-//    });
-
+builder.Host.UseSerilog((HostBuilderContext ctx, LoggerConfiguration loggerConfiguration) =>
+    {
+        loggerConfiguration.ReadFrom.Configuration(ctx.Configuration);
+    });
 
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -141,6 +142,15 @@ builder.Services.AddTransient<ICacheAlmacenamiento, CacheAlmacenamientoLocal>();
 builder.Services.AddTransient<IMedia, MediaService>();
 builder.Services.AddTransient<IBogusService, BogusService>();
 builder.Services.AddTransient<IServicioBitacoraCasting, ServicioBitacoraCasting>();
+
+builder.Services.AddCouchContext<GoogleDriveDbContext>(builder => builder
+    .EnsureDatabaseExists()
+    .UseEndpoint(configuration.GetValue<string>("promodeldrivers:couchdb:endpoint"))
+    .UseBasicAuthentication(username: configuration.GetValue<string>("promodeldrivers:couchdb:username"),
+    password: configuration.GetValue<string>("promodeldrivers:couchdb:password")));
+
+builder.Services.AddTransient<IServicioGoogleDrivePushNotifications, ServicioGoogleDrivePushNotifications>();
+builder.Services.AddHostedService<GoogleDriveBS>();
 
 builder.Services.AddHttpClient();
 
