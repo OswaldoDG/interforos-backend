@@ -53,7 +53,7 @@ public static class ExtensionesCastingServicios
             AceptaAutoInscripcion = casting.AceptaAutoInscripcion,
             Activo = casting.Activo,
             AperturaAutomatica = casting.AperturaAutomatica,
-            CierreAutomatico = casting.CierreAutomatico,
+            CierreAutomatico = casting.CierreAutomatico        
         };
     }
 

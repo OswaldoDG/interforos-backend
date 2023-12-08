@@ -62,4 +62,5 @@ public class CastingListElement
     /// Rol del usuario actual
     /// </summary>
     public TipoRolCliente Rol { get; set; }
+    public string Logo { get; set; }
 }
