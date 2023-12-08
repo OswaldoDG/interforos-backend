@@ -1,4 +1,5 @@
-﻿using almacenamiento.GoogleDrive;
+﻿using almacenamiento;
+using almacenamiento.GoogleDrive;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,18 @@ namespace api_promodel.Controllers.webhooks
     public class GoogleWebhooksController : ControllerBase
     {
         private readonly IServicioGoogleDrivePushNotifications servicioGoogleDrivePush;
-        public GoogleWebhooksController(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush)
+        private readonly IAlmacenamiento almacenamiento;
+        public GoogleWebhooksController(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush, IAlmacenamiento almacenamiento )
         {
             this.servicioGoogleDrivePush = servicioGoogleDrivePush;
+            this.almacenamiento = almacenamiento;
         }
 
         [HttpGet("echo")]
         public async Task<IActionResult> Echo()
         {
-            return Ok(DateTime.UtcNow);
+            var r  = await almacenamiento.ObtieneToken();
+            return Ok(r);
         }
 
 

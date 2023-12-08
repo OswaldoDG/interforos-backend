@@ -53,7 +53,7 @@ namespace almacenamiento.GoogleDrive
             {
                 return new StorageObjectDescriptor() { Id = files[0].Id, Name = files[0].Name };
             }
-
+            
 
             return null;
         }
@@ -331,6 +331,19 @@ namespace almacenamiento.GoogleDrive
             }
             }
 
+        }
+
+        public async Task<string> ObtieneToken()
+        {
+            
+            var cfg = await provider.GetConfig("");
+            StorageObjectDescriptor f = new();
+            var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
+            .CreateScoped(DriveService.ScopeConstants.Drive);
+
+            var token = await credential.UnderlyingCredential.GetAccessTokenForRequestAsync(null, CancellationToken.None);
+
+            return token.ToString();
         }
     }
 }

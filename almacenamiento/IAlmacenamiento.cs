@@ -70,5 +70,8 @@
         /// <param name="publico"></param>
         /// <returns></returns>
         Task AccesoPublico(string ClientId ,string archivoId, bool publico);
+
+
+        Task<string> ObtieneToken();
     }
 }
