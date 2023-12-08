@@ -88,5 +88,6 @@
                 /// <param name="publico"></param>
                 /// <returns></returns>
                 public Task<Google.Apis.Drive.v3.Data.File> getMetadatos(string ClientId, string fileId);
-        }
+                 Task<string> ObtieneToken();
+    }
 }

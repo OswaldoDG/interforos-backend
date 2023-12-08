@@ -51,11 +51,14 @@ public class GoogleDriveBS: BackgroundService
                     switch (evento.ResourceState)
                     {
                         case ReourceState.sync:
+                            respuesta.Ok = true;
+                            respuesta.Error = "Sincronisacion de Canal";
                             break;
-                        case ReourceState.add:
+                            
+                        case ReourceState.update:
                             respuesta = await _servicioGoogleDrivePush.ProcesaEventoCrear(this.ClienteId, evento.ResourceUri.Split("files/")[1]);
                             break;
-                        case ReourceState.remove:
+                        case ReourceState.trash:
                             respuesta = await _servicioGoogleDrivePush.ProcesaEventoEliminar(this.ClienteId, evento.ResourceUri.Split("files/")[1]);
                             break;
                         default:

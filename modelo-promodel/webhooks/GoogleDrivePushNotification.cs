@@ -6,19 +6,19 @@ namespace promodel.modelo.webhooks;
 public class GoogleDrivePushNotification: CouchDocument
 {
     [JsonProperty("cid")]
-    public Guid ChannelId { get; set; }
+    public string? ChannelId { get; set; }
 
     [JsonProperty("n")]
-    public long MessageNumber { get; set; }
+    public string? MessageNumber { get; set; }
     
     [JsonProperty("rid")]
-    public string ResourceId { get; set; }
+    public string? ResourceId { get; set; }
 
     [JsonProperty("s")]
     public ReourceState ResourceState { get; set; }
 
     [JsonProperty("u")]
-    public string ResourceUri { get; set; }
+    public string? ResourceUri { get; set; }
 
     [JsonProperty("cs")]
     public List<ResourceChanges>? Changes { get; set; }

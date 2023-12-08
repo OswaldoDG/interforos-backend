@@ -1,9 +1,11 @@
-﻿using almacenamiento.GoogleDrive;
+﻿using almacenamiento;
+using almacenamiento.GoogleDrive;
 using api_promodel.Controllers.publico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using promodel.modelo.webhooks;
+using promodel.servicios;
 using promodel.servicios.webhooks;
 
 namespace api_promodel.Controllers.webhooks;
@@ -17,14 +19,24 @@ public class GoogleWebhooksController : ControllerPublico
 
     private readonly IServicioGoogleDrivePushNotifications servicioGoogleDrivePush;
     private readonly IConfiguration configuracion;
+    private readonly IAlmacenamiento almacenamiento;
     private readonly string ClienteId;
 
-    public GoogleWebhooksController(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush, IConfiguration configuracion)
+    public GoogleWebhooksController(IServicioGoogleDrivePushNotifications servicioGoogleDrivePush, IConfiguration configuracion, IAlmacenamiento almacenamiento)
     {
         this.servicioGoogleDrivePush = servicioGoogleDrivePush;
         this.configuracion = configuracion;
+        this.almacenamiento = almacenamiento;
         this.ClienteId = configuracion.GetValue<string>("ClienteId");
     }
+
+    [HttpGet("token")]
+    public async Task<IActionResult> Token()
+    {
+        var r = await almacenamiento.ObtieneToken();
+        return Ok(r);
+    }
+
 
     [HttpGet("echo")]
     public async Task<IActionResult> Echo()
@@ -80,14 +92,16 @@ public class GoogleWebhooksController : ControllerPublico
     /// <returns></returns>
     [HttpPost("drivechange")]
     public async Task<IActionResult> PostDriveChangeEvent(
-        [FromHeader(Name = "X-Goog-Channel-ID")] Guid channelId,
-        [FromHeader(Name = "X-Goog-Message-Number")] long messageNumber,
-        [FromHeader(Name = "X-Goog-Resource-ID")] string resourceId,
-        [FromHeader(Name = "X-Goog-Resource-State")] string resourceState,
-        [FromHeader(Name = "X-Goog-Resource-URI")] string resourceUri,
-        [FromHeader(Name = "X-Goog-Changed")] string? changes,
+        [FromHeader(Name = "X-Goog-Channel-ID")] string? channelId,
+        [FromHeader(Name = "X-Goog-Channel-Token")] string? channelToken,
         [FromHeader(Name = "X-Goog-Channel-Expiration")] string? chennelExpiration,
-        [FromHeader(Name = "X-Goog-Channel-Token")] string? channelToken
+        [FromHeader(Name = "X-Goog-Resource-ID")] string? resourceId,
+        [FromHeader(Name = "X-Goog-Resource-URI")] string? resourceUri,
+        [FromHeader(Name = "X-Goog-Resource-State")] string? resourceState,
+        [FromHeader(Name = "X-Goog-Message-Number")] string? messageNumber,
+        [FromHeader(Name = "X-Goog-Changed")] string? changes
+        
+       
         )
     {
 
@@ -104,6 +118,7 @@ public class GoogleWebhooksController : ControllerPublico
             ResourceState = (ReourceState)Enum.Parse(typeof(ReourceState), resourceState)
         };
 
+        var resultado = new Respuesta();
         if (!string.IsNullOrEmpty(changes))
         {
             evento.Changes = new List<ResourceChanges>();
@@ -112,8 +127,11 @@ public class GoogleWebhooksController : ControllerPublico
                 evento.Changes.Add((ResourceChanges)Enum.Parse(typeof(ResourceChanges), c));
             });
         }
-
-        var resultado = await servicioGoogleDrivePush.InsertaEvento(this.ClienteId, evento);
+        if(evento.ResourceState!=ReourceState.sync)
+        {
+            resultado = await servicioGoogleDrivePush.InsertaEvento(this.ClienteId, evento);
+        }
+        else { resultado.Ok = true; }
 
         if (resultado.Ok)
         {
