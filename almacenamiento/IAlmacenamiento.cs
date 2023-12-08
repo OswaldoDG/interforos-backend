@@ -72,7 +72,6 @@
                 Task AccesoPublico(string ClientId, string archivoId, bool publico);
 
 
-                Task<string> ObtieneToken();
                 /// <summary>
                 /// Obtiene el id del folder padre de un  contenido
                 /// </summary>
