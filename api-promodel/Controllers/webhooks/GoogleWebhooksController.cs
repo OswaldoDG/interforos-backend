@@ -21,7 +21,7 @@ namespace api_promodel.Controllers.webhooks
             this.almacenamiento = almacenamiento;
         }
 
-        [HttpGet("echo")]
+        [HttpGet("token")]
         public async Task<IActionResult> Echo()
         {
             var r  = await almacenamiento.ObtieneToken();
