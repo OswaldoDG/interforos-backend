@@ -42,6 +42,7 @@ public interface ICastingService
     Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
     Task<RespuestaPayload<Casting>> FullCastingByFolderId(string ClienteId, string FolderId);
     Task<Respuesta> ActualizarModeloCasting(string ClienteId, string castingId, string categoriaId, ModeloCasting Modelo);
+    Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, int consecutivo, OrigenInscripcion origen);
 }
 
 

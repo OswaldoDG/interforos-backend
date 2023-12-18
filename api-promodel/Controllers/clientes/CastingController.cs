@@ -329,7 +329,24 @@ public class CastingController : ControllerUsoInterno
             return ActionFromCode(result.HttpCode, result.Error);
         }
     }
+    [HttpPut("{castingId}/categoria/{categoriaId}/modelo/{numModelo}/consecutivo", Name = "PorConsecutivo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> AgregarModeloCategoriaConsecutivo(string castingId, int numModelo, string categoriaId)
+    {
+        var result = await castingService.AdicionarModeloCategoriaConsecutivo(ClienteId, castingId, UsuarioId, categoriaId, numModelo, OrigenInscripcion.staff);
+        if (result.Ok)
+        {
+            return Ok();
 
+        }
+        else
+        {
+            return BadRequest();
+        }
+    }
     [HttpDelete("{castingId}/categoria/{categoriaId}/modelo/{modeloId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -345,7 +362,7 @@ public class CastingController : ControllerUsoInterno
         }
         else
         {
-            return ActionFromCode(result.HttpCode, result.Error);
+            return ActionFromCode(result.HttpCode, JsonConvert.SerializeObject(result.Error));
         }
     }
 

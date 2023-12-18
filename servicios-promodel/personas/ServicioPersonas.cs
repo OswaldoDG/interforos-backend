@@ -464,6 +464,11 @@ namespace promodel.servicios
             return r;
         }
 
+        public async Task<Persona> PorConsecutivo(string clienteId, int Consecutivo)
+        {
+            return await db.Personas.FirstOrDefaultAsync(_ => _.Consecutivo == Consecutivo && _.Clientes.Contains(clienteId));
+        }
+
         public async Task<RespuestaPayload<Persona>> PorUsuarioId(string Id)
         {
             RespuestaPayload<Persona> r = new();

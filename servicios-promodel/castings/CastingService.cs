@@ -515,6 +515,33 @@ public class CastingService : ICastingService
         r.Error = "No se pudo agregar modelo";
         return r;
     }
+
+    public async Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, int Consecutivo, OrigenInscripcion origen)
+    {
+        var r = new Respuesta();
+        var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == CastingId);
+        var persona = await servicioPersonas.PorConsecutivo(ClienteId,Consecutivo);
+        if (casting != null && persona!=null)
+        {
+            var categoria = casting.Categorias.FirstOrDefault(c => c.Id == CategoríaId);
+            if (categoria != null && !categoria.Modelos.Any(x => x.PersonaId == persona.Id))
+            {
+                var res = await servicioPersonas.AdicionarCasting(persona.Id, ClienteId, CastingId, casting.FolderId);
+                if (res.Ok)
+                {
+                    CastingPersona p = (CastingPersona)res.Payload;
+                    categoria.Modelos.Add(new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId });
+                    await db.Castings.AddOrUpdateAsync(casting);
+                }
+                r.Ok = true;
+                return r;
+            }
+
+        }
+        r.HttpCode = HttpCode.BadRequest;
+        r.Error = "No se pudo agregar modelo";
+        return r;
+    }
     public async Task<Respuesta> EliminarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
     {
         var r = new Respuesta();
