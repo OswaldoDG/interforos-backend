@@ -1,7 +1,10 @@
-﻿using promodel.modelo;
+﻿using Amazon.Runtime.Internal.Util;
+using promodel.modelo;
 using promodel.modelo.castings;
+using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
+using System.Reflection;
 
 namespace promodel.servicios.proyectos;
 
@@ -37,6 +40,8 @@ public interface ICastingService
     Task<RespuestaPayload<List<string>>> CategoriasModeloCasting(string ClienteId, string CastingId, string PersonaId, string UsuarioId);
     Task<Respuesta> EstablecerEstadoCasting(string clienteId, string usuarioId, string castingId, EstadoCasting estado, TipoRolCliente Rol);
     Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
+    Task<RespuestaPayload<Casting>> FullCastingByFolderId(string ClienteId, string FolderId);
+    Task<Respuesta> ActualizarModeloCasting(string ClienteId, string castingId, string categoriaId, ModeloCasting Modelo);
 }
 
 
