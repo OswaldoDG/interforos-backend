@@ -37,6 +37,7 @@ public interface ICastingService
     Task<RespuestaPayload<List<string>>> CategoriasModeloCasting(string ClienteId, string CastingId, string PersonaId, string UsuarioId);
     Task<Respuesta> EstablecerEstadoCasting(string clienteId, string usuarioId, string castingId, EstadoCasting estado, TipoRolCliente Rol);
     Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
+    Task<RespuestaPayload<Casting>> CrearExcelOpenXml(string filepath, Casting casting);
 }
 
 

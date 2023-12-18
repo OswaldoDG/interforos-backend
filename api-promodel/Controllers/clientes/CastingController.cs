@@ -604,6 +604,37 @@ public class CastingController : ControllerUsoInterno
         }
     }
 
+    [HttpGet("{CastingId}/excel", Name = "CastingExcel")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Casting>> ExcelOpenXmlCreating([FromRoute] string CastingId)
+    {
+        var busquedaCasting = await castingService.FullCasting(ClienteId, CastingId, UsuarioId);
+
+        if (busquedaCasting.Payload is Casting casting)
+        {
+
+            var result = await castingService.CrearExcelOpenXml("C:\\interforos\\interforos-backend\\api-promodel\\Casting.xlsx", casting);
+
+
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+        }
+        else
+        {
+            return ActionFromCode(busquedaCasting.HttpCode, busquedaCasting.Error);
+        }
+
+    }
 
 }
 

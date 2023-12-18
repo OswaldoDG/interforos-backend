@@ -1,5 +1,6 @@
 ﻿using almacenamiento;
 using almacenamiento.GoogleDrive;
+using Bogus.DataSets;
 using CouchDB.Driver.Extensions;
 using EllipticCurve.Utils;
 using Google.Apis.Drive.v3;
@@ -13,6 +14,13 @@ using promodel.modelo.proyectos;
 using promodel.servicios.castings;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using ImageMagick;
+using static Bogus.DataSets.Name;
+using promodel.servicios.perfil;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace promodel.servicios.proyectos;
 
@@ -27,9 +35,11 @@ public class CastingService : ICastingService
     private readonly IServicioPersonas servicioPersonas;
     private readonly IAlmacenamiento almacenamiento;
     private readonly IGoogleDriveConfigProvider provider;
+    private readonly IServicioCatalogos servicioCatalogos;
+    private readonly ICacheAlmacenamiento cacheAlmacenamiento;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider, IServicioCatalogos servicioCatalogos, ICacheAlmacenamiento cacheAlmacenamiento)
     {
         this.db = db;
         this.cache = cache;
@@ -39,6 +49,8 @@ public class CastingService : ICastingService
         this.servicioPersonas = servicioPersonas;
         this.almacenamiento = almacenamiento;
         this.provider = provider;
+        this.servicioCatalogos = servicioCatalogos;
+        this.cacheAlmacenamiento = cacheAlmacenamiento;
     }
 
 
@@ -927,5 +939,95 @@ public class CastingService : ICastingService
 
     #endregion
     #region Acceso
+    #endregion
+
+    #region Excel
+    public async Task<RespuestaPayload<Casting>> CrearExcelOpenXml(string filepath, Casting casting)
+    {
+        var r = new RespuestaPayload<Casting>();
+        using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filepath, SpreadsheetDocumentType.Workbook))
+        {
+            WorkbookPart workbookPart = spreadsheetDocument.AddWorkbookPart();
+            workbookPart.Workbook = new Workbook();
+
+            Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+
+            foreach (var categoria in casting.Categorias)
+            {
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = (uint)sheets.Count() + 1, Name = categoria.Nombre };
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                Row headerRow = new Row();
+                headerRow.Append(
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("FotografiaPricipal") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("NombreArtistico") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("NombrePersona") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Genero") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Edad") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Habilidades") }
+                );
+                sheetData.AppendChild(headerRow);
+
+                foreach (var modelo in categoria.Modelos)
+                {
+                    var respuesta = await servicioPersonas.PorId(modelo.PersonaId);
+                    if (respuesta.Payload is Persona persona)
+                    {
+                        CatalogoBase habilidades = await servicioCatalogos.GetCatalogoCliente("actividades",casting.ClienteId);
+                        List<string> habilidadesModelo = new List<string>();
+                        foreach (var habilidad in persona.ActividadesIds)
+                        {
+                            habilidades.Elementos.ForEach(e =>
+                            {
+                                if (e.Clave == habilidad)
+                                {
+                                    habilidadesModelo.Add(e.Texto);
+                                }
+                            });
+                        }
+                        string rutaIMG="";
+                        FileStream fileStream;
+                        if(!string.IsNullOrEmpty(persona.ElementoMedioPrincipalId))
+                        {
+                            rutaIMG = await cacheAlmacenamiento.FotoById(casting.ClienteId, persona.UsuarioId, persona.ElementoMedioPrincipalId, "thumb");
+                            FileInfo fi = new FileInfo(rutaIMG);
+                            fileStream = System.IO.File.OpenRead(rutaIMG);
+                        }
+
+
+                        Row row = new Row();
+                        row.Append(
+
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(fileStream) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.NombreArtistico) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.Nombre) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.GeneroId) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.Edad) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(string.Join(", ", habilidadesModelo)) }
+                        );
+                        sheetData.AppendChild(row);
+                    }
+                }
+            }
+
+            workbookPart.Workbook.Save();
+        }
+        if (casting != null)
+        {
+            r.Payload = casting;
+            r.Ok = true;
+        }
+        else
+        {
+            r.HttpCode = HttpCode.NotFound;
+        }
+        return r;
+    }
+
     #endregion
 }
