@@ -27,7 +27,7 @@ public class GoogleWebhooksController : ControllerPublico
         this.servicioGoogleDrivePush = servicioGoogleDrivePush;
         this.configuracion = configuracion;
         this.almacenamiento = almacenamiento;
-        this.ClienteId = configuracion.GetValue<string>("ClienteId");
+        ClienteId = configuracion.GetValue<string>("ClienteId");
     }
 
     [HttpGet("token")]

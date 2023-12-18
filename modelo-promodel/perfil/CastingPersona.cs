@@ -35,5 +35,15 @@ namespace promodel.modelo.perfil
         /// Identificador único del folder en google drive para la personas
         /// </summary>
         public string FolderId { get; set; }
+        /// <summary>
+        /// Identificador únicodel canal de notificaiones de drive
+        /// </summary>
+        [JsonProperty("chid")]
+        public string? ChannelId { get; set; }
+        /// <summary>
+        /// Identificador único del recurso del canal de notificaiones de drive
+        /// </summary>
+        [JsonProperty("resid")]
+        public string? resourceId { get; set; }
     }
 }

@@ -126,5 +126,15 @@ namespace promodel.modelo.proyectos
         /// </summary>
         [JsonProperty("fid")]
         public string? FolderId { get; set; }
+        /// <summary>
+        /// Identificador del canal para las notificaciones de drive
+        /// </summary>
+        [JsonProperty("chid")]
+        public string? ChannelId { get; set; }
+        /// <summary>
+        /// Identificador único del recurso unico del canal de notificaiones de drive
+        /// </summary>
+        [JsonProperty("resid")]
+        public string? resourceId { get; set; }
     }
 }

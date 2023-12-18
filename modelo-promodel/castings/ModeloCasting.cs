@@ -66,5 +66,6 @@ namespace promodel.modelo.proyectos
         [JsonProperty("fid")]
         public string? FolderId { get; set; }
 
+
     }
 }

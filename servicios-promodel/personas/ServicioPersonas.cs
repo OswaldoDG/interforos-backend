@@ -975,9 +975,12 @@ namespace promodel.servicios
                 var personaCasting = new CastingPersona() { CastingId = castingId, ClienteId = clienteId, Declinado = false, FechaAdicion = DateTime.UtcNow };
                 var nameFolder = $"{persona.Consecutivo}-{persona.NombreArtistico}-{persona.Nombre}{persona.Apellido1}{persona.Apellido2}";
                 var f = await almacenamiento.CreateFolder(clienteId,nameFolder,folderId);
-                if(f!=null)
+                var channel = await almacenamiento.WhatchArchivo(clienteId, f.Id);
+                if(f!=null && channel!=null)
                 {
                     personaCasting.FolderId = f.Id;
+                    personaCasting.resourceId = channel.ResourceId;
+                    personaCasting.ChannelId= channel.Id;
                 }
                 persona.Castings.Add(personaCasting);
                 await db.Personas.AddOrUpdateAsync(persona);
@@ -993,10 +996,12 @@ namespace promodel.servicios
             var respuesta = new Respuesta();
             var r = await PorId(personaId);
             var persona = (Persona)r.Payload;
+            var castingPersona = persona.Castings.FirstOrDefault(_ => _.CastingId == castingId);
             if (r.Ok)
             {
-                persona.Castings.Remove(persona.Castings.FirstOrDefault(_=>_.CastingId==castingId));
+                persona.Castings.Remove(castingPersona);
                 await Actualizar(persona);
+                await almacenamiento.DeleteWhatchArchivo(clienteId, castingPersona.ChannelId, castingPersona.resourceId);
                 respuesta.Ok = true;
 
             }

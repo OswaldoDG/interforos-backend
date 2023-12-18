@@ -262,14 +262,19 @@ public class CastingService : ICastingService
     {
         var cfg = await provider.GetConfig(ClienteId);
         var f= await almacenamiento.CreateFolder(ClienteId, casting.Nombre,cfg.CastingDirectory);
+        var canal = await almacenamiento.WhatchArchivo(ClienteId, f.Id);
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
         casting.ClienteId = ClienteId;
         casting.UsuarioId = UsuarioId;
         casting.Contactos = new List<ContactoCasting>();
-        if(f!=null)
-        { casting.FolderId = f.Id; }       
+        if(f!=null && canal!=null)
+        {
+          casting.FolderId = f.Id;
+          casting.ChannelId = canal.Id;
+          casting.resourceId = canal.ResourceId;
+        }       
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
         r.Payload = casting;
@@ -319,6 +324,7 @@ public class CastingService : ICastingService
         {
             await db.Castings.RemoveAsync(casting);
             await almacenamiento.DeleteFile(ClienteId, casting.FolderId);
+            await almacenamiento.DeleteWhatchArchivo(ClienteId, casting.ClienteId, casting.resourceId);
             r.Ok = true;
         }
         else
@@ -328,7 +334,6 @@ public class CastingService : ICastingService
 
         return r;
     }
-
     public async Task<Respuesta> EstadoCasting(string ClienteId, string CastingId, string UsuarioId, bool Activo)
     {
         var r = new Respuesta();
