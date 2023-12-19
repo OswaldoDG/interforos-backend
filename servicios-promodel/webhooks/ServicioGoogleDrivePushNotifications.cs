@@ -41,7 +41,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
     public async Task<Respuesta> InsertaEvento(string ClienteId,GoogleDrivePushNotification data)
     {
         Respuesta r = new();
-        string fileName = data.ResourceUri.ToString().Split("files/")[1].Split("?")[0];
+        string fileName = data.ResourceUri!.ToString().Split("files/")[1].Split("?")[0];
         var medio = google.ObtienePadre(ClienteId, fileName);
         try
         {
