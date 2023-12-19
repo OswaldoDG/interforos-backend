@@ -942,7 +942,7 @@ public class CastingService : ICastingService
     #endregion
 
     #region Excel
-    public async Task<RespuestaPayload<Casting>> CrearExcelOpenXml(string filepath, Casting casting)
+    public async Task<Respuesta> CrearExcelOpenXml(string filepath, Casting casting)
     {
         var r = new RespuestaPayload<Casting>();
         using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filepath, SpreadsheetDocumentType.Workbook))
@@ -1003,7 +1003,7 @@ public class CastingService : ICastingService
                         Row row = new Row();
                         row.Append(
 
-                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(fileStream) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue() },
                             new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.NombreArtistico) },
                             new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.Nombre) },
                             new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.GeneroId) },
@@ -1017,15 +1017,19 @@ public class CastingService : ICastingService
 
             workbookPart.Workbook.Save();
         }
-        if (casting != null)
+
+        
+
+
+        if (!System.IO.File.Exists(filepath))
         {
-            r.Payload = casting;
-            r.Ok = true;
-        }
-        else
-        {
+            r.Ok = false;
             r.HttpCode = HttpCode.NotFound;
+            return r;
         }
+
+        
+        r.Ok = true;
         return r;
     }
 
