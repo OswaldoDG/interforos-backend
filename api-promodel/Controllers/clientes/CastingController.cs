@@ -344,7 +344,7 @@ public class CastingController : ControllerUsoInterno
         }
         else
         {
-            return BadRequest();
+            return ActionFromCode(result.HttpCode);
         }
     }
     [HttpDelete("{castingId}/categoria/{categoriaId}/modelo/{modeloId}")]
