@@ -2,6 +2,7 @@
 using api_promodel.middlewares;
 using Bogus.DataSets;
 using CouchDB.Driver.Query.Extensions;
+using EllipticCurve;
 using ImageMagick;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -699,28 +700,26 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Casting>> ExcelOpenXmlCreating([FromRoute] string CastingId)
+    public async Task<IActionResult> ExcelOpenXmlCreating([FromRoute] string CastingId)
     {
+        const string rutaCompletaArchivo = "C:\\interforos\\interforos-backend\\api-promodel\\Casting.xlsx";
+        const string nombreArchivo = "Casting.xlsx";
         var busquedaCasting = await castingService.FullCasting(ClienteId, CastingId, UsuarioId);
+        var result = await castingService.CrearExcelOpenXml(rutaCompletaArchivo, (Casting)busquedaCasting.Payload);
 
-        if (busquedaCasting.Payload is Casting casting)
+        if (result.Ok)
         {
-
-            var result = await castingService.CrearExcelOpenXml("C:\\interforos\\interforos-backend\\api-promodel\\Casting.xlsx", casting);
-
-
-            if (result.Ok)
-            {
-                return Ok(result.Payload);
-
-            }
-            else
-            {
-                return ActionFromCode(busquedaCasting.HttpCode, busquedaCasting.Error);
-            }
-
+            byte[] contenidoArchivo = System.IO.File.ReadAllBytes(rutaCompletaArchivo);
+            return File(contenidoArchivo, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombreArchivo);
         }
-    }b
+        else
+        {
+            return ActionFromCode(result.HttpCode, result.Error);
+        }
+
+
+    }
+    
 }
 
 

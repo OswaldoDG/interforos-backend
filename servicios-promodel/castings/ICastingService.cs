@@ -47,6 +47,7 @@ public interface ICastingService
     Task<Respuesta> ActualizarVideoCastinPrincipal(string ClienteId, string  castingId, string  personaId, string archivoId);
     Task<RespuestaPayload<List<Persona>>> GetModelosCategoria(string ClienteId, string castingId,string categoriaId);
     Task<RespuestaPayload<Casting>> CrearExcelOpenXml(string filepath, Casting casting);
+    Task<Respuesta> CrearExcelOpenXml(string filepath, Casting casting);
 }
 
 
