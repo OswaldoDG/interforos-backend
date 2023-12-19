@@ -533,13 +533,25 @@ public class CastingService : ICastingService
                     categoria.Modelos.Add(new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId });
                     await db.Castings.AddOrUpdateAsync(casting);
                 }
+                {
+                    r.HttpCode = HttpCode.BadRequest;
+                    r.Error = "No se pudo agregar modelo";
+                }
                 r.Ok = true;
                 return r;
             }
+            else
+            {
+                r.HttpCode = HttpCode.Conflict;
+                r.Error = "Modelo ya existente";
+            }
 
         }
-        r.HttpCode = HttpCode.BadRequest;
-        r.Error = "No se pudo agregar modelo";
+        else
+        {
+            r.HttpCode = HttpCode.NotFound;
+            r.Error = "No existe modelo";
+        }
         return r;
     }
     public async Task<Respuesta> EliminarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
