@@ -93,7 +93,7 @@ namespace almacenamiento
                 public Task<Google.Apis.Drive.v3.Data.File> getMetadatos(string ClientId, string fileId);
                  Task<string> ObtieneToken();
 
-        Task<Channel> WhatchArchivo(string ClientId, string archivoId);
-        Task DeleteWhatchArchivo(string ClientId, string canalId, string resorceId);
+                Task<Channel> WhatchArchivo(string ClientId, string archivoId);
+                Task DeleteWhatchArchivo(string ClientId, string canalId, string resorceId);
     }
 }

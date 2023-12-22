@@ -8,6 +8,7 @@ using promodel.modelo.media;
 using promodel.modelo.perfil;
 using promodel.servicios;
 using promodel.servicios.media;
+using promodel.servicios.proyectos;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -37,6 +38,7 @@ public class ContenidoController : ControllerPublico
     private readonly IConfiguration configuration;
     private readonly IAlmacenamiento almacenamiento;
     private readonly IMedia media;
+    private readonly ICastingService castingService;
     private readonly ICacheAlmacenamiento cacheAlmacenamiento;
     private readonly IDistributedCache cache;
     public ContenidoController(
@@ -45,12 +47,13 @@ public class ContenidoController : ControllerPublico
         IConfiguration configuration, 
         IAlmacenamiento almacenamiento,
         IDistributedCache cache,
-        IMedia media, IServicioClientes servicioClientes ,IServicioPersonas servicioPersonas) : base(servicioClientes, servicioPersonas)
+        IMedia media, IServicioClientes servicioClientes ,IServicioPersonas servicioPersonas, ICastingService castingService) : base(servicioClientes, servicioPersonas)
     {
         this.cacheAlmacenamiento = cacheAlmacenamiento;
         this.configuration = configuration;
         this.almacenamiento = almacenamiento;
         this.media = media;
+        this.castingService = castingService;
         this.personas = personas;
         this.cache = cache;
     }
@@ -539,6 +542,20 @@ public class ContenidoController : ControllerPublico
                 el = await AddElementoMedio(usuarioFinal, archivoAlmacenado.Id, 
                     TipoMedio.Galería , fi.Extension, fileName.GetMimeTypeForFileExtension(),
                     FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, frameAlmacenado?.Id, photo.Titulo,castingId);
+
+                if (castingId != null)
+                {
+                    if (EsFoto)
+                    {
+                        await castingService.ActualizarFotoCastinPrincipal(ClienteId,castingId,p.Id,archivoAlmacenado.Id);
+                    }
+                    if(EsVideo)
+                    {
+                        await castingService.ActualizarVideoCastinPrincipal(ClienteId, castingId, p.Id, archivoAlmacenado.Id);
+
+                    }
+                   
+                }
             }
 
             try

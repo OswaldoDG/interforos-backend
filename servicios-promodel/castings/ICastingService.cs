@@ -1,10 +1,8 @@
-﻿using Amazon.Runtime.Internal.Util;
-using promodel.modelo;
+﻿using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
-using System.Reflection;
 
 namespace promodel.servicios.proyectos;
 
@@ -45,6 +43,8 @@ public interface ICastingService
     Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, int consecutivo, OrigenInscripcion origen);
     Task<RespuestaPayload<ModeloCasting>> GetVideoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
     Task<string> GetFotoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
+    Task<Respuesta> ActualizarFotoCastinPrincipal(string ClienteId, string castingId, string personaId, string  archivoId);
+    Task<Respuesta> ActualizarVideoCastinPrincipal(string ClienteId, string  castingId, string  personaId, string archivoId);
 }
 
 

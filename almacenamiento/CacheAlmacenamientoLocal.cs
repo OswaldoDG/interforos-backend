@@ -127,8 +127,6 @@ public class CacheAlmacenamientoLocal : ICacheAlmacenamiento
             {
                  ancho = (MaxLen * image.Width) / image.Height;
                  alto = MaxLen;
-         
-               
             }
             var size = new MagickGeometry(ancho, alto);
             image.Resize(size);

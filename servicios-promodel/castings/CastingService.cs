@@ -15,6 +15,7 @@ using promodel.servicios.castings;
 using promodel.servicios.media;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Reflection;
 
 namespace promodel.servicios.proyectos;
 
@@ -636,9 +637,6 @@ public class CastingService : ICastingService
 
     #endregion
 
-
-
-
     #region Comentarios
     public async Task<RespuestaPayload<ComentarioCasting>> AdicionarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string Comentario)
     {
@@ -1065,6 +1063,56 @@ public class CastingService : ICastingService
         }
         return respuesta;
     }
+
+
+    public async Task<Respuesta> ActualizarFotoCastinPrincipal(string ClienteId, string castingId, string personaId, string? archivoId)
+    {
+        var respuesta = new Respuesta();
+        var casting = db.Castings.FirstOrDefault(_ => _.Id == castingId && _.ClienteId == ClienteId);
+        if (casting != null)
+        {
+            var Categoria = casting.Categorias.FirstOrDefault(_=>_.Modelos.Any(x=>x.PersonaId==personaId));
+            if (Categoria!=null)
+            {
+                var modeloCasting = Categoria.Modelos.FirstOrDefault(_=>_.PersonaId==personaId);
+
+                if(modeloCasting!=null)
+                {
+                    modeloCasting.ImagenPortadaId = archivoId;
+
+                    return await this.ActualizarModeloCasting(ClienteId,castingId,Categoria.Id,modeloCasting);
+                }
+               
+            }
+        }
+        return respuesta;
+
+    }
+    public async Task<Respuesta> ActualizarVideoCastinPrincipal(string ClienteId, string castingId, string personaId, string? archivoId)
+    {
+        var respuesta = new Respuesta();
+        var casting = db.Castings.FirstOrDefault(_ => _.Id == castingId && _.ClienteId == ClienteId);
+        if (casting != null)
+        {
+            var Categoria = casting.Categorias.FirstOrDefault(_ => _.Modelos.Any(x => x.PersonaId == personaId));
+            if (Categoria != null)
+            {
+                var modeloCasting = Categoria.Modelos.FirstOrDefault(_ => _.PersonaId == personaId);
+
+                if (modeloCasting != null)
+                {
+                    modeloCasting.VideoPortadaId = archivoId;
+
+                    return await this.ActualizarModeloCasting(ClienteId, castingId, Categoria.Id, modeloCasting);
+                }
+
+            }
+        }
+        return respuesta;
+
+    }
+
+
     #endregion
     #region Acceso
     #endregion
