@@ -195,13 +195,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-app.UseFileServer(new FileServerOptions
-{
+//app.UseFileServer(new FileServerOptions
+//{
     
-    FileProvider = new PhysicalFileProvider(configuration["CacheDir"]),
-    RequestPath = "/videos",
-    EnableDirectoryBrowsing = true
-});
+//    FileProvider = new PhysicalFileProvider(configuration["CacheDir"]),
+//    RequestPath = "/videos",
+//    EnableDirectoryBrowsing = true
+//});
 
 
 app.MapControllers();

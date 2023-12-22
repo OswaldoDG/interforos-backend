@@ -8,7 +8,8 @@ using promodel.servicios.media;
 using promodel.servicios.proyectos;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
-
+using Microsoft.Extensions.Options;
+using promodel.modelo.perfil;
 
 namespace promodel.servicios.webhooks;
 
@@ -21,8 +22,9 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
     private readonly ICastingService castingService;
     private readonly ICacheAlmacenamiento cacheAlmacenamiento;
     private readonly IConfiguration configuration;
+    private readonly CacheAlmacenamientoLocalConfig config;
 
-    public ServicioGoogleDrivePushNotifications(GoogleDriveDbContext db, IMedia media, IAlmacenamiento google, IServicioPersonas servicioPersonas, ICastingService castingService, ICacheAlmacenamiento cacheAlmacenamiento, IConfiguration configuration)
+    public ServicioGoogleDrivePushNotifications(GoogleDriveDbContext db, IMedia media, IAlmacenamiento google, IServicioPersonas servicioPersonas, ICastingService castingService, ICacheAlmacenamiento cacheAlmacenamiento, IConfiguration configuration, IOptions<CacheAlmacenamientoLocalConfig> options)
     {
         this.db = db;
         this.media = media;
@@ -31,6 +33,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
         this.castingService = castingService;
         this.cacheAlmacenamiento = cacheAlmacenamiento;
         this.configuration = configuration;
+        this.config = options.Value;
     }
 
     /// <summary>
@@ -41,8 +44,8 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
     public async Task<Respuesta> InsertaEvento(string ClienteId,GoogleDrivePushNotification data)
     {
         Respuesta r = new();
-        string fileName = data.ResourceUri!.ToString().Split("files/")[1].Split("?")[0];
-        var medio = google.ObtienePadre(ClienteId, fileName);
+      //  string fileName = data.ResourceUri!.ToString().Split("files/")[1].Split("?")[0];
+      //  var medio = google.ObtienePadre(ClienteId, fileName);
         try
         {
             var notificaionEncontrada = await db.Notificaciones.AnyAsync(_ => _.ChannelId == data.ChannelId && _.MessageNumber == data.MessageNumber);
@@ -175,30 +178,31 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
                     if (categoria != null)
                     {
                         Modelo = categoria.Modelos.FirstOrDefault(_ => _.FolderId == FolderModeloId[0]);
-                        if (Modelo != null)
-                        {
-                            var res = await ActualizarArchivo(ClienteId, Modelo.PersonaId, casting.Id, Id);
-                            if (res.Ok)
-                            {
-                                var medio = (ElementoMedia)res.Payload;
-
-                                if (medio.Imagen)
+                            if (Modelo != null)
+                            {                  
+                                                      
+                                   var   res = await ActualizarArchivo(ClienteId, Modelo.PersonaId, casting.Id, Id, casting.Nombre);
+                                if (res.Ok)
                                 {
-                                    Modelo.ImagenPortadaId = medio.Id;
+                                    var medio = (ElementoMedia)res.Payload;
+
+                                    if (medio.Imagen)
+                                    {
+                                        Modelo.ImagenPortadaId = medio.Id;
+                                    }
+                                    if (medio.Video)
+                                    {
+                                        Modelo.VideoPortadaId = medio.Id;
+                                    }
+
+                                    respuesta = await castingService.ActualizarModeloCasting(ClienteId, casting.Id, categoria.Id, Modelo);
+
                                 }
-                                if (medio.Video)
+                                else
                                 {
-                                    Modelo.VideoPortadaId = medio.Id;
-                                }
-
-                                respuesta = await castingService.ActualizarModeloCasting(ClienteId, casting.Id, categoria.Id, Modelo);
-
-                            }
-                            else
-                            {
-                                respuesta.HttpCode = res.HttpCode;
-                                respuesta.Error = res.Error;
-                            }
+                                    respuesta.HttpCode = res.HttpCode;
+                                    respuesta.Error = res.Error;
+                                }   
                         }
                         else
                         {
@@ -232,7 +236,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
         return respuesta;
     }
 
-    public async Task<RespuestaPayload<ElementoMedia>> ActualizarArchivo(string clienteId, string PersonaId, string castingId, string ArchivoId)
+    public async Task<RespuestaPayload<ElementoMedia>> ActualizarArchivo(string clienteId, string PersonaId, string castingId, string ArchivoId,string nombreCasting)
     {
         var respuesta = new RespuestaPayload<ElementoMedia>();
         var Archivo = await google.DownloadFile(clienteId, ArchivoId);
@@ -240,10 +244,8 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
 
         if (Archivo != null && Metadatos != null)
         {
-            string usuarioFinal = PersonaId;
-
-            string webRootPath = configuration["UploadTempDir"];
-            string uploadsDir = Path.Combine(webRootPath, "uploads", usuarioFinal);
+            string webRootPath = config.Ruta;
+            string uploadsDir = Path.Combine(webRootPath, PersonaId);
 
             if (!Directory.Exists(uploadsDir))
                 Directory.CreateDirectory(uploadsDir);
@@ -256,11 +258,11 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
             bool Landscape = false;
             bool EsPDF = false;
 
-            string FileId = fileName;
+            string FileId = $"{ArchivoId}.{fileName.Split(".")[1]}";
             string FullPath = Path.Combine(uploadsDir, FileId);
-            string FileFrameId = $"{fileName.Split(".")[0]}.jpg";
+            string FileFrameId = $"{ArchivoId}-thumb.jpg";
             string FrameFullPath = Path.Combine(uploadsDir, FileFrameId);
-            string Titulo = "";
+            string Titulo = nombreCasting;
 
             if ("jpg,jpeg,png,gif".Contains(Metadatos.FileExtension.ToLower(), StringComparison.CurrentCulture))
             {
@@ -302,7 +304,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
                         Landscape = true;
                     }
                 }
-                await cacheAlmacenamiento.CreaArchivoImagen(FullPath, fileName, uploadsDir, true);
+                await cacheAlmacenamiento.CreaArchivoImagen(FullPath,FileId, uploadsDir, true);
             }
 
             if (EsVideo)
@@ -311,9 +313,8 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
                 if (FrameFullPath == null)
                 {
                     return respuesta;
-                }
+                }                
             }
-
             ElementoMedia el = null;
             if (ArchivoId != null)
             {
@@ -321,8 +322,8 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
                 // Añade el registro a la base de datos
                 FileInfo FiSaved = new(FullPath);
 
-                el = await AddElementoMedio(clienteId, usuarioFinal, ArchivoId,
-                    TipoMedio.Galería, Metadatos.FileExtension, fileName.GetMimeTypeForFileExtension(),
+                el = await AddElementoMedio(clienteId, PersonaId, ArchivoId,
+                    TipoMedio.Galería, $".{ Metadatos.FileExtension}", fileName.GetMimeTypeForFileExtension(),
                     FiSaved.Length, EsFoto, EsVideo, EsAudio, SinSoporte, EsPDF, Landscape, ArchivoId, Titulo, castingId);
             }
 
@@ -352,7 +353,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
 
     private async Task<ElementoMedia> AddElementoMedio(
         string clienteId,
-        string usuarioId,
+        string personaId,
         string Id,
         TipoMedio Tipo,
         string Extension,
@@ -394,7 +395,7 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
 
         };
 
-        el = await this.media.AddElemento(el, usuarioId);
+        el = await this.media.AddElemento(el, personaId);
 
         return el;
     }

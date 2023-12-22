@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using promodel.modelo.clientes;
 using promodel.modelo.controllers;
+using promodel.modelo.perfil;
 using promodel.servicios;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
@@ -10,9 +11,12 @@ namespace api_promodel.Controllers.publico
     public class ControllerPublico : ControllerBase, IControladorCliente
     {
         private readonly IServicioClientes servicioClientes;
-        public ControllerPublico(IServicioClientes servicioClientes)
+        private readonly IServicioPersonas servicioPersonas;
+
+        public ControllerPublico(IServicioClientes servicioClientes, IServicioPersonas servicioPersonas)
         {
             this.servicioClientes = servicioClientes;
+            this.servicioPersonas = servicioPersonas;
         }
 
         [NonAction]
@@ -97,6 +101,39 @@ namespace api_promodel.Controllers.publico
                 return null;
             }
         }
+
+        public  string? PersonaId
+        {
+            get
+            {
+                try
+                {
+                    var usuarioId = this.UsuarioId;
+                    if (!string.IsNullOrEmpty(usuarioId))
+                    {
+                      var respuesta = servicioPersonas.PorUsuarioId(usuarioId).Result;
+                        
+                        if(respuesta.Ok)
+                        {
+                            var persona = (Persona)respuesta.Payload;
+                            return persona.Id;
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    Console.WriteLine(ex.ToString());
+                }
+
+                return null;
+            }
+        }
+
+
+
+
 
         [NonAction]
         public async Task<Cliente?> Cliente()

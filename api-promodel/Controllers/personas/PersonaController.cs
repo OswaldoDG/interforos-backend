@@ -1,4 +1,5 @@
 ﻿using almacenamiento;
+using Amazon.Runtime;
 using api_promodel.Controllers.publico;
 using Bogus;
 using ImageMagick;
@@ -38,7 +39,7 @@ public class PersonaController : ControllerPublico
     private readonly ICastingService castingService;
 
     public PersonaController(IServicioPersonas personas, IServicioCatalogos catalogos, 
-        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad, IServicioPersonasUsuario personasUsuario, IServicioPersonas servicioPersonas, ICastingService castingService) : base(servicioClientes)
+        IAlmacenamiento almacenamiento,  IServicioClientes servicioClientes, IServicioIdentidad identidad, IServicioPersonasUsuario personasUsuario, IServicioPersonas servicioPersonas, ICastingService castingService) : base(servicioClientes, servicioPersonas)
     {
         this.personas = personas; 
         this.catalogos = catalogos;

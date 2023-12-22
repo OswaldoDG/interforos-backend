@@ -45,7 +45,7 @@ public class ContenidoController : ControllerPublico
         IConfiguration configuration, 
         IAlmacenamiento almacenamiento,
         IDistributedCache cache,
-        IMedia media, IServicioClientes servicioClientes) : base(servicioClientes)
+        IMedia media, IServicioClientes servicioClientes ,IServicioPersonas servicioPersonas) : base(servicioClientes, servicioPersonas)
     {
         this.cacheAlmacenamiento = cacheAlmacenamiento;
         this.configuration = configuration;
@@ -62,7 +62,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MediaCliente>> MisFotos([FromQuery] string? uid, [FromBody]string? CastingId)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
 
         var mm=  await media.GetByUsuarioId(usuarioFinal);
         if(mm!=null)
@@ -93,7 +93,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MediaCliente>> FotoPrincipal([FromQuery] string? uid, string id)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
         var mm = await media.EstablecerPrincipal(usuarioFinal, id);
         if (mm)
         {
@@ -113,7 +113,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MediaCliente>> FotoPermanente([FromQuery] string? uid, string id)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
         var mm = await media.AlternarBloqueo(usuarioFinal, id);
         if (mm)
         {
@@ -129,7 +129,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MediaCliente>> FotoEliminar([FromQuery] string? uid, string id)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
         var mm = await media.EliminarElemento(ClienteId!, usuarioFinal, id);
         if (mm)
         {
@@ -164,21 +164,23 @@ public class ContenidoController : ControllerPublico
         var a = await cacheAlmacenamiento.FotoById(ClienteId, usuarioid, id, tipo);
         if (a != null)
         {
-            FileInfo fi = new FileInfo(a);
-            var stream = System.IO.File.OpenRead(a);
-
-            return new FileStreamResult(stream, a.GetMimeTypeForFileExtension())
+            try
             {
-                EnableRangeProcessing = false,
-                FileDownloadName = fi.Name
-            };
-        }
-        else
-        {
-            return NotFound();
-        }
+                FileInfo fi = new FileInfo(a);
+                var stream = System.IO.File.OpenRead(a);
 
-
+                return new FileStreamResult(stream, a.GetMimeTypeForFileExtension())
+                {
+                    EnableRangeProcessing = false,
+                    FileDownloadName = fi.Name
+                };
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+        return NotFound();
     }
 
     private async Task ValidaPublicarVideos(string usuarioid)
@@ -210,7 +212,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ElementoMediaCliente>> UploadDocumentacion([FromQuery] string? uid, [FromForm] Medio documento)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
 
         if (string.IsNullOrEmpty(usuarioFinal) || string.IsNullOrEmpty(ClienteId))
             return BadRequest();
@@ -390,7 +392,7 @@ public class ContenidoController : ControllerPublico
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ElementoMediaCliente>> UploadFoto([FromQuery] string? uid, [FromForm] Medio photo)
     {
-        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : UsuarioId!;
+        string usuarioFinal = !string.IsNullOrEmpty(uid) ? uid : PersonaId!;
 
         if (string.IsNullOrEmpty(usuarioFinal))
             return BadRequest();
@@ -404,15 +406,8 @@ public class ContenidoController : ControllerPublico
         if (Request.Form.Files[0].Length <= 0)
             return BadRequest("Invalid file length, seems to be empty");
         RespuestaPayload<Persona> queryPersona; 
-        if (string.IsNullOrEmpty(uid))
-        {
-            queryPersona = await personas.PorUsuarioId(usuarioFinal);
-        }
-        else
-        {
-             queryPersona = await personas.PorId(usuarioFinal);
-        }
-        
+   
+            queryPersona = await personas.PorId(usuarioFinal);
         Persona p = null;
         if (queryPersona.Ok)
         {

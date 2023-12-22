@@ -1,10 +1,12 @@
-﻿using api_promodel.middlewares;
+﻿using almacenamiento;
+using api_promodel.middlewares;
 using Bogus.DataSets;
 using CouchDB.Driver.Query.Extensions;
 using ImageMagick;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using promodel.modelo;
 using promodel.modelo.castings;
@@ -15,6 +17,9 @@ using promodel.servicios;
 using promodel.servicios.BitacoraCastings;
 using promodel.servicios.castings.Mock;
 using promodel.servicios.proyectos;
+using System;
+using System.IO;
+using System.Net;
 using System.Text.Json;
 
 namespace api_promodel.Controllers.clientes;
@@ -362,7 +367,7 @@ public class CastingController : ControllerUsoInterno
         }
         else
         {
-            return ActionFromCode(result.HttpCode, JsonConvert.SerializeObject(result.Error));
+            return ActionFromCode(result.HttpCode, result.Error);
         }
     }
 
@@ -620,7 +625,55 @@ public class CastingController : ControllerUsoInterno
             return ActionFromCode(result.HttpCode, null);
         }
     }
+    [HttpGet("{castingId}/categoria/{categoriaId}/modelo/{modeloId}/video")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ModeloCasting>> ObtieneVideoCastingModelo(string castingId, string modeloId, string categoriaId)
+    {
+        var respuesta = await castingService.GetVideoCastingModelo(ClienteId, castingId, UsuarioId, categoriaId, modeloId);
+        if (respuesta.Ok)
+        {
+            return Ok(respuesta.Payload);
+        }
+        else
+        {
+            return null;
+        }
+    }
 
+    [HttpGet("{castingId}/categoria/{categoriaId}/modelo/{modeloId}/foto")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<string>> ObtieneFotoCastingModelo(string castingId, string modeloId, string categoriaId)
+    {
+            var foto = await castingService.GetFotoCastingModelo(ClienteId, castingId, UsuarioId, categoriaId, modeloId);
+            if (foto != null)
+            {
+               // FileInfo fi = new FileInfo(foto);
+              //  var stream = System.IO.File.OpenRead(foto);
+            try
+            {
+                var img = Convert.ToBase64String(System.IO.File.ReadAllBytes(foto));
 
+                var result = "data:image/jpeg;base64," + img;
+                return Ok(JsonConvert.SerializeObject(result));
+                
+            }
+            
+            catch
+            {
+                return NotFound();
+            }
+        }
+            else
+            {
+            return NotFound();
+            }
+        }
+    
 }
 
