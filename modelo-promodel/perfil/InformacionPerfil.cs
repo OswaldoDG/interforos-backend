@@ -39,6 +39,11 @@ namespace promodel.modelo.perfil
         public bool TienePerfil { get; set; }
 
         /// <summary>
+        /// Determina si el perfil tiene sus datos completos.
+        /// </summary>
+        public bool DatosCompletos { get; set; }
+
+        /// <summary>
         /// Roles del usuario en el cliente
         /// </summary>
         public List<TipoRolCliente> Roles { get; set; }

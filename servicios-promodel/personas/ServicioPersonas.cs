@@ -420,7 +420,8 @@ namespace promodel.servicios
                         NombreCompleto = usuario.NombreUsuario,
                         TienePerfil = false,
                         RequirePerfil = usuario.RolesCliente.Any(x => x.ClienteId == ClienteId && x.Rol == TipoRolCliente.Modelo),
-                        Roles = usuario.RolesCliente.Where(x=>x.ClienteId == ClienteId).Select(r=>r.Rol).ToList()
+                        Roles = usuario.RolesCliente.Where(x => x.ClienteId == ClienteId).Select(r => r.Rol).ToList(),
+                        DatosCompletos = false
                          
                 };
 
@@ -439,7 +440,7 @@ namespace promodel.servicios
                         info.AvatarBase64 = u.AvatarBase64;
                         info.NombreCompleto = u.Nombre;
                         info.Alias = u.NombreArtistico;
-                       
+                        info.DatosCompletos = u.DatosCompletos;
 
                     }
                     return info;
