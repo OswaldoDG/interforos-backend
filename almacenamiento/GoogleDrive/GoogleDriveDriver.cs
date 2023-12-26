@@ -250,7 +250,8 @@ public class GoogleDriveDriver : IAlmacenamiento
             HttpClientInitializer = credential,
             ApplicationName = "promodel"
         });
-
+        try
+        {
         var request = service.Files.Get(fileId);
         request.Fields = "parents";
         var response = request.Execute();
@@ -282,8 +283,16 @@ public class GoogleDriveDriver : IAlmacenamiento
                         }
                 }
             };
-        request.Download(stream);
-        return stream;
+        
+            request.Download(stream);
+            return stream;
+        }
+        catch
+        {
+            return null;
+        }
+       
+       
     }
 
 

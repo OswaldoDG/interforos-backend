@@ -34,10 +34,10 @@ public class CacheAlmacenamientoLocal : ICacheAlmacenamiento
             File.Delete(Ruta);
         }
     }
-    public async Task<string?> FotoById(string ClientId, string usuarioid, string id, string tipo)
+    public async Task<string?> FotoById(string ClientId, string personaId, string id, string tipo)
     {
 
-        string dir = Path.Combine(config.Ruta, usuarioid);
+        string dir = Path.Combine(config.Ruta, personaId);
        
         if (!Directory.Exists(dir))
         {
@@ -53,7 +53,7 @@ public class CacheAlmacenamientoLocal : ICacheAlmacenamiento
                 var file = await almacenamiento.DownloadFile(ClientId, id);
                 if(file!=null)
             {
-                await CreaArchivoImagen(file, $"{id}", usuarioid, true);
+                await CreaArchivoImagen(file, $"{id}", personaId, true);
                 return Directory.GetFiles(dir, $"{id}-{tipo}.*").ToList().FirstOrDefault();
             }
                 else { return null; }
@@ -127,8 +127,6 @@ public class CacheAlmacenamientoLocal : ICacheAlmacenamiento
             {
                  ancho = (MaxLen * image.Width) / image.Height;
                  alto = MaxLen;
-         
-               
             }
             var size = new MagickGeometry(ancho, alto);
             image.Resize(size);

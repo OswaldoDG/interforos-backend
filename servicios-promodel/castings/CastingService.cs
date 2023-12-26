@@ -8,11 +8,14 @@ using Microsoft.Extensions.Configuration;
 using promodel.modelo;
 using promodel.modelo.castings;
 using promodel.modelo.clientes;
+using promodel.modelo.media;
 using promodel.modelo.perfil;
 using promodel.modelo.proyectos;
 using promodel.servicios.castings;
+using promodel.servicios.media;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Reflection;
 
 namespace promodel.servicios.proyectos;
 
@@ -27,9 +30,11 @@ public class CastingService : ICastingService
     private readonly IServicioPersonas servicioPersonas;
     private readonly IAlmacenamiento almacenamiento;
     private readonly IGoogleDriveConfigProvider provider;
+    private readonly IMedia media;
+    private readonly ICacheAlmacenamiento cacheAlmacenamiento;
 
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider)
+        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider, IMedia media, ICacheAlmacenamiento cacheAlmacenamiento)
     {
         this.db = db;
         this.cache = cache;
@@ -39,6 +44,8 @@ public class CastingService : ICastingService
         this.servicioPersonas = servicioPersonas;
         this.almacenamiento = almacenamiento;
         this.provider = provider;
+        this.media = media;
+        this.cacheAlmacenamiento = cacheAlmacenamiento;
     }
 
 
@@ -579,10 +586,56 @@ public class CastingService : ICastingService
     }
 
 
+    public async Task<RespuestaPayload<ModeloCasting>> GetVideoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId)
+    {
+        var respuesta =new RespuestaPayload<ModeloCasting>();
+        var casting = await db.Castings.FirstOrDefaultAsync(_ => _.ClienteId == ClienteId && _.Id == CastingId);
+        if (casting != null)
+        {
+            var categoria = casting.Categorias.FirstOrDefault(_ => _.Id == CategoríaId);
+            if (categoria != null)
+            {
+                var modeloCasting = categoria.Modelos.FirstOrDefault(_ => _.PersonaId == PersonaId);
+                if(modeloCasting!=null)
+                {
+                    respuesta.Ok = true;
+                    respuesta.Payload = modeloCasting;
+                }
+                //var video = await almacenamiento.DownloadFile(ClienteId, modeloCasting.VideoPortadaId);
+                //if (video != null)
+                //{
+                //    return video;
+                //}
+               
+            }
+
+        }
+        return respuesta;
+    }
+
+    public async Task<string> GetFotoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId)
+    {
+        var casting = await db.Castings.FirstOrDefaultAsync(_ => _.ClienteId == ClienteId && _.Id == CastingId);
+        if (casting != null)
+        {
+            var categoria = casting.Categorias.FirstOrDefault(_ => _.Id== CategoríaId);
+            if (categoria != null)
+            {
+                var modeloCasting = categoria.Modelos.FirstOrDefault(_ => _.PersonaId == PersonaId);
+
+                var foto = await cacheAlmacenamiento.FotoById(ClienteId,PersonaId,modeloCasting.ImagenPortadaId,"card");
+                if (foto != null)
+                {
+                    return foto;
+                }
+            }
+
+        }
+        return null;
+    }
+
+
     #endregion
-
-
-
 
     #region Comentarios
     public async Task<RespuestaPayload<ComentarioCasting>> AdicionarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string Comentario)
@@ -1012,6 +1065,52 @@ public class CastingService : ICastingService
     }
 
 
+    public async Task<Respuesta> ActualizarFotoCastinPrincipal(string ClienteId, string castingId, string personaId, string? archivoId)
+    {
+        var respuesta = new Respuesta();
+        var casting = db.Castings.FirstOrDefault(_ => _.Id == castingId && _.ClienteId == ClienteId);
+        if (casting != null)
+        {
+            var Categoria = casting.Categorias.FirstOrDefault(_=>_.Modelos.Any(x=>x.PersonaId==personaId));
+            if (Categoria!=null)
+            {
+                var modeloCasting = Categoria.Modelos.FirstOrDefault(_=>_.PersonaId==personaId);
+
+                if(modeloCasting!=null)
+                {
+                    modeloCasting.ImagenPortadaId = archivoId;
+
+                    return await this.ActualizarModeloCasting(ClienteId,castingId,Categoria.Id,modeloCasting);
+                }
+               
+            }
+        }
+        return respuesta;
+
+    }
+    public async Task<Respuesta> ActualizarVideoCastinPrincipal(string ClienteId, string castingId, string personaId, string? archivoId)
+    {
+        var respuesta = new Respuesta();
+        var casting = db.Castings.FirstOrDefault(_ => _.Id == castingId && _.ClienteId == ClienteId);
+        if (casting != null)
+        {
+            var Categoria = casting.Categorias.FirstOrDefault(_ => _.Modelos.Any(x => x.PersonaId == personaId));
+            if (Categoria != null)
+            {
+                var modeloCasting = Categoria.Modelos.FirstOrDefault(_ => _.PersonaId == personaId);
+
+                if (modeloCasting != null)
+                {
+                    modeloCasting.VideoPortadaId = archivoId;
+
+                    return await this.ActualizarModeloCasting(ClienteId, castingId, Categoria.Id, modeloCasting);
+                }
+
+            }
+        }
+        return respuesta;
+
+    }
 
 
     #endregion
