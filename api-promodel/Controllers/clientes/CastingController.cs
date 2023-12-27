@@ -170,7 +170,6 @@ public class CastingController : ControllerUsoInterno
         if (result.Ok)
         {
             return Ok();
-
         }
         else
         {
@@ -323,7 +322,7 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> AgregarModeloCategoria(string castingId, string modeloId,string categoriaId)
     {
-        var result = await castingService.AdicionarModeloCategoria(ClienteId, castingId, UsuarioId, categoriaId, modeloId, OrigenInscripcion.staff);
+        var result = await castingService.AdicionarModeloCategoria(ClienteId, castingId,categoriaId, modeloId, OrigenInscripcion.staff);
         if (result.Ok)
         {
             return Ok();
@@ -341,7 +340,7 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> AgregarModeloCategoriaConsecutivo(string castingId, int numModelo, string categoriaId)
     {
-        var result = await castingService.AdicionarModeloCategoriaConsecutivo(ClienteId, castingId, UsuarioId, categoriaId, numModelo, OrigenInscripcion.staff);
+        var result = await castingService.AdicionarModeloCategoriaConsecutivo(ClienteId, castingId,categoriaId, numModelo, OrigenInscripcion.staff);
         if (result.Ok)
         {
             return Ok();

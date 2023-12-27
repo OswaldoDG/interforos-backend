@@ -59,7 +59,7 @@ public class GoogleDriveBS: BackgroundService
                             respuesta = await _servicioGoogleDrivePush.ProcesaEventoCrear(this.ClienteId, evento.ResourceUri.Split("files/")[1].Split("?")[0]);
                             break;
                         case ReourceState.trash:
-                            respuesta = await _servicioGoogleDrivePush.ProcesaEventoEliminar(this.ClienteId, evento.ResourceUri.Split("files/")[1]);
+                            respuesta = await _servicioGoogleDrivePush.ProcesaEventoEliminar(this.ClienteId, evento.ResourceUri.Split("files/")[1].Split("?")[0]);
                             break;
                         default:
                             break;

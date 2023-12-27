@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using promodel.modelo;
 using promodel.modelo.clientes;
 using promodel.modelo.controllers;
+using promodel.modelo.perfil;
 using promodel.servicios;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -22,6 +23,8 @@ public class ControllerUsoInterno : ControllerBase, IControladorCliente
 
     public readonly IServicioClientes servicioClientes;
     private readonly IServicioIdentidad identidad;
+    private readonly IServicioPersonas servicioPersonas;
+
     public ControllerUsoInterno(IServicioClientes servicioClientes, IServicioIdentidad servicioIdentidad)
     {
         this.servicioClientes = servicioClientes;

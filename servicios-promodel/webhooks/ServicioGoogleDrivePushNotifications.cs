@@ -10,6 +10,9 @@ using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using promodel.modelo.perfil;
+using Amazon.Runtime.Internal.Util;
+using promodel.modelo.clientes;
+using System.Reflection;
 
 namespace promodel.servicios.webhooks;
 
@@ -101,138 +104,149 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
         return res;
     }
 
-    public async Task<Respuesta> ProcesaEventoEliminar(string ClienteId, string Id)
+    public async Task<Respuesta> ProcesaEventoEliminar(string ClienteId, string FolderModeloId)
     {
         var respuesta = new Respuesta();
-        Casting casting;
+
+        List<string> FolderCastingId = await google.ObtienePadre(ClienteId, FolderModeloId);
+        Casting casting = null;
         ModeloCasting Modelo;
-        var medio = await media.GetByElementoId(Id);
-
-        if (medio != null)
+        if (FolderCastingId.Any())
         {
-            var ElementoMedia = medio.Elementos.FirstOrDefault(_ => _.Id == Id);
-
-            if (ElementoMedia != null)
+            var respuestCasting = await castingService.FullCastingByFolderId(ClienteId, FolderCastingId.First());
+            if (respuestCasting.Ok)
             {
-                media.DelElemento(ElementoMedia.Id, medio.UsuarioId);
-
-
-                var respuestCasting = await castingService.FullCasting(ClienteId, ElementoMedia.CastingId, medio.UsuarioId);
-                if (respuestCasting.Ok)
+                casting = (Casting)respuestCasting.Payload;
+                var categoria = casting.Categorias.FirstOrDefault(x => x.Modelos.Any(y => y.FolderId == FolderModeloId));
+                if (categoria != null)
                 {
-                    casting = (Casting)respuestCasting.Payload;
-                    var categoria = casting.Categorias.FirstOrDefault(x => x.Modelos.Any(y => y.PersonaId == medio.UsuarioId));
-                    if (categoria != null)
+                    Modelo = categoria.Modelos.FirstOrDefault(_ => _.FolderId == FolderModeloId);
+                    if (Modelo != null)
                     {
-                        Modelo = categoria.Modelos.FirstOrDefault(_ => _.PersonaId == medio.UsuarioId);
-                        if (Modelo != null)
+                        var ElementoRemovido = await RemoverArchivo(ClienteId, Modelo.PersonaId, casting.Id, FolderModeloId);
+                        if (ElementoRemovido!=null)
                         {
 
-                            if (ElementoMedia.Imagen)
+                            if (ElementoRemovido.Imagen)
                             {
                                 Modelo.ImagenPortadaId = null;
                             }
-                            if (ElementoMedia.Video)
+                            if (ElementoRemovido.Video)
                             {
                                 Modelo.VideoPortadaId = null;
                             }
-                            respuesta = await castingService.ActualizarModeloCasting(ClienteId, casting.Id, categoria.Id, Modelo);
+                            respuesta = await castingService.ActualizarModeloCasting(ClienteId,casting.Id, categoria.Id, Modelo);
 
-                        }
-                    }
-                }
-
-
-            }
-            else
-            {
-                respuesta.HttpCode = HttpCode.NotFound;
-                respuesta.Error = "Elemento Media No encontrado";
-            }
-        }
-        else
-        {
-            respuesta.HttpCode = HttpCode.NotFound;
-            respuesta.Error = "Medio No existente";
-        }
-        return respuesta;
-    }
-
-
-    public async Task<Respuesta> ProcesaEventoCrear(string ClienteId, string Id)
-    {
-        var respuesta = new Respuesta();
-        List<string> FolderModeloId = await google.ObtienePadre(ClienteId, Id);
-        if (FolderModeloId.Any())
-        {
-            List<string> FolderCastingId = await google.ObtienePadre(ClienteId, FolderModeloId.First());
-            Casting casting = null;
-            ModeloCasting Modelo;
-            if (FolderCastingId.Any())
-            {
-                var respuestCasting = await castingService.FullCastingByFolderId(ClienteId, FolderCastingId.First());
-                if (respuestCasting.Ok)
-                {
-                    casting = (Casting)respuestCasting.Payload;
-                    var categoria = casting.Categorias.FirstOrDefault(x => x.Modelos.Any(y => y.FolderId == FolderModeloId.First()));
-                    if (categoria != null)
-                    {
-                        Modelo = categoria.Modelos.FirstOrDefault(_ => _.FolderId == FolderModeloId[0]);
-                            if (Modelo != null)
-                            {                  
-                                                      
-                                   var   res = await ActualizarArchivo(ClienteId, Modelo.PersonaId, casting.Id, Id, casting.Nombre);
-                                if (res.Ok)
-                                {
-                                    var medio = (ElementoMedia)res.Payload;
-
-                                    if (medio.Imagen)
-                                    {
-                                        Modelo.ImagenPortadaId = medio.Id;
-                                    }
-                                    if (medio.Video)
-                                    {
-                                        Modelo.VideoPortadaId = medio.Id;
-                                    }
-
-                                    respuesta = await castingService.ActualizarModeloCasting(ClienteId, casting.Id, categoria.Id, Modelo);
-
-                                }
-                                else
-                                {
-                                    respuesta.HttpCode = res.HttpCode;
-                                    respuesta.Error = res.Error;
-                                }   
                         }
                         else
                         {
                             respuesta.HttpCode = HttpCode.NotFound;
-                            respuesta.Error = "No existe Modelo";
+                            respuesta.Error = "No existe Archivo para procesar";
                         }
                     }
                     else
                     {
                         respuesta.HttpCode = HttpCode.NotFound;
-                        respuesta.Error = "No existe Casting";
+                        respuesta.Error = "No existe Modelo en la categoria";
                     }
                 }
                 else
                 {
                     respuesta.HttpCode = HttpCode.NotFound;
-                    respuesta.Error = "la Carpeta no tiene Casting ID";
+                    respuesta.Error = "El folder No pertenece a ninguna Categoria";
                 }
             }
             else
             {
                 respuesta.HttpCode = HttpCode.NotFound;
-                respuesta.Error = "Archivo no tiene Carpeta ModeloId";
+                respuesta.Error = "No existe el Casting";
             }
         }
-        else {
+        else
+        {
             respuesta.HttpCode = HttpCode.NotFound;
-            respuesta.Error = "Archivo no existe";
+            respuesta.Error = "El folder NO pertenece a un Casting";
         }
+        return respuesta;
 
+   
+    }
+
+
+        public async Task<Respuesta> ProcesaEventoCrear(string ClienteId, string FolderModeloId)
+    {
+        var respuesta = new Respuesta();
+
+        List<string> FolderCastingId = await google.ObtienePadre(ClienteId, FolderModeloId);
+        Casting casting = null;
+        ModeloCasting Modelo;
+        if (FolderCastingId.Any())
+        {
+            var respuestCasting = await castingService.FullCastingByFolderId(ClienteId, FolderCastingId.First());
+            if (respuestCasting.Ok)
+            {
+                casting = (Casting)respuestCasting.Payload;
+                var categoria = casting.Categorias.FirstOrDefault(x => x.Modelos.Any(y => y.FolderId == FolderModeloId));
+                if (categoria != null)
+                {
+                    Modelo = categoria.Modelos.FirstOrDefault(_ => _.FolderId == FolderModeloId);
+                    if (Modelo != null)
+                    {
+                        var archivoId = await GetArchivoIdAgregado(ClienteId, Modelo.PersonaId, casting.Id, FolderModeloId);
+                        if (!string.IsNullOrEmpty(archivoId))
+                        {
+                            var res = await ActualizarArchivo(ClienteId, Modelo.PersonaId, casting.Id, archivoId, casting.Nombre);
+                            if (res.Ok)
+                            {
+                                var medio = (ElementoMedia)res.Payload;
+
+                                if (medio.Imagen)
+                                {
+                                    Modelo.ImagenPortadaId = medio.Id;
+                                }
+                                if (medio.Video)
+                                {
+                                    Modelo.VideoPortadaId = medio.Id;
+                                }
+
+                                respuesta = await castingService.ActualizarModeloCasting(ClienteId, casting.Id, categoria.Id, Modelo);
+
+                            }
+                            else
+                            {
+                                respuesta.HttpCode = res.HttpCode;
+                                respuesta.Error = res.Error;
+                            }
+                        }
+                        else
+                        {
+                            respuesta.HttpCode = HttpCode.NotFound;
+                            respuesta.Error = "No existe Archivo para procesar";
+                        }
+                    }
+                    else
+                    {
+                        respuesta.HttpCode = HttpCode.NotFound;
+                        respuesta.Error = "No existe Modelo en la categoria";
+                    }
+                }
+                else
+                {
+                    respuesta.HttpCode = HttpCode.NotFound;
+                    respuesta.Error = "El folder No pertenece a ninguna Categoria";
+                }
+            }
+            else
+            {
+                respuesta.HttpCode = HttpCode.NotFound;
+                respuesta.Error = "No existe el Casting";
+            }
+        }
+        else
+        {
+            respuesta.HttpCode = HttpCode.NotFound;
+            respuesta.Error = "El folder NO pertenece a un Casting";
+        }
         return respuesta;
     }
 
@@ -436,5 +450,72 @@ public class ServicioGoogleDrivePushNotifications : IServicioGoogleDrivePushNoti
         }
         return null; ;
     }
+    public async Task<string> GetArchivoIdAgregado(string clienteId, string PersonaId, string castingId, string folderModeloId) 
+    {       
+        var medio = await media.GetByUsuarioId(PersonaId);
+
+        if (medio != null)
+        {
+            var ElementosMedia = medio.Elementos.Where(_ => _.CastingId ==castingId).ToList();
+
+            if (ElementosMedia != null)
+            {
+                var idsArchivosFolder = await google.getArchivosFolder(clienteId, folderModeloId);
+
+
+                if (idsArchivosFolder.Any())
+                {
+                    foreach (var id in idsArchivosFolder)
+                    {
+                        var archivo = ElementosMedia.FirstOrDefault(_=> _.Id == id);
+                        if (archivo == null)
+                        {
+                            return id;
+                        }
+                    };
+                }            
+            }
+            else
+            {
+              return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+        return null;
      
     }
+
+    public async Task<ElementoMedia> RemoverArchivo(string clienteId, string PersonaId, string castingId, string folderModeloId)
+    {
+        var medio = await media.GetByUsuarioId(PersonaId);
+
+        if (medio != null)
+        {
+            var ElementosMedia = medio.Elementos.Where(_ => _.CastingId == castingId).ToList();
+
+            if (ElementosMedia.Count >0)
+            {
+                var idsArchivosFolder = await google.getArchivosFolder(clienteId, folderModeloId);               
+                    foreach (var elemento in ElementosMedia)
+                    {
+                        if (!idsArchivosFolder.Contains(elemento.Id))
+                        {
+                            await  media.DelElemento(elemento.Id, medio.UsuarioId);
+                            return elemento;
+                        }
+                    };
+               
+            }
+        }
+        else
+        {
+            return null;
+        }
+        return null;
+
+    }
+
+}

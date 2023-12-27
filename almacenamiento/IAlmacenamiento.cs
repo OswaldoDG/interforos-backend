@@ -95,5 +95,7 @@ namespace almacenamiento
 
                 Task<Channel> WhatchArchivo(string ClientId, string archivoId);
                 Task DeleteWhatchArchivo(string ClientId, string canalId, string resorceId);
+
+                Task<List<string>> getArchivosFolder(string ClientId, string archivoId);
     }
 }

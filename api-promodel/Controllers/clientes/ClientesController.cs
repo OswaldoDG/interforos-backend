@@ -11,7 +11,7 @@ namespace api_promodel.Controllers.clientes;
 [ApiController]
 public class ClientesController : ControllerUsoInterno
 {
-    public ClientesController(IServicioClientes clientes, IServicioIdentidad servicioIdentidad): base (clientes, servicioIdentidad) { 
+    public ClientesController(IServicioClientes clientes, IServicioIdentidad servicioIdentidad, IServicioPersonas servicioPersonas): base (clientes, servicioIdentidad) { 
     }
 
 
