@@ -34,6 +34,7 @@ public class GoogleWebhooksController : ControllerPublico
     public async Task<IActionResult> Token()
     {
         var r = await almacenamiento.ObtieneToken();
+        var res = await almacenamiento.getArchivosFolder(ClienteId, "1wr4jPmsB25Yg5hdnL-dWKl2A8xfGc3I0");
         return Ok(r);
     }
 

@@ -269,18 +269,15 @@ public class CastingService : ICastingService
     {
         var cfg = await provider.GetConfig(ClienteId);
         var f= await almacenamiento.CreateFolder(ClienteId, casting.Nombre,cfg.CastingDirectory);
-        var canal = await almacenamiento.WhatchArchivo(ClienteId, f.Id);
         var r = new RespuestaPayload<Casting>();
         casting.Id = Guid.NewGuid().ToString();
         casting.FechaCreacionTicks = DateTime.UtcNow.Ticks;
         casting.ClienteId = ClienteId;
         casting.UsuarioId = UsuarioId;
         casting.Contactos = new List<ContactoCasting>();
-        if(f!=null && canal!=null)
+        if(f!=null)
         {
           casting.FolderId = f.Id;
-          casting.ChannelId = canal.Id;
-          casting.resourceId = canal.ResourceId;
         }       
         await db.Castings.AddOrUpdateAsync(casting);
         r.Ok = true;
@@ -329,9 +326,18 @@ public class CastingService : ICastingService
         var casting = await ObtieneCasting(ClienteId, CastingId, UsuarioId);
         if (casting != null)
         {
+            foreach (var categoria in casting.Categorias)
+            {
+                foreach (var modelo in categoria.Modelos)
+                {
+                    await servicioPersonas.RemoverCasting(ClienteId, modelo.PersonaId, CastingId);
+                    
+                }
+
+
+            }
             await db.Castings.RemoveAsync(casting);
             await almacenamiento.DeleteFile(ClienteId, casting.FolderId);
-            await almacenamiento.DeleteWhatchArchivo(ClienteId, casting.ClienteId, casting.resourceId);
             r.Ok = true;
         }
         else
@@ -497,7 +503,7 @@ public class CastingService : ICastingService
 
     #region ModelosCategoria
 
-    public async Task<Respuesta> AdicionarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen)
+    public async Task<Respuesta> AdicionarModeloCategoria(string ClienteId, string CastingId,string CategoríaId, string PersonaId, OrigenInscripcion origen)
     {
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == CastingId);
@@ -523,7 +529,7 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, int Consecutivo, OrigenInscripcion origen)
+    public async Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int Consecutivo, OrigenInscripcion origen)
     {
         var r = new Respuesta();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == CastingId);
@@ -539,13 +545,15 @@ public class CastingService : ICastingService
                     CastingPersona p = (CastingPersona)res.Payload;
                     categoria.Modelos.Add(new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId });
                     await db.Castings.AddOrUpdateAsync(casting);
+                    r.Ok = true;
+                    return r;
                 }
+                else
                 {
                     r.HttpCode = HttpCode.BadRequest;
                     r.Error = "No se pudo agregar modelo";
                 }
-                r.Ok = true;
-                return r;
+               
             }
             else
             {
@@ -575,8 +583,9 @@ public class CastingService : ICastingService
                 {
                     categoria.Modelos.Remove(modelo);
                     await db.Castings.AddOrUpdateAsync(casting);
-                    await servicioPersonas.RemoverCasting(PersonaId, ClienteId, CastingId);
+                    await servicioPersonas.RemoverCasting(ClienteId,PersonaId, CastingId);
                     r.Ok = true;
+                    return r;
                 }
             }
         }

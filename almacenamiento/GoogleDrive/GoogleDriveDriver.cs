@@ -114,7 +114,10 @@ public class GoogleDriveDriver : IAlmacenamiento
 
         
         var request = service.Files.Delete(FileId);
+      
         var result = request.Execute();
+     
+        
         return true;
 
     }
@@ -494,4 +497,37 @@ public class GoogleDriveDriver : IAlmacenamiento
         request.Execute();
         
     }
+
+    /// <summary>
+    /// elimina un canal de notificaciones para un archivo de drive 
+    /// </summary>
+    /// <param name="ClientId"></param>
+    /// <param name="archivoId"></param>
+    /// <param name="publico"></param>
+    /// <returns></returns>
+    public async Task<List<string>> getArchivosFolder(string ClientId, string archivoId)
+    {
+        var cfg = await provider.GetConfig(ClientId);
+
+        var credential = GoogleCredential.FromFile(cfg.AuthJsonPath)
+            .CreateScoped(DriveService.ScopeConstants.Drive);
+
+        var service = new DriveService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "promodel"
+        });
+
+        var request = service.Files.List();
+        request.PageSize = 100;
+        request.Q = $"'{archivoId}' in parents";
+        var r = await request.ExecuteAsync();
+        var ids = new List<string>();
+        if (r.Files.Any())
+        {
+            ids = r.Files.Select(f => f.Id).ToList();
+        }
+        return ids;
+    }
+
 }

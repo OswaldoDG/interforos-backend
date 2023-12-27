@@ -997,7 +997,7 @@ namespace promodel.servicios
             return respuesta;
         }
 
-        public async Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId)
+        public async Task<Respuesta> RemoverCasting(string clienteId, string personaId, string castingId)
         {
             var respuesta = new Respuesta();
             var r = await PorId(personaId);
@@ -1006,8 +1006,9 @@ namespace promodel.servicios
             if (r.Ok)
             {
                 persona.Castings.Remove(castingPersona);
-                await Actualizar(persona);
+                await db.Personas.AddOrUpdateAsync(persona);
                 await almacenamiento.DeleteWhatchArchivo(clienteId, castingPersona.ChannelId, castingPersona.resourceId);
+                await almacenamiento.DeleteFile(clienteId,castingPersona.FolderId);
                 respuesta.Ok = true;
 
             }

@@ -17,7 +17,7 @@ public interface ICastingService
     Task<Respuesta> EliminarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId);
     Task<RespuestaPayload<CategoriaCasting>> ActualizarCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoriaId, CategoriaCasting categoria);
     Task<Respuesta> EliminarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen);
-    Task<Respuesta> AdicionarModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, OrigenInscripcion origen);
+    Task<Respuesta> AdicionarModeloCategoria(string ClienteId, string CastingId,string CategoríaId, string PersonaId, OrigenInscripcion origen);
     Task<Respuesta> EliminarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, string ComentarioId);
     Task<RespuestaPayload<ComentarioCategoriaModeloCasting>> AdicionarComentarioModeloCategoria(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId, string Comentario);
     Task<Respuesta> EliminarComentarioCasting(string ClienteId, string CastingId, string UsuarioId, string ComentarioId);
@@ -40,7 +40,7 @@ public interface ICastingService
     Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
     Task<RespuestaPayload<Casting>> FullCastingByFolderId(string ClienteId, string FolderId);
     Task<Respuesta> ActualizarModeloCasting(string ClienteId, string castingId, string categoriaId, ModeloCasting Modelo);
-    Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, int consecutivo, OrigenInscripcion origen);
+    Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int consecutivo, OrigenInscripcion origen);
     Task<RespuestaPayload<ModeloCasting>> GetVideoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
     Task<string> GetFotoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
     Task<Respuesta> ActualizarFotoCastinPrincipal(string ClienteId, string castingId, string personaId, string  archivoId);

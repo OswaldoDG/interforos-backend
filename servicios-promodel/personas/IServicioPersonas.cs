@@ -21,7 +21,7 @@ public interface IServicioPersonas
     Task<bool> UpsertLinkDocumento(string CLienteId, string UsuarioId, string DocumentoId, string AlmacenamientoId);
     Task<RespuestaPayload<CastingPersona>> MisCastings(string personaId);
     Task<RespuestaPayload<CastingPersona>> AdicionarCasting(string personaId, string clienteId, string castingId,string folderId);
-    Task<Respuesta> RemoverCasting(string personaId, string clienteId, string castingId);
+    Task<Respuesta> RemoverCasting(string clienteId, string personaId, string castingId);
     Task<Persona> PorConsecutivo(string ClinteId,int Consecutivo);
     
 }
