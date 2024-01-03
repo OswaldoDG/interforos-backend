@@ -516,7 +516,12 @@ public class CastingService : ICastingService
                 if (res.Ok)
                 {
                     CastingPersona p = (CastingPersona)res.Payload;
-                    categoria.Modelos.Add(new ModeloCasting() { PersonaId = PersonaId, Origen = origen ,FolderId=p.FolderId});
+                    categoria.Modelos.Add(new ModeloCasting() { 
+                       PersonaId = PersonaId,
+                       Origen = origen,
+                       FolderId=p.FolderId,
+                       Consecutivo= SiguienteId(categoria)
+                    });
                     await db.Castings.AddOrUpdateAsync(casting);
                 }
                 r.Ok = true;
@@ -529,9 +534,9 @@ public class CastingService : ICastingService
         return r;
     }
 
-    public async Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int Consecutivo, OrigenInscripcion origen)
+    public async Task<RespuestaPayload<ModeloCastingReview>> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int Consecutivo, OrigenInscripcion origen)
     {
-        var r = new Respuesta();
+        var r = new RespuestaPayload<ModeloCastingReview>();
         var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == CastingId);
         var persona = await servicioPersonas.PorConsecutivo(ClienteId,Consecutivo);
         if (casting != null && persona!=null)
@@ -543,9 +548,11 @@ public class CastingService : ICastingService
                 if (res.Ok)
                 {
                     CastingPersona p = (CastingPersona)res.Payload;
-                    categoria.Modelos.Add(new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId });
+                    var modelo = new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId, Consecutivo = SiguienteId(categoria) };
+                    categoria.Modelos.Add(modelo);
                     await db.Castings.AddOrUpdateAsync(casting);
                     r.Ok = true;
+                    r.Payload = new ModeloCastingReview { Consecutivo = modelo.Consecutivo, PersonaId = modelo.PersonaId};
                     return r;
                 }
                 else
@@ -1125,4 +1132,53 @@ public class CastingService : ICastingService
     #endregion
     #region Acceso
     #endregion
+
+    private int SiguienteId(CategoriaCasting categoria)
+    {
+        try
+        {
+            var c = categoria.Modelos.Max(p => p.Consecutivo);
+            if (c.HasValue)
+            {
+                return c.Value + 1;
+            }
+        }
+        catch (Exception)
+        {
+
+
+        }
+
+        return 1;
+    }
+
+    public async Task<RespuestaPayload<List<Persona>>> GetModelosCategoria(string ClienteId, string castingId, string categoriaId)
+    {
+        var modelos = new List<Persona>();
+            var r = new RespuestaPayload<List<Persona>>();
+            var casting = await db.Castings.FirstOrDefaultAsync(x => x.ClienteId == ClienteId && x.Id == castingId);
+            if (casting != null)
+            {
+                var categoria = casting.Categorias.FirstOrDefault(c=>c.Id == categoriaId);
+                if (categoria != null && categoria.Modelos.Any())
+                {
+                    foreach (var modelo in categoria.Modelos)
+                    {
+                        var res = await servicioPersonas.PorId(modelo.PersonaId);
+                            if (res.Ok)
+                            {
+                            modelos.Add((Persona)res.Payload);
+                            }    
+                    }
+                    r.Ok = true;
+                    r.Payload = modelos;
+                    return r;
+                }
+
+            }
+            r.HttpCode = HttpCode.BadRequest;
+            r.Error = "No hay modelos";
+            return r;
+     }
+    
 }

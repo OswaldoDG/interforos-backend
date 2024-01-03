@@ -19,6 +19,9 @@ namespace promodel.modelo.proyectos
     /// </summary>
     public class ModeloCasting
     {
+        [JsonProperty("consecutivo")]
+        public int? Consecutivo { get; set; }
+
         /// <summary>
         /// Identificador úico de la persona
         /// </summary>

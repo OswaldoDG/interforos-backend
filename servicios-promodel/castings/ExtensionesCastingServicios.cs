@@ -92,12 +92,16 @@ public static class ExtensionesCastingServicios
                 var c = new SelectorCategoria();
                 c.Id = categoria.Id;
                 c.Nombre = categoria.Nombre;
-                c.Modelos = new List<string>();
+                c.Modelos = new List<ModeloCastingReview>();
                 c.Comentarios = new List<ComentarioCategoriaModeloCasting>();
                 c.Votos = new List<VotoModeloMapeo>();
                 categoria.Modelos.ForEach(m =>
                 {
-                    c.Modelos.Add(m.PersonaId);
+                    c.Modelos.Add(new ModeloCastingReview
+                    {
+                        PersonaId=m.PersonaId,
+                        Consecutivo=m.Consecutivo,
+                    });
 
                     m.Comentarios.ForEach(co =>
                     {
