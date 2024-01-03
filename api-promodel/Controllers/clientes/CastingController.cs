@@ -338,12 +338,12 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> AgregarModeloCategoriaConsecutivo(string castingId, int numModelo, string categoriaId)
+    public async Task<ActionResult<ModeloCastingReview>> AgregarModeloCategoriaConsecutivo(string castingId, int numModelo, string categoriaId)
     {
         var result = await castingService.AdicionarModeloCategoriaConsecutivo(ClienteId, castingId,categoriaId, numModelo, OrigenInscripcion.staff);
         if (result.Ok)
         {
-            return Ok();
+            return Ok(result.Payload);
 
         }
         else
@@ -673,6 +673,26 @@ public class CastingController : ControllerUsoInterno
             return NotFound();
             }
         }
-    
+
+    [HttpGet("{castingId}/categoria/{categoriaId}/modelos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<Persona>>> ObtieneModelosCategoria(string castingId, string categoriaId)
+    {
+      
+
+            var result = await castingService.GetModelosCategoria(ClienteId, castingId, categoriaId);
+            if (result.Ok)
+            {
+                return Ok(result.Payload);
+            }
+            else
+            {
+                return ActionFromCode(result.HttpCode, result.Error);
+            }
+       
+    }
+
 }
 

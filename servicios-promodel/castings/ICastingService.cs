@@ -40,11 +40,12 @@ public interface ICastingService
     Task<string?> NombreActivo(string ClienteId, string UsuarioId,string castingId);
     Task<RespuestaPayload<Casting>> FullCastingByFolderId(string ClienteId, string FolderId);
     Task<Respuesta> ActualizarModeloCasting(string ClienteId, string castingId, string categoriaId, ModeloCasting Modelo);
-    Task<Respuesta> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int consecutivo, OrigenInscripcion origen);
+    Task<RespuestaPayload<ModeloCastingReview>> AdicionarModeloCategoriaConsecutivo(string ClienteId, string CastingId,string CategoríaId, int consecutivo, OrigenInscripcion origen);
     Task<RespuestaPayload<ModeloCasting>> GetVideoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
     Task<string> GetFotoCastingModelo(string ClienteId, string CastingId, string UsuarioId, string CategoríaId, string PersonaId);
     Task<Respuesta> ActualizarFotoCastinPrincipal(string ClienteId, string castingId, string personaId, string  archivoId);
     Task<Respuesta> ActualizarVideoCastinPrincipal(string ClienteId, string  castingId, string  personaId, string archivoId);
+    Task<RespuestaPayload<List<Persona>>> GetModelosCategoria(string ClienteId, string castingId,string categoriaId);
 }
 
 
