@@ -101,6 +101,7 @@ public static class ExtensionesCastingServicios
                     {
                         PersonaId=m.PersonaId,
                         Consecutivo=m.Consecutivo,
+                        FechaAdicion=m.FechaAdicion
                     });
 
                     m.Comentarios.ForEach(co =>

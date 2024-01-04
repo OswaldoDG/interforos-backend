@@ -520,7 +520,8 @@ public class CastingService : ICastingService
                        PersonaId = PersonaId,
                        Origen = origen,
                        FolderId=p.FolderId,
-                       Consecutivo= SiguienteId(categoria)
+                       Consecutivo= SiguienteId(categoria),
+                       FechaAdicion= DateTime.UtcNow
                     });
                     await db.Castings.AddOrUpdateAsync(casting);
                 }
@@ -548,11 +549,11 @@ public class CastingService : ICastingService
                 if (res.Ok)
                 {
                     CastingPersona p = (CastingPersona)res.Payload;
-                    var modelo = new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId, Consecutivo = SiguienteId(categoria) };
+                    var modelo = new ModeloCasting() { PersonaId = persona.Id, Origen = origen, FolderId = p.FolderId, Consecutivo = SiguienteId(categoria), FechaAdicion = DateTime.UtcNow };
                     categoria.Modelos.Add(modelo);
                     await db.Castings.AddOrUpdateAsync(casting);
                     r.Ok = true;
-                    r.Payload = new ModeloCastingReview { Consecutivo = modelo.Consecutivo, PersonaId = modelo.PersonaId};
+                    r.Payload = new ModeloCastingReview { Consecutivo = modelo.Consecutivo, PersonaId = modelo.PersonaId,FechaAdicion=modelo.FechaAdicion};
                     return r;
                 }
                 else
