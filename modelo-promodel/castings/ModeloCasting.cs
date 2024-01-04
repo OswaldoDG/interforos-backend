@@ -68,6 +68,11 @@ namespace promodel.modelo.proyectos
         /// </summary>
         [JsonProperty("fid")]
         public string? FolderId { get; set; }
+        /// <summary>
+        /// Fecha de adición del modelo al casting
+        /// </summary>
+        [JsonProperty("f")]
+        public DateTime FechaAdicion { get; set; }
 
 
     }

@@ -14,4 +14,8 @@ public class ModeloCastingReview
     /// consecutivo del modelo en el casting
     /// </summary>
     public int? Consecutivo { get; set; }
+    /// <summary>
+    /// Fecha de adición del modelo al casting
+    /// </summary>
+    public DateTime FechaAdicion { get; set; }
 }
