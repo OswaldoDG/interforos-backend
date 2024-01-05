@@ -1,5 +1,6 @@
 ﻿using almacenamiento;
 using almacenamiento.GoogleDrive;
+using Bogus.DataSets;
 using CouchDB.Driver.Extensions;
 using EllipticCurve.Utils;
 using Google.Apis.Drive.v3;
@@ -16,6 +17,17 @@ using promodel.servicios.media;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Reflection;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using ImageMagick;
+using static Bogus.DataSets.Name;
+using promodel.servicios.perfil;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using System.Drawing;
+using A = DocumentFormat.OpenXml.Drawing;
+using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
+
 
 namespace promodel.servicios.proyectos;
 
@@ -32,9 +44,9 @@ public class CastingService : ICastingService
     private readonly IGoogleDriveConfigProvider provider;
     private readonly IMedia media;
     private readonly ICacheAlmacenamiento cacheAlmacenamiento;
-
+    private readonly IServicioCatalogos servicioCatalogos;
     public CastingService(CastingCouchDbContext db, IDistributedCache cache,
-        IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider, IMedia media, ICacheAlmacenamiento cacheAlmacenamiento)
+    IServicioIdentidad servicioIdentidad, HttpClient httpClient, IConfiguration configuration, IServicioPersonas servicioPersonas, IAlmacenamiento almacenamiento, IGoogleDriveConfigProvider provider, IMedia media, ICacheAlmacenamiento cacheAlmacenamiento, IServicioCatalogos servicioCatalogos)
     {
         this.db = db;
         this.cache = cache;
@@ -45,6 +57,7 @@ public class CastingService : ICastingService
         this.almacenamiento = almacenamiento;
         this.provider = provider;
         this.media = media;
+        this.servicioCatalogos = servicioCatalogos;
         this.cacheAlmacenamiento = cacheAlmacenamiento;
     }
 
@@ -1182,4 +1195,262 @@ public class CastingService : ICastingService
             return r;
      }
     
+    #region Excel
+    public async Task<Respuesta> CrearExcelOpenXml(string FilePath, Casting casting)
+    {
+        var r = new RespuestaPayload<Casting>();
+        using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(FilePath, SpreadsheetDocumentType.Workbook))
+        {
+            WorkbookPart workbookPart = spreadsheetDocument.AddWorkbookPart();
+            workbookPart.Workbook = new Workbook();
+
+            Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+
+            foreach (var categoria in casting.Categorias)
+            {
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+                Columns columns = worksheetPart.Worksheet.GetFirstChild<Columns>();
+                Boolean needToInsertColumns = false;
+                if (columns == null)
+                {
+                    columns = new Columns();
+                    needToInsertColumns = true;
+                }
+                columns.Append(new Column() { Min = 1, Max = 1, Width = 29, CustomWidth = true });
+                if (needToInsertColumns)
+                    worksheetPart.Worksheet.InsertAt(columns, 0);
+
+                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = (uint)sheets.Count() + 1, Name = categoria.Nombre };
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                Row headerRow = new Row();
+                headerRow.Append(
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("FotografiaPricipal") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Consecutivo") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("NombreArtistico") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("NombrePersona") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Genero") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Edad") },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue("Habilidades") }
+                );
+                sheetData.AppendChild(headerRow);
+
+                foreach (var modelo in categoria.Modelos)
+                {
+                    var respuesta = await servicioPersonas.PorId(modelo.PersonaId);
+                    if (respuesta.Payload is Persona persona)
+                    {
+                        CatalogoBase habilidades = await servicioCatalogos.GetCatalogoCliente(Perfil.CAT_ACTIVIDADES,casting.ClienteId);
+                        List<string> habilidadesModelo = new List<string>();
+                        foreach (var habilidad in persona.ActividadesIds)
+                        {
+                            habilidades.Elementos.ForEach(e =>
+                            {
+                                if (e.Clave == habilidad)
+                                {
+                                    habilidadesModelo.Add(e.Texto);
+                                }
+                            });
+                        }
+
+                        Row row = new Row();
+                        row.CustomHeight = true;
+                        row.Height = 155;
+                        row.Append(
+
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue() },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(modelo.Consecutivo.ToString()) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.NombreArtistico) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.Nombre) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.GeneroId) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(persona.Edad) },
+                            new Cell() { DataType = CellValues.String, CellValue = new CellValue(string.Join(", ", habilidadesModelo)) }
+                        );
+                        sheetData.AppendChild(row);
+                    }
+                }
+            }
+
+            workbookPart.Workbook.Save();
+        }
+
+
+
+        if (!System.IO.File.Exists(FilePath))
+        {
+            r.Ok = false;
+            r.HttpCode = HttpCode.NotFound;
+            return r;
+        }
+
+        
+        r.Ok = true;
+        return r;
+    }
+
+    public async Task<Respuesta> InsertarImagenes(Casting casting, string FilePath)
+    {
+        Respuesta r = new();
+        foreach (var categoria in casting.Categorias)
+        {
+            try
+            {
+                SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(FilePath, true);
+
+                WorksheetPart worksheetPart = GetWorksheetPartByName(spreadsheetDocument, categoria.Nombre);
+                int cont = 2;
+                foreach (var modelo in categoria.Modelos)
+                {
+                    var busquedaPersona = await servicioPersonas.PorId(modelo.PersonaId);
+                    Persona persona = (Persona)busquedaPersona.Payload;
+                    string rutaIMG = "";
+                    FileStream fileStream;
+                    
+                    if(modelo.ImagenPortadaId != null)
+                    {
+                        rutaIMG = await cacheAlmacenamiento.FotoById(casting.ClienteId, persona.UsuarioId, modelo.ImagenPortadaId, "thumb");
+
+                        FileInfo fi = new FileInfo(rutaIMG);
+                        fileStream = System.IO.File.OpenRead(rutaIMG);
+                        AddImage(worksheetPart, fileStream, persona.NombreArtistico, 1, cont, 120, 150); // A5
+                    }
+                    else
+                    {
+                        FileInfo fi = new FileInfo(@"C:\interforos\interforos-backend\errorMedio.jpg");
+                        fileStream = System.IO.File.OpenRead(@"C:\interforos\interforos-backend\errorMedio.jpg");
+                        AddImage(worksheetPart, fileStream, persona.NombreArtistico, 1, cont, 120, 150); // A5
+                    }
+                    cont++;
+                }
+                cont = 0;
+
+
+
+                worksheetPart.Worksheet.Save();
+
+                spreadsheetDocument.Dispose();
+            }
+            catch
+            {
+                Console.WriteLine("No se pudieron guardar las imagenes");
+            }
+
+        }
+
+        if (!System.IO.File.Exists(FilePath))
+        {
+            r.Ok = false;
+            r.HttpCode = HttpCode.NotFound;
+            return r;
+        }
+
+
+        r.Ok = true;
+        return r;
+    }
+
+    public WorksheetPart GetWorksheetPartByName(SpreadsheetDocument document, string sheetName)
+    {
+        IEnumerable<Sheet> sheets =
+           document.WorkbookPart.Workbook.GetFirstChild<Sheets>().
+           Elements<Sheet>().Where(s => s.Name == sheetName);
+
+        if (sheets.Count() == 0)
+        {
+            // The specified worksheet does not exist
+            return null;
+        }
+
+        string relationshipId = sheets.First().Id.Value;
+        return (WorksheetPart)document.WorkbookPart.GetPartById(relationshipId);
+    }
+
+    public void AddImage(WorksheetPart worksheetPart,
+                                    string imageFileName, string imgDesc,
+                                    int colNumber, int rowNumber, int imageHeight, int imageWidth)
+    {
+        using (var imageStream = new FileStream(imageFileName, FileMode.Open))
+        {
+            AddImage(worksheetPart, imageStream, imgDesc, colNumber, rowNumber, imageHeight, imageWidth);
+        }
+    }
+
+    public static void AddImage(WorksheetPart worksheetPart,
+                            Stream imageStream, string imgDesc,
+                            int colNumber, int rowNumber, int imageHeight, int imageWidth)
+    {
+        MemoryStream imageMemStream = new MemoryStream();
+        imageStream.Position = 0;
+        imageStream.CopyTo(imageMemStream);
+        imageStream.Position = 0;
+
+        DrawingsPart drawingsPart = worksheetPart.DrawingsPart;
+        if (drawingsPart == null)
+            drawingsPart = worksheetPart.AddNewPart<DrawingsPart>();
+
+        if (!worksheetPart.Worksheet.ChildElements.OfType<Drawing>().Any())
+        {
+            worksheetPart.Worksheet.Append(new Drawing { Id = worksheetPart.GetIdOfPart(drawingsPart) });
+        }
+
+        if (drawingsPart.WorksheetDrawing == null)
+        {
+            drawingsPart.WorksheetDrawing = new Xdr.WorksheetDrawing();
+        }
+
+        var worksheetDrawing = drawingsPart.WorksheetDrawing;
+
+        Bitmap bm = new Bitmap(imageMemStream);
+        var imagePart = drawingsPart.AddImagePart(ImagePartType.Jpeg);
+        imagePart.FeedData(imageStream);
+        A.Extents extents = new A.Extents();
+        var extentsCy = (imageWidth * (long)(914400 / bm.VerticalResolution));
+
+        var extentsCx = (imageWidth * (long)(914400 / bm.VerticalResolution));
+
+        bm.Dispose();
+
+        var colOffset = 0;
+        var rowOffset = 0;
+        var nvps = worksheetDrawing.Descendants<Xdr.NonVisualDrawingProperties>();
+        var nvpId = nvps.Count() > 0
+            ? (UInt32Value)worksheetDrawing.Descendants<Xdr.NonVisualDrawingProperties>().Max(p => p.Id.Value) + 1
+            : 1U;
+
+        var oneCellAnchor = new Xdr.OneCellAnchor(
+            new Xdr.FromMarker
+            {
+                ColumnId = new Xdr.ColumnId((colNumber - 1).ToString()),
+                RowId = new Xdr.RowId((rowNumber - 1).ToString()),
+                ColumnOffset = new Xdr.ColumnOffset(colOffset.ToString()),
+                RowOffset = new Xdr.RowOffset(rowOffset.ToString())
+            },
+            new Xdr.Extent { Cx = extentsCx, Cy = extentsCy },
+            new Xdr.Picture(
+                new Xdr.NonVisualPictureProperties(
+                    new Xdr.NonVisualDrawingProperties { Id = nvpId, Name = "Picture " + nvpId, Description = imgDesc },
+                    new Xdr.NonVisualPictureDrawingProperties(new A.PictureLocks { NoChangeAspect = true })
+                ),
+                new Xdr.BlipFill(
+                    new A.Blip { Embed = drawingsPart.GetIdOfPart(imagePart), CompressionState = A.BlipCompressionValues.Print },
+                    new A.Stretch(new A.FillRectangle())
+                ),
+                new Xdr.ShapeProperties(
+                    new A.Transform2D(
+                        new A.Offset { X = 0, Y = 0 },
+                        new A.Extents { Cx = extentsCx, Cy = extentsCy }
+                    ),
+                    new A.PresetGeometry { Preset = A.ShapeTypeValues.Rectangle }
+                )
+            ),
+            new Xdr.ClientData()
+        );
+
+        worksheetDrawing.Append(oneCellAnchor);
+        
+    }
+    #endregion
 }
