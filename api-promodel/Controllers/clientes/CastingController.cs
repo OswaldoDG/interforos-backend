@@ -2,6 +2,7 @@
 using api_promodel.middlewares;
 using Bogus.DataSets;
 using CouchDB.Driver.Query.Extensions;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EllipticCurve;
 using ImageMagick;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +23,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace api_promodel.Controllers.clientes;
 
@@ -695,6 +697,7 @@ public class CastingController : ControllerUsoInterno
        
     }
 
+
     [HttpGet("{CastingId}/excel", Name = "CastingExcel")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -702,25 +705,27 @@ public class CastingController : ControllerUsoInterno
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ExcelOpenXmlCreating([FromRoute] string CastingId)
     {
-        const string rutaCompletaArchivo = "C:\\interforos\\interforos-backend\\api-promodel\\Casting.xlsx";
-        const string nombreArchivo = "Casting.xlsx";
+        string filename = String.Format("{0:yyyy-MM-dd}__{1}", DateTime.Now, CastingId+".xlsx");
+        string ruta = "C:\\interforos\\interforos-backend\\api-promodel\\";
+        string path = Path.Combine(ruta, filename);
         var busquedaCasting = await castingService.FullCasting(ClienteId, CastingId, UsuarioId);
-        var result = await castingService.CrearExcelOpenXml(rutaCompletaArchivo, (Casting)busquedaCasting.Payload);
-
+        var creacionExcel = await castingService.CrearExcelOpenXml(path, (Casting)busquedaCasting.Payload);
+        var result = await castingService.InsertarImagenes((Casting)busquedaCasting.Payload, path);
         if (result.Ok)
         {
-            byte[] contenidoArchivo = System.IO.File.ReadAllBytes(rutaCompletaArchivo);
-            return File(contenidoArchivo, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombreArchivo);
+            byte[] contenidoArchivo = System.IO.File.ReadAllBytes(path);
+            return File(contenidoArchivo, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
         }
         else
         {
             return ActionFromCode(result.HttpCode, result.Error);
         }
 
-
     }
-    
+
 }
+    
+
 
 
 
