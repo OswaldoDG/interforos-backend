@@ -1255,15 +1255,6 @@ public class CastingService : ICastingService
                                 }
                             });
                         }
-                        string rutaIMG="";
-                        FileStream fileStream;
-                        if(!string.IsNullOrEmpty(persona.ElementoMedioPrincipalId))
-                        {
-                            rutaIMG = await cacheAlmacenamiento.FotoById(casting.ClienteId, persona.UsuarioId, persona.ElementoMedioPrincipalId, "thumb");
-                            FileInfo fi = new FileInfo(rutaIMG);
-                            fileStream = System.IO.File.OpenRead(rutaIMG);
-                        }
-
 
                         Row row = new Row();
                         row.CustomHeight = true;
